@@ -25,7 +25,8 @@ import {
 
 // Import new sub-components
 import { StepOneAccount } from "./components/enrollment/StepOneAccount";
-import { StepTwoRoleDetails } from "./components/enrollment/StepTwoRoleDetails";
+import { StepTwoRoleSelection } from "./components/enrollment/StepTwoRoleSelection";
+import { StepThreeProfileDetails } from "./components/enrollment/StepThreeProfileDetails";
 
 export function EnrollUserPage() {
   const { user } = useAuth();
@@ -176,7 +177,7 @@ export function EnrollUserPage() {
   };
 
   const handleSave = async () => {
-    // Validate Step 2
+    // Validate Step 3
     if (!profileData.department && profileData.role !== "super_admin") {
       return toast({
         title: "Please select a Department",
@@ -279,7 +280,7 @@ export function EnrollUserPage() {
             <span
               className={`text-sm font-medium bg-background px-2 ${currentStep >= 1 ? "text-primary" : "text-muted-foreground"}`}
             >
-              Account Details
+              Account
             </span>
           </div>
 
@@ -292,7 +293,20 @@ export function EnrollUserPage() {
             <span
               className={`text-sm font-medium bg-background px-2 ${currentStep >= 2 ? "text-primary" : "text-muted-foreground"}`}
             >
-              Role & Profile
+              Role
+            </span>
+          </div>
+
+          <div className="relative flex flex-col items-center gap-2">
+            <div
+              className={`h-10 w-10 rounded-full flex items-center justify-center border-2 transition-colors duration-300 ${currentStep >= 3 ? "border-primary bg-background text-primary" : "border-muted-foreground bg-background text-muted-foreground"}`}
+            >
+              <span className="font-bold">3</span>
+            </div>
+            <span
+              className={`text-sm font-medium bg-background px-2 ${currentStep >= 3 ? "text-primary" : "text-muted-foreground"}`}
+            >
+              Details
             </span>
           </div>
         </div>
@@ -325,23 +339,24 @@ export function EnrollUserPage() {
           )}
 
           {currentStep === 2 && (
-            <div className="space-y-6">
-              <StepTwoRoleDetails
-                profileData={profileData}
-                setProfileData={setProfileData}
-                studentData={studentData}
-                setStudentData={setStudentData}
-                documents={newDocuments}
-                setDocuments={setNewDocuments}
-                userFullName={`${accountData.firstName} ${accountData.lastName}`}
-                avatarUpload={avatarUpload}
-                setAvatarUpload={setAvatarUpload}
-                isSuperAdmin={isSuperAdmin}
-                isAdmin={isAdmin}
-                userDepartment={user?.department}
-              />
-
-              <div className="flex justify-between pt-6 border-t bg-background/50 backdrop-blur-sm sticky bottom-0 z-10 p-4 rounded-lg border shadow-sm">
+            <Card className="animate-in slide-in-from-right-4 duration-300">
+              <CardHeader>
+                <CardTitle>Step 2: Role Selection</CardTitle>
+                <CardDescription>
+                  Assign a role and upload a profile picture.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <StepTwoRoleSelection
+                  profileData={profileData}
+                  setProfileData={setProfileData}
+                  userFullName={`${accountData.firstName} ${accountData.lastName}`}
+                  avatarUpload={avatarUpload}
+                  setAvatarUpload={setAvatarUpload}
+                  isSuperAdmin={isSuperAdmin}
+                />
+              </CardContent>
+              <CardFooter className="flex justify-between border-t p-6">
                 <Button
                   variant="outline"
                   onClick={() => setCurrentStep(1)}
@@ -349,9 +364,40 @@ export function EnrollUserPage() {
                 >
                   <ArrowLeft className="h-4 w-4" /> Back
                 </Button>
+                <Button
+                  onClick={handleNextStep}
+                  className="gap-2 min-w-[120px]"
+                >
+                  Next Step <ChevronRight className="h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+
+          {currentStep === 3 && (
+            <div className="space-y-6">
+              <StepThreeProfileDetails
+                profileData={profileData}
+                setProfileData={setProfileData}
+                studentData={studentData}
+                setStudentData={setStudentData}
+                documents={newDocuments}
+                setDocuments={setNewDocuments}
+                isAdmin={isAdmin}
+                userDepartment={user?.department}
+              />
+
+              <div className="flex justify-between pt-6 border-t bg-background/50 backdrop-blur-sm sticky bottom-0 z-10 p-4 rounded-lg border shadow-sm">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep(2)}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Back
+                </Button>
                 <Button onClick={handleSave} className="gap-2 min-w-[150px]">
                   <Check className="h-4 w-4" />{" "}
-                  {editingUserId ? "Update User" : "Create User"}
+                  {editingUserId ? "Update User" : "Complete Enrollment"}
                 </Button>
               </div>
             </div>
