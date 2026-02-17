@@ -38,6 +38,7 @@ export function EnrollUserPage() {
   const isAdmin = user?.role === "admin";
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [createdUserId, setCreatedUserId] = useState<string | null>(null);
 
   // State Group 1: Account Credentials
   const [accountData, setAccountData] = useState<AccountFormData>({
@@ -122,7 +123,7 @@ export function EnrollUserPage() {
     fetchUserForEdit();
   }, [editingUserId]);
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     // Validate Step 1
     if (!accountData.firstName.trim())
       return toast({ title: "First Name is required", variant: "destructive" });
@@ -142,7 +143,36 @@ export function EnrollUserPage() {
       }
     }
 
-    setCurrentStep(2);
+    try {
+      if (!editingUserId && !createdUserId) {
+        // Create user in Step 1
+        const { userApi: api } = await import("@/lib/api");
+        const payload = {
+          username: accountData.userId,
+          primaryEmail: accountData.email,
+          givenName: accountData.firstName,
+          familyName: accountData.lastName,
+          password: accountData.password,
+        };
+
+        const response = await api.post("/users", payload);
+        const newUser = response.data;
+
+        if (newUser && newUser.id) {
+          setCreatedUserId(newUser.id);
+          toast({ title: "User created successfully", description: "Proceed to complete profile." });
+        }
+      }
+
+      setCurrentStep(2);
+    } catch (err: any) {
+      console.error("Failed to create user:", err);
+      toast({
+        title: "Failed to create user",
+        description: err.response?.data?.message || err.message || "Could not create user",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -180,9 +210,7 @@ export function EnrollUserPage() {
     const fullName = `${accountData.firstName.trim()} ${accountData.lastName.trim()}`;
 
     const payload = {
-      username: accountData.userId,
-      primaryEmail: accountData.email,
-      password: accountData.password,
+      // Basic info is already created, but we send updates if needed
       name: fullName,
       role: profileData.role,
       department: profileData.department,
@@ -194,23 +222,22 @@ export function EnrollUserPage() {
 
     try {
       const { userApi: api } = await import("@/lib/api");
-      if (editingUserId) {
+      const targetUserId = editingUserId || createdUserId;
+
+      if (targetUserId) {
         if (!accountData.password) delete (payload as any).password;
-        await api.put(`/users/${editingUserId}`, payload);
-        toast({ title: "User updated successfully" });
+        await api.put(`/users/${targetUserId}`, payload);
+        toast({ title: "User profile updated successfully" });
+        setLocation("/users");
       } else {
-        await api.post("/users", payload);
-        toast({
-          title: `${roleLabels[profileData.role]} enrolled successfully`,
-        });
+        toast({ title: "Error: User ID missing", variant: "destructive" });
       }
-      setLocation("/users");
     } catch (err: any) {
-      console.error("Failed to save user:", err);
+      console.error("Failed to save user details:", err);
       toast({
         title: "Operation failed",
         description:
-          err.response?.data?.message || err.message || "Could not save user",
+          err.response?.data?.message || err.message || "Could not save user details",
         variant: "destructive",
       });
     }
