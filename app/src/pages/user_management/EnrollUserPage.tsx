@@ -183,7 +183,38 @@ export function EnrollUserPage() {
       if (!profileData.role) {
         return toast({ title: "Please select a role", variant: "destructive" });
       }
-      setCurrentStep(3);
+
+      const targetUserId = editingUserId || createdUserId;
+      if (!targetUserId) {
+        return toast({
+          title: "Error: User ID missing",
+          description: "Cannot assign role without user ID.",
+          variant: "destructive",
+        });
+      }
+
+      try {
+        const { userApi: api } = await import("@/lib/api");
+        // Convert role to uppercase for authority (e.g., student -> STUDENT)
+        const authority = profileData.role.toUpperCase();
+
+        await api.post(`/users/${targetUserId}/authorities`, {
+          authority: authority,
+        });
+
+        toast({ title: "Role assigned successfully" });
+        setCurrentStep(3);
+      } catch (err: any) {
+        console.error("Failed to assign role:", err);
+        toast({
+          title: "Failed to assign role",
+          description:
+            err.response?.data?.message ||
+            err.message ||
+            "Could not assign role to user",
+          variant: "destructive",
+        });
+      }
     }
   };
 
