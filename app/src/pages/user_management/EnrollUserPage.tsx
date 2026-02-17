@@ -350,9 +350,6 @@ export function EnrollUserPage() {
                 <StepTwoRoleSelection
                   profileData={profileData}
                   setProfileData={setProfileData}
-                  userFullName={`${accountData.firstName} ${accountData.lastName}`}
-                  avatarUpload={avatarUpload}
-                  setAvatarUpload={setAvatarUpload}
                   isSuperAdmin={isSuperAdmin}
                 />
               </CardContent>
@@ -385,6 +382,9 @@ export function EnrollUserPage() {
                 setDocuments={setNewDocuments}
                 isAdmin={isAdmin}
                 userDepartment={user?.department}
+                userFullName={`${accountData.firstName} ${accountData.lastName}`}
+                avatarUpload={avatarUpload}
+                setAvatarUpload={setAvatarUpload}
               />
 
               <div className="flex justify-between pt-6 border-t bg-background/50 backdrop-blur-sm sticky bottom-0 z-10 p-4 rounded-lg border shadow-sm">
