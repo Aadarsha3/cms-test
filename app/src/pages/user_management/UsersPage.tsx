@@ -45,7 +45,7 @@ export function UsersPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await userApi.get<UserResponse[]>("/user");
+      const response = await userApi.get<UserResponse[]>("/users");
       if (Array.isArray(response.data)) {
         setApiUsers(response.data);
       } else {
