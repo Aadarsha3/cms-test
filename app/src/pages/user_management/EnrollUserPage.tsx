@@ -136,6 +136,15 @@ export function EnrollUserPage() {
       if (!accountData.email.trim())
         return toast({ title: "Email is required", variant: "destructive" });
 
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(accountData.email.trim())) {
+        return toast({
+          title: "Invalid Email Format",
+          description: "Please enter a valid email address.",
+          variant: "destructive",
+        });
+      }
+
       if (!accountData.password.trim() || accountData.password.length < 6) {
         if (!editingUserId) {
           return toast({
