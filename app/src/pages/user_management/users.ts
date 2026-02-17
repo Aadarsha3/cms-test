@@ -2,6 +2,8 @@ export interface UserDetail {
     id: string;
     username: string;
     primaryEmail: string;
+    givenName?: string;
+    familyName?: string;
     createdAt?: string;
     role?: string;
     department?: string;

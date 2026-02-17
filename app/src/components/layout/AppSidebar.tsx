@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
     permissionId: "dashboard_view",
   },
   {
-    title: "Users",
+    title: "User Management",
     url: "/users",
     icon: Users,
     permissionId: "users_view",

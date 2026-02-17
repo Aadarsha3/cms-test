@@ -27,6 +27,8 @@ interface UserResponse {
   id: string;
   primaryEmail: string;
   username: string;
+  givenName: string;
+  familyName: string;
   createdAt: string;
 }
 
@@ -43,7 +45,7 @@ export function UsersPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get<UserResponse[]>("/users");
+      const response = await api.get<UserResponse[]>("/user");
       if (Array.isArray(response.data)) {
         setApiUsers(response.data);
       } else {
@@ -74,11 +76,17 @@ export function UsersPage() {
     const username = u.username?.toLowerCase() || "";
     const email = u.primaryEmail?.toLowerCase() || "";
     const id = u.id?.toLowerCase() || "";
+    const givenName = u.givenName?.toLowerCase() || "";
+    const familyName = u.familyName?.toLowerCase() || "";
+    const fullName = `${givenName} ${familyName}`.trim();
 
     return (
       username.includes(searchLower) ||
       email.includes(searchLower) ||
-      id.includes(searchLower)
+      id.includes(searchLower) ||
+      givenName.includes(searchLower) ||
+      familyName.includes(searchLower) ||
+      fullName.includes(searchLower)
     );
   });
 
@@ -131,6 +139,8 @@ export function UsersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">SN</TableHead>
+                  <TableHead>First Name</TableHead>
+                  <TableHead>Last Name</TableHead>
                   <TableHead>Username</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Joined</TableHead>
@@ -172,8 +182,12 @@ export function UsersPage() {
                     >
                       <TableCell>{index + 1}</TableCell>
                       <TableCell className="font-medium">
-                        {user.username || "N/A"}
+                        {user.givenName || "-"}
                       </TableCell>
+                      <TableCell className="font-medium">
+                        {user.familyName || "-"}
+                      </TableCell>
+                      <TableCell>{user.username || "N/A"}</TableCell>
                       <TableCell>{user.primaryEmail || "N/A"}</TableCell>
                       <TableCell>
                         {user.createdAt
