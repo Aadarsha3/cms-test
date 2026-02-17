@@ -38,6 +38,11 @@ export function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [sort, setSort] = useState("id");
+  const [direction, setDirection] = useState("DESC");
+
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
@@ -45,13 +50,27 @@ export function UsersPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await userApi.get<UserResponse[]>("/users");
+      const response = await userApi.get<UserResponse[]>("/users", {
+        params: {
+          page,
+          size,
+          sort,
+          direction
+        }
+      });
+
       if (Array.isArray(response.data)) {
         setApiUsers(response.data);
       } else {
-        console.warn("API response is not an array:", response.data);
-        setApiUsers([]);
-        setError("Invalid response format from server");
+        // Handle case where API might return a Page object { content: [], totalPages: ... }
+        const data = response.data as any;
+        if (data && Array.isArray(data.content)) {
+          setApiUsers(data.content);
+        } else {
+          console.warn("API response format unexpected:", response.data);
+          setApiUsers([]);
+          setError("Invalid response format from server");
+        }
       }
     } catch (err: any) {
       console.error("Failed to fetch users:", err);
@@ -68,7 +87,7 @@ export function UsersPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, size, sort, direction]);
 
   const filteredUsers = apiUsers.filter((u) => {
     if (!u) return false;
@@ -94,26 +113,22 @@ export function UsersPage() {
     setLocation(`/users/${userId}`);
   };
 
-  const ITEMS_PER_PAGE = 10;
-  const [offset, setOffset] = useState(0);
-
-  const paginatedUsers = filteredUsers.slice(offset, offset + ITEMS_PER_PAGE);
-
   const handleNextPage = () => {
-    if (offset + ITEMS_PER_PAGE < filteredUsers.length) {
-      setOffset(offset + ITEMS_PER_PAGE);
+    // If we have full page of users, assume there might be a next page
+    if (apiUsers.length === size) {
+      setPage(prev => prev + 1);
     }
   };
 
   const handlePrevPage = () => {
-    if (offset - ITEMS_PER_PAGE >= 0) {
-      setOffset(offset - ITEMS_PER_PAGE);
+    if (page > 0) {
+      setPage(prev => prev - 1);
     }
   };
 
   // Reset pagination when search changes
   useEffect(() => {
-    setOffset(0);
+    setPage(0);
   }, [search]);
 
   return (
@@ -195,13 +210,13 @@ export function UsersPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginatedUsers.map((user, index) => (
+                  filteredUsers.map((user, index) => (
                     <TableRow
                       key={user.id || index}
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => user.id && openUserDetails(user.id)}
                     >
-                      <TableCell>{offset + index + 1}</TableCell>
+                      <TableCell>{page * size + index + 1}</TableCell>
                       <TableCell className="font-medium">
                         {user.givenName || "-"}
                       </TableCell>
@@ -224,17 +239,17 @@ export function UsersPage() {
         </Card>
 
         {/* Pagination Controls */}
-        {!loading && filteredUsers.length > 0 && (
+        {!loading && apiUsers.length > 0 && (
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              Showing {offset + 1}-{Math.min(offset + ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
+              Showing {page * size + 1}-{page * size + apiUsers.length} users
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handlePrevPage}
-                disabled={offset === 0}
+                disabled={page === 0}
               >
                 Previous
               </Button>
@@ -242,7 +257,7 @@ export function UsersPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleNextPage}
-                disabled={offset + ITEMS_PER_PAGE >= filteredUsers.length}
+                disabled={apiUsers.length < size}
               >
                 Next
               </Button>
