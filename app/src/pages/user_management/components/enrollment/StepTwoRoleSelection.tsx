@@ -18,9 +18,6 @@ import { ProfileFormData } from "../../users";
 interface StepTwoRoleSelectionProps {
     profileData: ProfileFormData;
     setProfileData: (data: ProfileFormData) => void;
-    userFullName: string;
-    avatarUpload: string | null;
-    setAvatarUpload: (url: string | null) => void;
     isSuperAdmin: boolean;
 }
 

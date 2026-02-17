@@ -125,54 +125,65 @@ export function EnrollUserPage() {
   }, [editingUserId]);
 
   const handleNextStep = async () => {
-    // Validate Step 1
-    if (!accountData.firstName.trim())
-      return toast({ title: "First Name is required", variant: "destructive" });
-    if (!accountData.lastName.trim())
-      return toast({ title: "Last Name is required", variant: "destructive" });
-    if (!accountData.userId.trim())
-      return toast({ title: "User ID is required", variant: "destructive" });
-    if (!accountData.email.trim())
-      return toast({ title: "Email is required", variant: "destructive" });
+    if (currentStep === 1) {
+      // Validate Step 1
+      if (!accountData.firstName.trim())
+        return toast({ title: "First Name is required", variant: "destructive" });
+      if (!accountData.lastName.trim())
+        return toast({ title: "Last Name is required", variant: "destructive" });
+      if (!accountData.userId.trim())
+        return toast({ title: "User ID is required", variant: "destructive" });
+      if (!accountData.email.trim())
+        return toast({ title: "Email is required", variant: "destructive" });
 
-    if (!accountData.password.trim() || accountData.password.length < 6) {
-      if (!editingUserId) {
-        return toast({
-          title: "Password must be at least 6 characters",
-          variant: "destructive",
-        });
-      }
-    }
-
-    try {
-      if (!editingUserId && !createdUserId) {
-        // Create user in Step 1
-        const { userApi: api } = await import("@/lib/api");
-        const payload = {
-          username: accountData.userId,
-          primaryEmail: accountData.email,
-          givenName: accountData.firstName,
-          familyName: accountData.lastName,
-          password: accountData.password,
-        };
-
-        const response = await api.post("/users", payload);
-        const newUser = response.data;
-
-        if (newUser && newUser.id) {
-          setCreatedUserId(newUser.id);
-          toast({ title: "User created successfully", description: "Proceed to complete profile." });
+      if (!accountData.password.trim() || accountData.password.length < 6) {
+        if (!editingUserId) {
+          return toast({
+            title: "Password must be at least 6 characters",
+            variant: "destructive",
+          });
         }
       }
 
-      setCurrentStep(2);
-    } catch (err: any) {
-      console.error("Failed to create user:", err);
-      toast({
-        title: "Failed to create user",
-        description: err.response?.data?.message || err.message || "Could not create user",
-        variant: "destructive",
-      });
+      try {
+        if (!editingUserId && !createdUserId) {
+          // Create user in Step 1
+          const { userApi: api } = await import("@/lib/api");
+          const payload = {
+            username: accountData.userId,
+            primaryEmail: accountData.email,
+            givenName: accountData.firstName,
+            familyName: accountData.lastName,
+            password: accountData.password,
+          };
+
+          const response = await api.post("/users", payload);
+          const newUser = response.data;
+
+          if (newUser && newUser.id) {
+            setCreatedUserId(newUser.id);
+            toast({
+              title: "User created successfully",
+              description: "Proceed to complete profile.",
+            });
+          }
+        }
+
+        setCurrentStep(2);
+      } catch (err: any) {
+        console.error("Failed to create user:", err);
+        toast({
+          title: "Failed to create user",
+          description:
+            err.response?.data?.message || err.message || "Could not create user",
+          variant: "destructive",
+        });
+      }
+    } else if (currentStep === 2) {
+      if (!profileData.role) {
+        return toast({ title: "Please select a role", variant: "destructive" });
+      }
+      setCurrentStep(3);
     }
   };
 
@@ -353,14 +364,16 @@ export function EnrollUserPage() {
                   isSuperAdmin={isSuperAdmin}
                 />
               </CardContent>
-              <CardFooter className="flex justify-between border-t p-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentStep(1)}
-                  className="gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back
-                </Button>
+              <CardFooter className={`flex ${createdUserId ? "justify-end" : "justify-between"} border-t p-6`}>
+                {!createdUserId && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentStep(1)}
+                    className="gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Back
+                  </Button>
+                )}
                 <Button
                   onClick={handleNextStep}
                   className="gap-2 min-w-[120px]"
@@ -387,14 +400,18 @@ export function EnrollUserPage() {
                 setAvatarUpload={setAvatarUpload}
               />
 
-              <div className="flex justify-between pt-6 border-t bg-background/50 backdrop-blur-sm sticky bottom-0 z-10 p-4 rounded-lg border shadow-sm">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentStep(2)}
-                  className="gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back
-                </Button>
+              <div
+                className={`flex ${createdUserId ? "justify-end" : "justify-between"} pt-6 border-t bg-background/50 backdrop-blur-sm sticky bottom-0 z-10 p-4 rounded-lg border shadow-sm`}
+              >
+                {!createdUserId && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentStep(2)}
+                    className="gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Back
+                  </Button>
+                )}
                 <Button onClick={handleSave} className="gap-2 min-w-[150px]">
                   <Check className="h-4 w-4" />{" "}
                   {editingUserId ? "Update User" : "Complete Enrollment"}
