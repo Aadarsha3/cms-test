@@ -144,7 +144,6 @@ export function UsersPage() {
                   <TableHead>Username</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Joined</TableHead>
-                  <TableHead className="w-[100px]">ID</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -193,9 +192,6 @@ export function UsersPage() {
                         {user.createdAt
                           ? new Date(user.createdAt).toLocaleDateString()
                           : "-"}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {user.id ? user.id.slice(0, 8) + "..." : "No ID"}
                       </TableCell>
                     </TableRow>
                   ))
