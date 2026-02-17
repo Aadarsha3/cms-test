@@ -94,6 +94,28 @@ export function UsersPage() {
     setLocation(`/users/${userId}`);
   };
 
+  const ITEMS_PER_PAGE = 10;
+  const [offset, setOffset] = useState(0);
+
+  const paginatedUsers = filteredUsers.slice(offset, offset + ITEMS_PER_PAGE);
+
+  const handleNextPage = () => {
+    if (offset + ITEMS_PER_PAGE < filteredUsers.length) {
+      setOffset(offset + ITEMS_PER_PAGE);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (offset - ITEMS_PER_PAGE >= 0) {
+      setOffset(offset - ITEMS_PER_PAGE);
+    }
+  };
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    setOffset(0);
+  }, [search]);
+
   return (
     <MainLayout title="User Management">
       <div className="space-y-6">
@@ -149,7 +171,7 @@ export function UsersPage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={6} className="h-24 text-center">
                       <div className="flex items-center justify-center gap-2 text-muted-foreground">
                         <Loader2 className="h-5 w-5 animate-spin" />
                         Loading users...
@@ -159,7 +181,7 @@ export function UsersPage() {
                 ) : filteredUsers.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className="h-24 text-center text-muted-foreground"
                     >
                       {error ? (
@@ -173,13 +195,13 @@ export function UsersPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredUsers.map((user, index) => (
+                  paginatedUsers.map((user, index) => (
                     <TableRow
                       key={user.id || index}
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => user.id && openUserDetails(user.id)}
                     >
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{offset + index + 1}</TableCell>
                       <TableCell className="font-medium">
                         {user.givenName || "-"}
                       </TableCell>
@@ -201,9 +223,32 @@ export function UsersPage() {
           </CardContent>
         </Card>
 
-        <div className="text-sm text-muted-foreground text-center">
-          Showing {filteredUsers.length} users
-        </div>
+        {/* Pagination Controls */}
+        {!loading && filteredUsers.length > 0 && (
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              Showing {offset + 1}-{Math.min(offset + ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrevPage}
+                disabled={offset === 0}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                disabled={offset + ITEMS_PER_PAGE >= filteredUsers.length}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );
