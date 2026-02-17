@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import api from "@/lib/api";
+import { dashboardApi } from "@/lib/api";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { StatCard } from "@/components/common/StatCard";
 import { useToast } from "@/hooks/use-toast";
@@ -38,7 +38,7 @@ export function DashboardPage() {
 
   useEffect(() => {
     if (user?.role === "super_admin") {
-      api
+      dashboardApi
         .get("/dashboard")
         .then((response) => {
           const { studentCount, courseCount, programCount } = response.data;

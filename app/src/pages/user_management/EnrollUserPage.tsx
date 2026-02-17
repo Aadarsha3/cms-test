@@ -78,7 +78,7 @@ export function EnrollUserPage() {
       if (editingUserId) {
         try {
           const response = await import("@/lib/api").then((m) =>
-            m.default.get(`/users/${editingUserId}`),
+            m.userApi.get(`/users/${editingUserId}`),
           );
           const userToEdit = response.data;
           if (userToEdit) {
@@ -193,7 +193,7 @@ export function EnrollUserPage() {
     };
 
     try {
-      const api = (await import("@/lib/api")).default;
+      const { userApi: api } = await import("@/lib/api");
       if (editingUserId) {
         if (!accountData.password) delete (payload as any).password;
         await api.put(`/users/${editingUserId}`, payload);

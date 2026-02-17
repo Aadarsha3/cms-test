@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
-import api from "@/lib/api";
+import { userApi } from "@/lib/api";
 import { ArrowLeft, Edit, Trash2, Loader2 } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -32,7 +32,7 @@ export function UserDetailsPage() {
       if (!userId) return;
       setLoading(true);
       try {
-        const response = await api.get<UserDetail>(`/users/${userId}`);
+        const response = await userApi.get<UserDetail>(`/users/${userId}`);
         setUser(response.data);
       } catch (err: any) {
         console.error("Failed to fetch user details:", err);
@@ -58,7 +58,7 @@ export function UserDetailsPage() {
       )
     ) {
       try {
-        await api.delete(`/users/${user.id}`);
+        await userApi.delete(`/users/${user.id}`);
         toast({ title: "User deleted successfully" });
         setLocation("/users");
       } catch (err: any) {

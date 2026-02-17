@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import api from "@/lib/api";
+import { userApi } from "@/lib/api";
 import {
   UserPlus,
   Search,
@@ -45,7 +45,7 @@ export function UsersPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get<UserResponse[]>("/user");
+      const response = await userApi.get<UserResponse[]>("/user");
       if (Array.isArray(response.data)) {
         setApiUsers(response.data);
       } else {
