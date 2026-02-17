@@ -46,6 +46,12 @@ const navItems: NavItem[] = [
     icon: LayoutDashboard,
     permissionId: "dashboard_view",
   },
+  {
+    title: "Users",
+    url: "/users",
+    icon: Users,
+    permissionId: "users_view",
+  },
 ];
 
 

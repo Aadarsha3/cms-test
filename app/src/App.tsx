@@ -13,6 +13,9 @@ import { DashboardPage } from "@/pages/dashboard/DashboardPage";
 import { ActivityPage } from "@/pages/dashboard/ActivityPage";
 import { ProfilePage } from "@/pages/user/ProfilePage";
 import { ChangePasswordPage } from "@/pages/user/ChangePasswordPage";
+import { UsersPage } from "@/pages/user_management/UsersPage";
+import { EnrollUserPage } from "@/pages/user_management/EnrollUserPage";
+import { UserDetailsPage } from "@/pages/user_management/UserdetailsPage";
 import NotFound from "@/pages/common/not-found";
 
 function ProtectedRoute({
@@ -80,6 +83,21 @@ function Router() {
           permission="password_change"
         />
       </Route>
+
+      {/* User Management Routes */}
+      <Route path="/users">
+        <ProtectedRoute component={UsersPage} permission="users_view" />
+      </Route>
+      <Route path="/users/enroll">
+        <ProtectedRoute component={EnrollUserPage} permission="users_create" />
+      </Route>
+      <Route path="/users/:id/edit">
+        <ProtectedRoute component={EnrollUserPage} permission="users_edit" />
+      </Route>
+      <Route path="/users/:id">
+        <ProtectedRoute component={UserDetailsPage} permission="users_view" />
+      </Route>
+
       <Route component={NotFound} />
     </Switch>
   );
