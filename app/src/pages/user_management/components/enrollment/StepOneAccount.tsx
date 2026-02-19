@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
-import { AccountFormData } from "../../users";
+import { AccountFormData } from "../../user.types";
 import { useState } from "react";
 
 interface StepOneAccountProps {
@@ -27,7 +27,10 @@ export function StepOneAccount({
           <Input
             id="firstName"
             value={data.firstName}
-            onChange={(e) => setData({ ...data, firstName: e.target.value })}
+            onChange={(e) => {
+              const v = e.target.value;
+              setData({ ...data, firstName: v.charAt(0).toUpperCase() + v.slice(1) });
+            }}
             placeholder="e.g. John"
             autoComplete="given-name"
           />
@@ -39,7 +42,10 @@ export function StepOneAccount({
           <Input
             id="lastName"
             value={data.lastName}
-            onChange={(e) => setData({ ...data, lastName: e.target.value })}
+            onChange={(e) => {
+              const v = e.target.value;
+              setData({ ...data, lastName: v.charAt(0).toUpperCase() + v.slice(1) });
+            }}
             placeholder="e.g. Smith"
             autoComplete="family-name"
           />

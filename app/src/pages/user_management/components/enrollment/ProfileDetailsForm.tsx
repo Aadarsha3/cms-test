@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { ProfileFormData } from "../../users";
+import { ProfileFormData } from "../../user.types";
 
 interface ProfileDetailsFormProps {
   data: ProfileFormData;

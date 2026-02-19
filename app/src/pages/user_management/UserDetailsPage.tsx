@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserProfileCard } from "./components/features/UserProfileCard";
 import { UserPersonalInfo } from "./components/features/UserPersonalInfo";
 import { UserDocuments } from "./components/features/UserDocuments";
-import { UserDetail } from "./users";
+import { UserDetail } from "./user.types";
 
 export function UserDetailsPage() {
   const { user: currentUser } = useAuth();

@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Phone, MapPin, Calendar } from "lucide-react";
-import { UserDetail, roleLabels, roleColors } from "../../users";
+import { UserDetail, roleLabels, roleColors } from "../../user.types";
 
 interface UserProfileCardProps {
   user: UserDetail;

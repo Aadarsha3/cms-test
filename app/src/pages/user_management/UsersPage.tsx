@@ -1,12 +1,6 @@
 import { useState, useEffect } from "react";
 import { userApi } from "@/lib/api";
-import {
-  UserPlus,
-  Search,
-  SeparatorHorizontal,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
+import { UserPlus, Search, Loader2, RefreshCw } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 
 interface UserResponse {
   id: string;
@@ -62,12 +56,12 @@ export function UsersPage() {
       if (Array.isArray(response.data)) {
         setApiUsers(response.data);
       } else {
-        // Handle case where API might return a Page object { content: [], totalPages: ... }
+        // Handle paginated response shape: { content: [], totalPages: ... }
         const data = response.data as any;
         if (data && Array.isArray(data.content)) {
           setApiUsers(data.content);
         } else {
-          console.warn("API response format unexpected:", response.data);
+          console.warn("Unexpected API response format:", response.data);
           setApiUsers([]);
           setError("Invalid response format from server");
         }
@@ -114,7 +108,6 @@ export function UsersPage() {
   };
 
   const handleNextPage = () => {
-    // If we have full page of users, assume there might be a next page
     if (apiUsers.length === size) {
       setPage(prev => prev + 1);
     }
@@ -126,7 +119,6 @@ export function UsersPage() {
     }
   };
 
-  // Reset pagination when search changes
   useEffect(() => {
     setPage(0);
   }, [search]);
@@ -238,7 +230,7 @@ export function UsersPage() {
           </CardContent>
         </Card>
 
-        {/* Pagination Controls */}
+
         {!loading && apiUsers.length > 0 && (
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">

@@ -1,7 +1,7 @@
 import { ProfileDetailsForm } from "./ProfileDetailsForm";
 import { StudentAcademicForm } from "./StudentAcademicForm";
 import { UserDocumentUpload } from "./UserDocumentUpload";
-import { ProfileFormData, StudentFormData } from "../../users";
+import { ProfileFormData, StudentFormData } from "../../user.types";
 import { useRef, ChangeEvent } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
@@ -71,7 +71,6 @@ export function StepThreeProfileDetails({
     return (
         <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
             <div className="max-w-3xl mx-auto space-y-6">
-                {/* Avatar Upload Section */}
                 <Card>
                     <CardContent className="pt-6 flex flex-col items-center gap-4">
                         <div className="relative">

@@ -15,7 +15,7 @@ import { ProfilePage } from "@/pages/user/ProfilePage";
 import { ChangePasswordPage } from "@/pages/user/ChangePasswordPage";
 import { UsersPage } from "@/pages/user_management/UsersPage";
 import { EnrollUserPage } from "@/pages/user_management/EnrollUserPage";
-import { UserDetailsPage } from "@/pages/user_management/UserdetailsPage";
+import { UserDetailsPage } from "@/pages/user_management/UserDetailsPage";
 import NotFound from "@/pages/common/not-found";
 
 function ProtectedRoute({

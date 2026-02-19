@@ -5,9 +5,8 @@ import {
     AccountFormData,
     ProfileFormData,
     StudentFormData,
-} from "../users";
+} from "../user.types";
 
-// Default initial states
 const initialAccountData: AccountFormData = {
     firstName: "",
     lastName: "",
@@ -57,7 +56,6 @@ export function useEnrollmentForm() {
 
     const [error, setError] = useState<string | null>(null);
 
-    // Auto-clear error after 3 seconds
     useEffect(() => {
         if (error) {
             const timer = setTimeout(() => {
@@ -67,7 +65,6 @@ export function useEnrollmentForm() {
         }
     }, [error]);
 
-    // 1. Fetch user data if in "Edit Mode"
     useEffect(() => {
         const fetchUserForEdit = async () => {
             if (editingUserId) {
@@ -84,7 +81,7 @@ export function useEnrollmentForm() {
                             lastName: nameParts.slice(1).join(" ") || "",
                             userId: userToEdit.username || "",
                             email: userToEdit.primaryEmail || "",
-                            password: "", // Password usually not returned
+                            password: "",
                         });
 
                         setProfileData({
@@ -117,12 +114,9 @@ export function useEnrollmentForm() {
         fetchUserForEdit();
     }, [editingUserId]);
 
-
-    // 2. Handle Logic for Next Step
     const handleNextStep = async () => {
         setError(null);
         if (currentStep === 1) {
-            // Validate Step 1
             if (!accountData.firstName.trim())
                 return setError("First Name is required");
             if (!accountData.lastName.trim())
@@ -145,7 +139,6 @@ export function useEnrollmentForm() {
 
             try {
                 if (!editingUserId && !createdUserId) {
-                    // Create user in Step 1
                     const { userApi: api } = await import("@/lib/api");
                     const payload = {
                         username: accountData.userId,
@@ -184,7 +177,6 @@ export function useEnrollmentForm() {
 
             try {
                 const { userApi: api } = await import("@/lib/api");
-                // Convert role to uppercase for authority (e.g., student -> STUDENT)
                 const authority = profileData.role.toUpperCase();
 
                 await api.post(`/users/${targetUserId}/authorities`, {
@@ -200,11 +192,8 @@ export function useEnrollmentForm() {
         }
     };
 
-
-    // 3. Handle Saving Final Details
     const handleSave = async () => {
         setError(null);
-        // Validate Step 3
         if (!profileData.department && profileData.role !== "super_admin") {
             return setError("Please select a Department");
         }
@@ -229,7 +218,6 @@ export function useEnrollmentForm() {
         const fullName = `${accountData.firstName.trim()} ${accountData.lastName.trim()}`;
 
         const payload = {
-            // Basic info is already created, but we send updates if needed
             name: fullName,
             role: profileData.role,
             department: profileData.department,

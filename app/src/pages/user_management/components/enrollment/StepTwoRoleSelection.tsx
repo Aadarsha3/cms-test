@@ -13,7 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { ProfileFormData } from "../../users";
+import { ProfileFormData } from "../../user.types";
 
 interface StepTwoRoleSelectionProps {
     profileData: ProfileFormData;

@@ -2,7 +2,7 @@ import { useRef, ChangeEvent } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload, FileText, Download } from "lucide-react";
-import { UserDetail } from "../../users";
+import { UserDetail } from "../../user.types";
 import { useToast } from "@/hooks/use-toast";
 
 interface UserDocumentsProps {
@@ -17,9 +17,9 @@ export function UserDocuments({ user }: UserDocumentsProps) {
     documentInputRef.current?.click();
   };
 
-  const handleDocumentUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleDocumentUpload = (_e: ChangeEvent<HTMLInputElement>) => {
     toast({
-      title: "Document upload not supported by backend yet.",
+      title: "Document upload is not yet available.",
       variant: "default",
     });
   };

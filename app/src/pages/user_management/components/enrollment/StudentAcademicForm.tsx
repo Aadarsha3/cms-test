@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { StudentFormData } from "../../users";
+import { StudentFormData } from "../../user.types";
 
 interface StudentAcademicFormProps {
   data: StudentFormData;

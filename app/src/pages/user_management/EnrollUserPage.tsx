@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-// Import new sub-components
 import { StepOneAccount } from "./components/enrollment/StepOneAccount";
 import { StepTwoRoleSelection } from "./components/enrollment/StepTwoRoleSelection";
 import { StepThreeProfileDetails } from "./components/enrollment/StepThreeProfileDetails";
@@ -116,7 +115,7 @@ export function EnrollUserPage() {
           {currentStep === 1 && (
             <Card className="animate-in slide-in-from-right-4 duration-300">
               <CardHeader>
-                <CardTitle>Step 1: Account Setup</CardTitle>
+                <CardTitle>Account Setup</CardTitle>
                 <CardDescription>
                   Enter the user's primary login credentials and name.
                 </CardDescription>
@@ -133,7 +132,7 @@ export function EnrollUserPage() {
                   onClick={handleNextStep}
                   className="gap-2 min-w-[120px]"
                 >
-                  Next Step <ChevronRight className="h-4 w-4" />
+                  Next <ChevronRight className="h-4 w-4" />
                 </Button>
               </CardFooter>
             </Card>
@@ -142,9 +141,9 @@ export function EnrollUserPage() {
           {currentStep === 2 && (
             <Card className="animate-in slide-in-from-right-4 duration-300">
               <CardHeader>
-                <CardTitle>Step 2: Role Selection</CardTitle>
+                <CardTitle>Role Selection</CardTitle>
                 <CardDescription>
-                  Assign a role and upload a profile picture.
+                  Assign a primary role for the new user.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -154,12 +153,12 @@ export function EnrollUserPage() {
                   isSuperAdmin={isSuperAdmin}
                 />
               </CardContent>
-              <CardFooter className={`flex justify-end border-t p-6`}>
+              <CardFooter className="flex justify-end border-t p-6">
                 <Button
                   onClick={handleNextStep}
                   className="gap-2 min-w-[120px]"
                 >
-                  Next Step <ChevronRight className="h-4 w-4" />
+                  Next <ChevronRight className="h-4 w-4" />
                 </Button>
               </CardFooter>
             </Card>
@@ -184,9 +183,7 @@ export function EnrollUserPage() {
                   />
                 </div>
 
-                <div
-                  className={`flex justify-end p-6 border-t bg-muted/30 backdrop-blur-sm`}
-                >
+                <div className="flex justify-end p-6 border-t bg-muted/30 backdrop-blur-sm">
                   <Button onClick={handleSave} className="gap-2 min-w-[150px]">
                     <Check className="h-4 w-4" />{" "}
                     {editingUserId ? "Update User" : "Complete Enrollment"}
@@ -198,7 +195,6 @@ export function EnrollUserPage() {
         </div>
       </div>
 
-      {/* Floating Error Toast */}
       <ErrorToast error={error} />
     </MainLayout>
   );
@@ -211,12 +207,10 @@ function ErrorToast({ error }: { error: string | null }) {
   useEffect(() => {
     if (error) {
       setContent(error);
-      // Tiny delay to ensure DOM is rendered before triggering animation
       const timer = setTimeout(() => setShow(true), 10);
       return () => clearTimeout(timer);
     } else {
       setShow(false);
-      // Wait for slide-out animation to finish before clearing content
       const timer = setTimeout(() => setContent(null), 300);
       return () => clearTimeout(timer);
     }
@@ -226,9 +220,9 @@ function ErrorToast({ error }: { error: string | null }) {
 
   return (
     <div
-      className={`fixed bottom-8 right-8 z-50 w-full max-w-sm px-4 transition-all duration-500 ease-in-out transform ${show
-          ? "translate-x-0 opacity-100"
-          : "translate-x-full opacity-0"
+      className={`fixed bottom-4 left-4 right-4 md:bottom-8 md:right-8 md:left-auto z-50 w-auto md:w-full md:max-w-sm transition-all duration-500 ease-in-out transform ${show
+        ? "translate-x-0 opacity-100"
+        : "translate-x-full opacity-0"
         }`}
     >
       <div className="bg-destructive text-destructive-foreground px-4 py-3 rounded-lg shadow-2xl border border-destructive/20 flex items-center justify-between gap-3">

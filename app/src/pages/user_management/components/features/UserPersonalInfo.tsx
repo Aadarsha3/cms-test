@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { UserDetail } from "../../users";
+import { UserDetail } from "../../user.types";
 interface UserPersonalInfoProps {
   user: UserDetail;
 }
@@ -41,7 +41,6 @@ export function UserPersonalInfo({ user }: UserPersonalInfoProps) {
                   <p className="text-base">{user.universityId}</p>
                 </div>
               )}
-              {/* Add other student fields here as needed */}
             </div>
           </>
         )}
