@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
@@ -40,7 +41,8 @@ export function EnrollUserPage() {
     setNewDocuments,
     handleNextStep,
     handleSave,
-    setLocation
+    setLocation,
+    error
   } = useEnrollmentForm();
 
   return (
@@ -119,7 +121,7 @@ export function EnrollUserPage() {
                   Enter the user's primary login credentials and name.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <StepOneAccount
                   data={accountData}
                   setData={setAccountData}
@@ -145,23 +147,14 @@ export function EnrollUserPage() {
                   Assign a role and upload a profile picture.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <StepTwoRoleSelection
                   profileData={profileData}
                   setProfileData={setProfileData}
                   isSuperAdmin={isSuperAdmin}
                 />
               </CardContent>
-              <CardFooter className={`flex ${createdUserId ? "justify-end" : "justify-between"} border-t p-6`}>
-                {!createdUserId && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentStep(1)}
-                    className="gap-2"
-                  >
-                    <ArrowLeft className="h-4 w-4" /> Back
-                  </Button>
-                )}
+              <CardFooter className={`flex justify-end border-t p-6`}>
                 <Button
                   onClick={handleNextStep}
                   className="gap-2 min-w-[120px]"
@@ -174,41 +167,73 @@ export function EnrollUserPage() {
 
           {currentStep === 3 && (
             <div className="space-y-6">
-              <StepThreeProfileDetails
-                profileData={profileData}
-                setProfileData={setProfileData}
-                studentData={studentData}
-                setStudentData={setStudentData}
-                documents={newDocuments}
-                setDocuments={setNewDocuments}
-                isAdmin={isAdmin}
-                userDepartment={user?.department}
-                userFullName={`${accountData.firstName} ${accountData.lastName}`}
-                avatarUpload={avatarUpload}
-                setAvatarUpload={setAvatarUpload}
-              />
+              <div className="bg-card border rounded-lg overflow-hidden">
+                <div className="p-6">
+                  <StepThreeProfileDetails
+                    profileData={profileData}
+                    setProfileData={setProfileData}
+                    studentData={studentData}
+                    setStudentData={setStudentData}
+                    documents={newDocuments}
+                    setDocuments={setNewDocuments}
+                    isAdmin={isAdmin}
+                    userDepartment={user?.department}
+                    userFullName={`${accountData.firstName} ${accountData.lastName}`}
+                    avatarUpload={avatarUpload}
+                    setAvatarUpload={setAvatarUpload}
+                  />
+                </div>
 
-              <div
-                className={`flex ${createdUserId ? "justify-end" : "justify-between"} pt-6 border-t bg-background/50 backdrop-blur-sm sticky bottom-0 z-10 p-4 rounded-lg border shadow-sm`}
-              >
-                {!createdUserId && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentStep(2)}
-                    className="gap-2"
-                  >
-                    <ArrowLeft className="h-4 w-4" /> Back
+                <div
+                  className={`flex justify-end p-6 border-t bg-muted/30 backdrop-blur-sm`}
+                >
+                  <Button onClick={handleSave} className="gap-2 min-w-[150px]">
+                    <Check className="h-4 w-4" />{" "}
+                    {editingUserId ? "Update User" : "Complete Enrollment"}
                   </Button>
-                )}
-                <Button onClick={handleSave} className="gap-2 min-w-[150px]">
-                  <Check className="h-4 w-4" />{" "}
-                  {editingUserId ? "Update User" : "Complete Enrollment"}
-                </Button>
+                </div>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Floating Error Toast */}
+      <ErrorToast error={error} />
     </MainLayout>
+  );
+}
+
+function ErrorToast({ error }: { error: string | null }) {
+  const [show, setShow] = useState(false);
+  const [content, setContent] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (error) {
+      setContent(error);
+      // Tiny delay to ensure DOM is rendered before triggering animation
+      const timer = setTimeout(() => setShow(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setShow(false);
+      // Wait for slide-out animation to finish before clearing content
+      const timer = setTimeout(() => setContent(null), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  if (!content) return null;
+
+  return (
+    <div
+      className={`fixed bottom-8 right-8 z-50 w-full max-w-sm px-4 transition-all duration-500 ease-in-out transform ${show
+          ? "translate-x-0 opacity-100"
+          : "translate-x-full opacity-0"
+        }`}
+    >
+      <div className="bg-destructive text-destructive-foreground px-4 py-3 rounded-lg shadow-2xl border border-destructive/20 flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold tracking-wide">{content}</p>
+      </div>
+    </div>
   );
 }

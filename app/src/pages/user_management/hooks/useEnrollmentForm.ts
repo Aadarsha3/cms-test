@@ -55,6 +55,18 @@ export function useEnrollmentForm() {
     const [avatarUpload, setAvatarUpload] = useState<string | null>(null);
     const [newDocuments, setNewDocuments] = useState<any[]>([]);
 
+    const [error, setError] = useState<string | null>(null);
+
+    // Auto-clear error after 3 seconds
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => {
+                setError(null);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
+
     // 1. Fetch user data if in "Edit Mode"
     useEffect(() => {
         const fetchUserForEdit = async () => {
@@ -98,42 +110,36 @@ export function useEnrollmentForm() {
                     }
                 } catch (err) {
                     console.error("Failed to load user for editing", err);
-                    toast({ title: "Failed to load user data", variant: "destructive" });
+                    setError("Failed to load user data");
                 }
             }
         };
         fetchUserForEdit();
-    }, [editingUserId, toast]);
+    }, [editingUserId]);
 
 
     // 2. Handle Logic for Next Step
     const handleNextStep = async () => {
+        setError(null);
         if (currentStep === 1) {
             // Validate Step 1
             if (!accountData.firstName.trim())
-                return toast({ title: "First Name is required", variant: "destructive" });
+                return setError("First Name is required");
             if (!accountData.lastName.trim())
-                return toast({ title: "Last Name is required", variant: "destructive" });
+                return setError("Last Name is required");
             if (!accountData.userId.trim())
-                return toast({ title: "User ID is required", variant: "destructive" });
+                return setError("User ID is required");
             if (!accountData.email.trim())
-                return toast({ title: "Email is required", variant: "destructive" });
+                return setError("Email is required");
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(accountData.email.trim())) {
-                return toast({
-                    title: "Invalid Email Format",
-                    description: "Please enter a valid email address.",
-                    variant: "destructive",
-                });
+                return setError("Invalid Email Format: Please enter a valid email address.");
             }
 
             if (!accountData.password.trim() || accountData.password.length < 6) {
                 if (!editingUserId) {
-                    return toast({
-                        title: "Password must be at least 6 characters",
-                        variant: "destructive",
-                    });
+                    return setError("Password must be at least 6 characters");
                 }
             }
 
@@ -164,25 +170,16 @@ export function useEnrollmentForm() {
                 setCurrentStep(2);
             } catch (err: any) {
                 console.error("Failed to create user:", err);
-                toast({
-                    title: "Failed to create user",
-                    description:
-                        err.response?.data?.message || err.message || "Could not create user",
-                    variant: "destructive",
-                });
+                setError(err.response?.data?.message || err.message || "Could not create user");
             }
         } else if (currentStep === 2) {
             if (!profileData.role) {
-                return toast({ title: "Please select a role", variant: "destructive" });
+                return setError("Please select a role");
             }
 
             const targetUserId = editingUserId || createdUserId;
             if (!targetUserId) {
-                return toast({
-                    title: "Error: User ID missing",
-                    description: "Cannot assign role without user ID.",
-                    variant: "destructive",
-                });
+                return setError("Error: User ID missing. Cannot assign role without user ID.");
             }
 
             try {
@@ -198,14 +195,7 @@ export function useEnrollmentForm() {
                 setCurrentStep(3);
             } catch (err: any) {
                 console.error("Failed to assign role:", err);
-                toast({
-                    title: "Failed to assign role",
-                    description:
-                        err.response?.data?.message ||
-                        err.message ||
-                        "Could not assign role to user",
-                    variant: "destructive",
-                });
+                setError(err.response?.data?.message || err.message || "Could not assign role to user");
             }
         }
     };
@@ -213,18 +203,13 @@ export function useEnrollmentForm() {
 
     // 3. Handle Saving Final Details
     const handleSave = async () => {
+        setError(null);
         // Validate Step 3
         if (!profileData.department && profileData.role !== "super_admin") {
-            return toast({
-                title: "Please select a Department",
-                variant: "destructive",
-            });
+            return setError("Please select a Department");
         }
         if (!profileData.phone.trim()) {
-            return toast({
-                title: "Phone number is required",
-                variant: "destructive",
-            });
+            return setError("Phone number is required");
         }
 
         if (profileData.role === "student") {
@@ -237,10 +222,7 @@ export function useEnrollmentForm() {
                 !studentData.guardianContact.trim() ||
                 !studentData.guardianRelationship.trim()
             ) {
-                return toast({
-                    title: "Please fill in all student details",
-                    variant: "destructive",
-                });
+                return setError("Please fill in all student details");
             }
         }
 
@@ -267,16 +249,11 @@ export function useEnrollmentForm() {
                 toast({ title: "User profile updated successfully" });
                 setLocation("/users");
             } else {
-                toast({ title: "Error: User ID missing", variant: "destructive" });
+                setError("Error: User ID missing");
             }
         } catch (err: any) {
             console.error("Failed to save user details:", err);
-            toast({
-                title: "Operation failed",
-                description:
-                    err.response?.data?.message || err.message || "Could not save user details",
-                variant: "destructive",
-            });
+            setError(err.response?.data?.message || err.message || "Could not save user details");
         }
     };
 
@@ -298,6 +275,8 @@ export function useEnrollmentForm() {
         handleNextStep,
         handleSave,
         location,
-        setLocation
+        setLocation,
+        error,
+        setError
     };
 }
