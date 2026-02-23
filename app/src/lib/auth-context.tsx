@@ -44,55 +44,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// todo: remove mock functionality
-const mockUsers: Record<string, AuthUser> = {
-  "admin@college.edu": {
-    id: "1",
-    name: "Dr. Sarah Johnson",
-    email: "admin@college.edu",
-    role: "super_admin",
-    User_Id: "SA2024001",
-    department: "Administration",
-  },
-  "deptadmin@college.edu": {
-    id: "4",
-    name: "Prof. Alan Turing",
-    email: "deptadmin@college.edu",
-    role: "admin",
-    User_Id: "ADM2024002",
-    department: "Computer Science",
-  },
-  "staff@college.edu": {
-    id: "2",
-    name: "Prof. Michael Chen",
-    email: "staff@college.edu",
-    role: "staff",
-    User_Id: "STF2024001",
-    department: "Computer Science",
-    assignedCourses: ["CS101", "CS201", "CS301", "CS401", "CS501"], // Courses this staff teaches
-  },
-  "student@college.edu": {
-    id: "3",
-    name: "Emily Parker",
-    email: "student@college.edu",
-    role: "student",
-    department: "Computer Science",
-    phone: "+1 555-0103",
-    User_Id: "COL2024001",
-    universityId: "UNI2024001",
-    dateOfBirth: "2002-05-15",
-    gender: "female",
-    currentClass: "BCS Year 3",
-    semester: "5",
-    guardianName: "Robert Parker",
-    guardianContact: "+1 555-0150",
-    guardianRelationship: "Father",
-    enrollmentDate: "2024-09-01",
-    program: "Bachelor of Computer Science",
-    group: "Section A",
-    enrolledCourses: ["CS101", "CS201", "CS301"], // Courses student is enrolled in
-  },
-};
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
@@ -140,16 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  const login = async (email: string, _password: string) => {
-    // todo: remove mock functionality - replace with real API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const mockUser = mockUsers[email];
-    if (mockUser) {
-      setUser(mockUser);
-      localStorage.setItem("authUser", JSON.stringify(mockUser));
-    } else {
-      throw new Error("Invalid credentials");
-    }
+  const login = async (_email: string, _password: string) => {
+    throw new Error("Direct login is not supported. Use the OIDC authentication flow.");
   };
 
   const setAuthUser = (user: AuthUser) => {

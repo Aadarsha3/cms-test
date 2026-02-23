@@ -169,22 +169,5 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermissions = {
         "calendar_view", "routine_view",
         "profile_view", "password_change"
     ],
-    student_council_member: [
-        "dashboard_view",
-        "courses_view",
-        "attendance_view",
-        "results_view",
-        "fees_view",
-        "calendar_view", "routine_view",
-        "profile_view", "password_change"
-    ],
-    sports_committee_member: [
-        "dashboard_view",
-        "courses_view",
-        "attendance_view",
-        "results_view",
-        "fees_view",
-        "calendar_view", "routine_view",
-        "profile_view", "password_change"
-    ],
+
 };
