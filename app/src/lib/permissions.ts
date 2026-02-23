@@ -147,7 +147,6 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermissions = {
     staff: [
         "dashboard_view",
         "courses_view", "syllabus_upload",
-        "users_view",
         "attendance_view", "attendance_mark",
         "results_view", "results_edit",
         "calendar_view", "routine_view",
