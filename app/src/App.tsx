@@ -16,6 +16,7 @@ import { ChangePasswordPage } from "@/pages/user/ChangePasswordPage";
 import { UsersPage } from "@/pages/user_management/UsersPage";
 import { EnrollUserPage } from "@/pages/user_management/EnrollUserPage";
 import { UserDetailsPage } from "@/pages/user_management/UserDetailsPage";
+import { StudentsPage } from "@/pages/student_management/StudentsPage";
 import NotFound from "@/pages/common/not-found";
 
 function ProtectedRoute({
@@ -96,6 +97,14 @@ function Router() {
       </Route>
       <Route path="/users/:id">
         <ProtectedRoute component={UserDetailsPage} permission="users_view" />
+      </Route>
+
+      {/* Student Management Routes */}
+      <Route path="/students">
+        <ProtectedRoute component={StudentsPage} permission="students_view" />
+      </Route>
+      <Route path="/students/:id">
+        <ProtectedRoute component={UserDetailsPage} permission="students_view" />
       </Route>
 
       <Route component={NotFound} />

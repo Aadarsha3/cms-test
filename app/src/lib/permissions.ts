@@ -68,6 +68,17 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
         ],
     },
     {
+        id: "students",
+        name: "Student Management",
+        icon: "GraduationCap",
+        permissions: [
+            { id: "students_view", name: "View Students", description: "View the student list", action: "view" },
+            { id: "students_create", name: "Enroll Students", description: "Enroll new students", action: "create" },
+            { id: "students_edit", name: "Edit Students", description: "Modify student details", action: "edit" },
+            { id: "students_delete", name: "Delete Students", description: "Remove students from system", action: "delete" },
+        ],
+    },
+    {
         id: "attendance",
         name: "Attendance",
         icon: "ClipboardCheck",
@@ -138,6 +149,7 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermissions = {
         "programs_view", "programs_create", "programs_edit",
         "courses_view", "courses_create", "courses_edit",
         "users_view", "users_create", "users_edit",
+        "students_view", "students_create", "students_edit",
         "attendance_view", "attendance_mark", "attendance_report",
         "results_view", "results_publish",
         "fees_view", "fees_manage",

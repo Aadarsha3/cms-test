@@ -52,6 +52,12 @@ const navItems: NavItem[] = [
     icon: Users,
     permissionId: "users_view",
   },
+  {
+    title: "Student Management",
+    url: "/students",
+    icon: GraduationCap,
+    permissionId: "students_view",
+  },
 ];
 
 
