@@ -23,7 +23,8 @@ interface UserResponse {
   username: string;
   givenName: string;
   familyName: string;
-  createdAt: string;
+  roles: string[];
+  createdAt: number[];
 }
 
 export function UsersPage() {
@@ -92,6 +93,7 @@ export function UsersPage() {
     const givenName = u.givenName?.toLowerCase() || "";
     const familyName = u.familyName?.toLowerCase() || "";
     const fullName = `${givenName} ${familyName}`.trim();
+    console.log("created date is : " + u.createdAt);
 
     return (
       username.includes(searchLower) ||
@@ -172,6 +174,7 @@ export function UsersPage() {
                   <TableHead>Last Name</TableHead>
                   <TableHead>Username</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
                   <TableHead>Joined</TableHead>
                 </TableRow>
               </TableHeader>
@@ -193,8 +196,7 @@ export function UsersPage() {
                     >
                       {error ? (
                         <span className="text-destructive">
-                          Failed to load data. Is the backend running on port
-                          8001?
+                          Failed to load data.
                         </span>
                       ) : (
                         "No users found matching your search."
@@ -217,11 +219,16 @@ export function UsersPage() {
                       </TableCell>
                       <TableCell>{user.username || "N/A"}</TableCell>
                       <TableCell>{user.primaryEmail || "N/A"}</TableCell>
-                      <TableCell>
-                        {user.createdAt
-                          ? new Date(user.createdAt).toLocaleDateString()
-                          : "-"}
-                      </TableCell>
+                      <TableCell>{user.roles?.length ? user.roles.join(", ") : "N/A"}</TableCell>
+
+                   <TableCell>
+                      {user.createdAt
+                        ? (() => {
+                            const [y, m, d] = user.createdAt;
+                            return `${y}/${d}/${m}`;
+                          })()
+                        : "-"}
+                  </TableCell>
                     </TableRow>
                   ))
                 )}

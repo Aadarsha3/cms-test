@@ -44,7 +44,7 @@ configureInterceptors(dashboardApi);
 
 // User Management API (Port 8001)
 export const userApi = axios.create({
-    baseURL: 'http://localhost:8001/api/v1',
+    baseURL: 'http://localhost:8000/api/v1',
     headers: {
         'Content-Type': 'application/json',
     },
