@@ -22,7 +22,7 @@ interface UserResponse {
   username: string;
   givenName: string;
   familyName: string;
-  createdAt: number[];
+  createdDate: number[];
 }
 
 interface UserTableProps {
@@ -99,7 +99,8 @@ export function UserTable({
     const givenName = u.givenName?.toLowerCase() || "";
     const familyName = u.familyName?.toLowerCase() || "";
     const fullName = `${givenName} ${familyName}`.trim();
-    console.log("abc :" + u.createdAt);
+    const createdDate = u.createdDate;
+    console.log("abc :" + createdDate);
 
     return (
       username.includes(searchLower) ||
@@ -226,9 +227,9 @@ export function UserTable({
                       <TableCell>{user.username || "N/A"}</TableCell>
                       <TableCell>{user.primaryEmail || "N/A"}</TableCell>
                       <TableCell>
-                        {user.createdAt
+                        {user.createdDate
                           ? (() => {
-                              const [y, m, d] = user.createdAt;
+                              const [y, m, d] = user.createdDate;
                               return `${y} /${m}/${d}`;
                             })()
                           : "-"}
