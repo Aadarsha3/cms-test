@@ -28,7 +28,7 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from "@/components/sidebar/sidebar";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 
@@ -47,16 +47,22 @@ const navItems: NavItem[] = [
     permissionId: "dashboard_view",
   },
   {
-    title: "User Management",
-    url: "/users",
-    icon: Users,
-    permissionId: "users_view",
-  },
-  {
     title: "Student Management",
     url: "/students",
     icon: GraduationCap,
     permissionId: "students_view",
+  },
+  {
+    title: "Teacher Management",
+    url: "/teachers",
+    icon: BookOpen,
+    permissionId: "users_view",
+  },
+  {
+    title: "Staff Management",
+    url: "/staff",
+    icon: Users,
+    permissionId: "users_view",
   },
 ];
 

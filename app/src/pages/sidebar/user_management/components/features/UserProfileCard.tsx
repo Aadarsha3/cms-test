@@ -69,8 +69,12 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span>
               Joined:{" "}
-              {user.createdAt
-                ? new Date(user.createdAt).toLocaleDateString()
+              {user.createdTimestamp
+                ? new Date(user.createdTimestamp).toLocaleDateString()
+                : Array.isArray(user.createdAt) && user.createdAt.length >= 3
+                ? new Date(user.createdAt[0], user.createdAt[1] - 1, user.createdAt[2]).toLocaleDateString()
+                : typeof user.createdAt === 'string'
+                ? new Date(user.createdAt).toLocaleDateString() 
                 : "N/A"}
             </span>
           </div>

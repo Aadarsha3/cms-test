@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/sidebar/sidebar";
 import { cn } from "@/lib/utils";
-import { AppSidebar } from "./AppSidebar";
+import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, KeyRound, GraduationCap } from "lucide-react";

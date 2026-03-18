@@ -42,12 +42,29 @@ export function useEnrollmentForm() {
     const match = location.match(/\/users\/([^\/]+)\/edit/);
     const editingUserId = match ? match[1] : null;
 
+    const searchParams = new URLSearchParams(window.location.search);
+    const context = searchParams.get("context");
+
+    let allowedRoles = ["student", "teacher", "staff", "admin", "super_admin"];
+    if (context === "student") allowedRoles = ["student"];
+    else if (context === "teacher") allowedRoles = ["teacher"];
+    else if (context === "staff") allowedRoles = ["staff", "admin", "super_admin"];
+
     const [currentStep, setCurrentStep] = useState(1);
     const [createdUserId, setCreatedUserId] = useState<string | null>(null);
 
     // Form States
     const [accountData, setAccountData] = useState<AccountFormData>(initialAccountData);
-    const [profileData, setProfileData] = useState<ProfileFormData>(initialProfileData);
+    const [profileData, setProfileData] = useState<ProfileFormData>(() => {
+        let initialRole = "student";
+        if (context === "student" || context === "teacher" || context === "staff") {
+            initialRole = context;
+        }
+        return {
+            ...initialProfileData,
+            role: initialRole,
+        };
+    });
     const [studentData, setStudentData] = useState<StudentFormData>(initialStudentData);
 
     // Uploads
@@ -235,7 +252,10 @@ export function useEnrollmentForm() {
                 if (!accountData.password) delete (payload as any).password;
                 await api.put(`/users/${targetUserId}`, payload);
                 toast({ title: "User profile updated successfully" });
-                setLocation("/users");
+                if (context === "student" || profileData.role === "student") setLocation("/students");
+                else if (context === "teacher" || profileData.role === "teacher") setLocation("/teachers");
+                else if (context === "staff" || ["staff", "admin", "super_admin"].includes(profileData.role)) setLocation("/staff");
+                else setLocation("/dashboard");
             } else {
                 setError("Error: User ID missing");
             }
@@ -243,6 +263,14 @@ export function useEnrollmentForm() {
             console.error("Failed to save user details:", err);
             setError(err.response?.data?.message || err.message || "Could not save user details");
         }
+    };
+
+    const goBack = () => {
+        if (editingUserId) setLocation(`/users/${editingUserId}`);
+        else if (context === "student") setLocation("/students");
+        else if (context === "teacher") setLocation("/teachers");
+        else if (context === "staff") setLocation("/staff");
+        else setLocation("/dashboard");
     };
 
     return {
@@ -265,6 +293,8 @@ export function useEnrollmentForm() {
         location,
         setLocation,
         error,
-        setError
+        setError,
+        allowedRoles,
+        goBack
     };
 }

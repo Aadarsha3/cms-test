@@ -50,8 +50,20 @@ export function UserDetailsPage() {
     fetchUser();
   }, [userId, toast]);
 
+  const goBack = () => {
+    if (!user) {
+      setLocation("/dashboard");
+      return;
+    }
+    const role = user.role;
+    if (role === "student") setLocation("/students");
+    else if (role === "teacher") setLocation("/teachers");
+    else if (role && ["staff", "admin", "super_admin"].includes(role)) setLocation("/staff");
+    else setLocation("/dashboard");
+  };
+
   const handleDelete = async () => {
-    if (!user) return;
+    if (!user || !user.id) return;
     if (
       confirm(
         "Are you sure you want to delete this user? This action cannot be undone.",
@@ -60,7 +72,7 @@ export function UserDetailsPage() {
       try {
         await userApi.delete(`/users/${user.id}`);
         toast({ title: "User deleted successfully" });
-        setLocation("/users");
+        goBack();
       } catch (err: any) {
         console.error("Failed to delete user:", err);
         toast({
@@ -93,7 +105,7 @@ export function UserDetailsPage() {
       <MainLayout title="User Details">
         <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
           <p className="text-muted-foreground">{error || "User not found"}</p>
-          <Button onClick={() => setLocation("/users")}>Back to Users</Button>
+          <Button onClick={goBack}>Back to Users</Button>
         </div>
       </MainLayout>
     );
@@ -106,7 +118,7 @@ export function UserDetailsPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setLocation("/users")}
+            onClick={goBack}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" /> Back to Users

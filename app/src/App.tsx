@@ -8,15 +8,16 @@ import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { UserProvider } from "@/lib/user-context";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { CallbackPage } from "@/pages/auth/CallbackPage";
-import { DashboardPage } from "@/pages/dashboard/DashboardPage";
+import { DashboardPage } from "@/pages/sidebar/dashboard/DashboardPage";
 
-import { ActivityPage } from "@/pages/dashboard/ActivityPage";
+import { ActivityPage } from "@/pages/sidebar/dashboard/ActivityPage";
 import { ProfilePage } from "@/pages/user/ProfilePage";
 import { ChangePasswordPage } from "@/pages/user/ChangePasswordPage";
-import { UsersPage } from "@/pages/user_management/UsersPage";
-import { EnrollUserPage } from "@/pages/user_management/EnrollUserPage";
-import { UserDetailsPage } from "@/pages/user_management/UserDetailsPage";
-import { StudentsPage } from "@/pages/student_management/StudentsPage";
+import { EnrollUserPage } from "@/pages/sidebar/user_management/EnrollUserPage";
+import { UserDetailsPage } from "@/pages/sidebar/user_management/UserDetailsPage";
+import { StudentsPage } from "@/pages/sidebar/user_management/student_management/StudentsPage";
+import { TeachersPage } from "@/pages/sidebar/user_management/teacher_management/TeachersPage";
+import { StaffPage } from "@/pages/sidebar/user_management/staff_management/StaffPage";
 import NotFound from "@/pages/common/not-found";
 
 function ProtectedRoute({
@@ -86,9 +87,6 @@ function Router() {
       </Route>
 
       {/* User Management Routes */}
-      <Route path="/users">
-        <ProtectedRoute component={UsersPage} permission="users_view" />
-      </Route>
       <Route path="/users/enroll">
         <ProtectedRoute component={EnrollUserPage} permission="users_create" />
       </Route>
@@ -99,12 +97,14 @@ function Router() {
         <ProtectedRoute component={UserDetailsPage} permission="users_view" />
       </Route>
 
-      {/* Student Management Routes */}
       <Route path="/students">
         <ProtectedRoute component={StudentsPage} permission="students_view" />
       </Route>
-      <Route path="/students/:id">
-        <ProtectedRoute component={UserDetailsPage} permission="students_view" />
+      <Route path="/teachers">
+        <ProtectedRoute component={TeachersPage} permission="users_view" />
+      </Route>
+      <Route path="/staff">
+        <ProtectedRoute component={StaffPage} permission="users_view" />
       </Route>
 
       <Route component={NotFound} />

@@ -14,7 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/lib/auth-context";
 import { useLocation } from "wouter";
 
 interface UserResponse {
@@ -23,19 +22,30 @@ interface UserResponse {
   username: string;
   givenName: string;
   familyName: string;
-  createdAt: string;
+  createdAt: number[];
 }
 
-export function UsersPage() {
-  const { user } = useAuth();
+interface UserTableProps {
+  title: string;
+  roleFilter?: string; // Optional role string (e.g., "student", "teacher", "staff,admin")
+  enrollPath?: string; // Path to redirect for enrolling a new user
+  enrollLabel?: string; // Text for the enroll button
+}
+
+export function UserTable({
+  title,
+  roleFilter,
+  enrollPath = "/users/enroll",
+  enrollLabel = "Enroll User",
+}: UserTableProps) {
   const [apiUsers, setApiUsers] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [size, setSize] = useState(10);
-  const [sort, setSort] = useState("id");
-  const [direction, setDirection] = useState("DESC");
+  const [size] = useState(10);
+  const [sort] = useState("id");
+  const [direction] = useState("DESC");
 
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -44,19 +54,16 @@ export function UsersPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await userApi.get<UserResponse[]>("/users", {
-        params: {
-          page,
-          size,
-          sort,
-          direction
-        }
-      });
+      const params: any = { page, size, sort, direction };
+      if (roleFilter) {
+        params.role = roleFilter;
+      }
+
+      const response = await userApi.get<UserResponse[]>("/users", { params });
 
       if (Array.isArray(response.data)) {
         setApiUsers(response.data);
       } else {
-        // Handle paginated response shape: { content: [], totalPages: ... }
         const data = response.data as any;
         if (data && Array.isArray(data.content)) {
           setApiUsers(data.content);
@@ -81,7 +88,7 @@ export function UsersPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, [page, size, sort, direction]);
+  }, [page, size, sort, direction, roleFilter]);
 
   const filteredUsers = apiUsers.filter((u) => {
     if (!u) return false;
@@ -92,6 +99,7 @@ export function UsersPage() {
     const givenName = u.givenName?.toLowerCase() || "";
     const familyName = u.familyName?.toLowerCase() || "";
     const fullName = `${givenName} ${familyName}`.trim();
+    console.log("abc :" + u.createdAt);
 
     return (
       username.includes(searchLower) ||
@@ -109,13 +117,13 @@ export function UsersPage() {
 
   const handleNextPage = () => {
     if (apiUsers.length === size) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   };
 
   const handlePrevPage = () => {
     if (page > 0) {
-      setPage(prev => prev - 1);
+      setPage((prev) => prev - 1);
     }
   };
 
@@ -124,7 +132,7 @@ export function UsersPage() {
   }, [search]);
 
   return (
-    <MainLayout title="User Management">
+    <MainLayout title={title}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
@@ -152,11 +160,11 @@ export function UsersPage() {
               />
             </Button>
             <Button
-              onClick={() => setLocation("/users/enroll")}
+              onClick={() => setLocation(enrollPath)}
               className="gap-2 h-11 px-6 shadow-md hover:shadow-lg transition-all"
             >
               <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Enroll User</span>
+              <span className="hidden sm:inline">{enrollLabel}</span>
               <span className="sm:hidden">Enroll</span>
             </Button>
           </div>
@@ -181,7 +189,7 @@ export function UsersPage() {
                     <TableCell colSpan={6} className="h-24 text-center">
                       <div className="flex items-center justify-center gap-2 text-muted-foreground">
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        Loading users...
+                        Loading...
                       </div>
                     </TableCell>
                   </TableRow>
@@ -197,7 +205,7 @@ export function UsersPage() {
                           8001?
                         </span>
                       ) : (
-                        "No users found matching your search."
+                        "No matching users found."
                       )}
                     </TableCell>
                   </TableRow>
@@ -219,7 +227,10 @@ export function UsersPage() {
                       <TableCell>{user.primaryEmail || "N/A"}</TableCell>
                       <TableCell>
                         {user.createdAt
-                          ? new Date(user.createdAt).toLocaleDateString()
+                          ? (() => {
+                              const [y, m, d] = user.createdAt;
+                              return `${y} /${m}/${d}`;
+                            })()
                           : "-"}
                       </TableCell>
                     </TableRow>
@@ -230,11 +241,10 @@ export function UsersPage() {
           </CardContent>
         </Card>
 
-
         {!loading && apiUsers.length > 0 && (
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              Showing {page * size + 1}-{page * size + apiUsers.length} users
+              Showing {page * size + 1}-{page * size + apiUsers.length} entries
             </div>
             <div className="flex gap-2">
               <Button

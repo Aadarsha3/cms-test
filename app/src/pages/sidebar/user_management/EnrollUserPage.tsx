@@ -41,7 +41,9 @@ export function EnrollUserPage() {
     handleNextStep,
     handleSave,
     setLocation,
-    error
+    error,
+    allowedRoles,
+    goBack
   } = useEnrollmentForm();
 
   return (
@@ -51,7 +53,7 @@ export function EnrollUserPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLocation("/users")}
+            onClick={goBack}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -151,6 +153,7 @@ export function EnrollUserPage() {
                   profileData={profileData}
                   setProfileData={setProfileData}
                   isSuperAdmin={isSuperAdmin}
+                  allowedRoles={allowedRoles}
                 />
               </CardContent>
               <CardFooter className="flex justify-end border-t p-6">

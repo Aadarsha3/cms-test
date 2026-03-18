@@ -4,7 +4,8 @@ export interface UserDetail {
     primaryEmail: string;
     givenName?: string;
     familyName?: string;
-    createdAt?: string;
+    createdAt?: string | number[];
+    createdTimestamp?: number;
     role?: string;
     department?: string;
     status?: string;
