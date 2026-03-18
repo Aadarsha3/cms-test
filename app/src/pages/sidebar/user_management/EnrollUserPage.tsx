@@ -42,7 +42,6 @@ export function EnrollUserPage() {
     handleSave,
     setLocation,
     error,
-    allowedRoles,
     goBack
   } = useEnrollmentForm();
 
@@ -95,7 +94,7 @@ export function EnrollUserPage() {
             <span
               className={`text-sm font-medium bg-background px-2 ${currentStep >= 2 ? "text-primary" : "text-muted-foreground"}`}
             >
-              Role
+              Group
             </span>
           </div>
 
@@ -143,17 +142,15 @@ export function EnrollUserPage() {
           {currentStep === 2 && (
             <Card className="animate-in slide-in-from-right-4 duration-300">
               <CardHeader>
-                <CardTitle>Role Selection</CardTitle>
+                <CardTitle>Group Assignment</CardTitle>
                 <CardDescription>
-                  Assign a primary role for the new user.
+                  Assign the user to a specific group.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <StepTwoRoleSelection
                   profileData={profileData}
                   setProfileData={setProfileData}
-                  isSuperAdmin={isSuperAdmin}
-                  allowedRoles={allowedRoles}
                 />
               </CardContent>
               <CardFooter className="flex justify-end border-t p-6">

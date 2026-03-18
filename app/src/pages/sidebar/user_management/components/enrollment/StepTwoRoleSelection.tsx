@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -6,54 +7,58 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { ProfileFormData, roleLabels } from "../../user.types";
+import { ProfileFormData } from "../../user.types";
+import { userApi } from "@/lib/api";
 
 interface StepTwoRoleSelectionProps {
     profileData: ProfileFormData;
     setProfileData: (data: ProfileFormData) => void;
-    isSuperAdmin: boolean;
-    allowedRoles: string[];
+}
+
+interface GroupResponse {
+    id: string;
+    name: string;
 }
 
 export function StepTwoRoleSelection({
     profileData,
     setProfileData,
-    isSuperAdmin,
-    allowedRoles,
 }: StepTwoRoleSelectionProps) {
-    if (allowedRoles.length === 1) {
-        return (
-            <div className="max-w-xl mx-auto w-full">
-                <div className="grid gap-2">
-                    <Label htmlFor="role">Primary Role</Label>
-                    <div className="p-3 bg-muted rounded-md text-sm font-medium border text-muted-foreground cursor-not-allowed">
-                        {/* Typecast to keyof typeof roleLabels to correctly render the badge label */}
-                        {roleLabels[allowedRoles[0] as keyof typeof roleLabels] || allowedRoles[0]}
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    const [groups, setGroups] = useState<GroupResponse[]>([]);
+
+    useEffect(() => {
+        const fetchGroups = async () => {
+            try {
+                const response = await userApi.get("/groups");
+                if (Array.isArray(response.data)) {
+                    setGroups(response.data);
+                } else if (response.data && Array.isArray(response.data.content)) {
+                    setGroups(response.data.content);
+                }
+            } catch (err) {
+                console.error("Failed to fetch groups", err);
+            }
+        };
+        fetchGroups();
+    }, []);
 
     return (
-        <div className="max-w-xl mx-auto w-full">
+        <div className="max-w-xl mx-auto w-full space-y-6">
             <div className="grid gap-2">
-                <Label htmlFor="role">Primary Role</Label>
+                <Label htmlFor="group">Assign Group</Label>
                 <Select
-                    value={profileData.role}
-                    onValueChange={(v) => setProfileData({ ...profileData, role: v })}
+                    value={profileData.groupId || ""}
+                    onValueChange={(v) => setProfileData({ ...profileData, groupId: v })}
                 >
                     <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select a Group" />
                     </SelectTrigger>
                     <SelectContent>
-                        {allowedRoles.includes("student") && <SelectItem value="student">Student</SelectItem>}
-                        {allowedRoles.includes("teacher") && <SelectItem value="teacher">Teacher</SelectItem>}
-                        {allowedRoles.includes("staff") && <SelectItem value="staff">Staff</SelectItem>}
-                        {isSuperAdmin && allowedRoles.includes("admin") && <SelectItem value="admin">Admin</SelectItem>}
-                        {isSuperAdmin && allowedRoles.includes("super_admin") && (
-                            <SelectItem value="super_admin">Super Admin</SelectItem>
-                        )}
+                        {groups.map((group) => (
+                            <SelectItem key={group.id} value={group.id}>
+                                {group.name}
+                            </SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </div>

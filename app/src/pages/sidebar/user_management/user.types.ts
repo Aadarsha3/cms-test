@@ -50,6 +50,7 @@ export interface ProfileFormData {
     department: string;
     phone: string;
     status: "active" | "inactive";
+    groupId: string;
 }
 
 export const roleLabels: Record<string, string> = {

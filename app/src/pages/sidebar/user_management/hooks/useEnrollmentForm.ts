@@ -21,6 +21,7 @@ const initialProfileData: ProfileFormData = {
     department: "",
     phone: "",
     status: "active",
+    groupId: "",
 };
 
 const initialStudentData: StudentFormData = {
@@ -107,6 +108,7 @@ export function useEnrollmentForm() {
                             department: userToEdit.department || "",
                             phone: userToEdit.phone || "",
                             status: userToEdit.status || "active",
+                            groupId: userToEdit.groupId || "",
                         });
 
                         if (userToEdit.role === "student") {
@@ -200,11 +202,15 @@ export function useEnrollmentForm() {
                     authority: authority,
                 });
 
-                toast({ title: "Role assigned successfully" });
+                if (profileData.groupId) {
+                    await api.post(`/users/${targetUserId}/groups/${profileData.groupId}`);
+                }
+
+                toast({ title: "Role & Group assigned successfully" });
                 setCurrentStep(3);
             } catch (err: any) {
-                console.error("Failed to assign role:", err);
-                setError(err.response?.data?.message || err.message || "Could not assign role to user");
+                console.error("Failed to assign role or group:", err);
+                setError(err.response?.data?.message || err.message || "Could not assign role or group to user");
             }
         }
     };
