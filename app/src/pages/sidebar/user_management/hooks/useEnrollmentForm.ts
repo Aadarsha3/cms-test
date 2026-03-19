@@ -180,7 +180,8 @@ export function useEnrollmentForm() {
                 setCurrentStep(2);
             } catch (err: any) {
                 console.error("Failed to create user:", err);
-                setError(err.response?.data?.message || err.message || "Could not create user");
+                const serverMessage = err.response?.data?.detail || err.message;
+                setError(serverMessage);
             }
         } else if (currentStep === 2) {
             if (!profileData.role) {
