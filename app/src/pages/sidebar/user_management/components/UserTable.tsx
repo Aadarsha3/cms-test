@@ -202,7 +202,7 @@ export function UserTable({
                     >
                       {error ? (
                         <span className="text-destructive">
-                          Failed to load data. Is the backend running on port
+                          Failed to load data.
                           8001?
                         </span>
                       ) : (
