@@ -1,16 +1,30 @@
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth-context";
 import { userApi } from "@/lib/api";
-import { ArrowLeft, Edit, Trash2, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Loader2,
+  User,
+  Mail,
+  Phone,
+  Building,
+  Calendar,
+  Hash,
+  MapPin,
+} from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
-import { UserProfileCard } from "./components/features/UserProfileCard";
-import { UserPersonalInfo } from "./components/features/UserPersonalInfo";
 import { UserDocuments } from "./components/features/UserDocuments";
-import { UserDetail } from "./user.types";
+import { UserDetail, roleLabels, roleColors } from "./user.types";
 
 export function UserDetailsPage() {
   const { user: currentUser } = useAuth();
@@ -51,15 +65,43 @@ export function UserDetailsPage() {
   }, [userId, toast]);
 
   const goBack = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const from = searchParams.get("from");
+
+    if (from && from !== "dashboard") {
+      setLocation(`/${from}`);
+      return;
+    }
+
     if (!user) {
       setLocation("/dashboard");
       return;
     }
-    const role = user.role;
+    const role = user.role?.toLowerCase();
     if (role === "student") setLocation("/students");
     else if (role === "teacher") setLocation("/teachers");
-    else if (role && ["staff", "admin", "super_admin"].includes(role)) setLocation("/staff");
+    else if (role && ["staff", "admin", "super_admin"].includes(role))
+      setLocation("/staff");
     else setLocation("/dashboard");
+  };
+
+  const getBackLabel = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const from = searchParams.get("from");
+
+    if (from === "students") return "Student Management";
+    if (from === "teachers") return "Teacher Management";
+    if (from === "staff") return "Staff Management";
+
+    if (!user) return "Users";
+
+    const role = user.role?.toLowerCase();
+    if (role === "student") return "Student Management";
+    if (role === "teacher") return "Teacher Management";
+    if (role && ["staff", "admin", "super_admin"].includes(role))
+      return "Staff Management";
+
+    return "Users";
   };
 
   const handleDelete = async () => {
@@ -90,6 +132,61 @@ export function UserDetailsPage() {
     }
   };
 
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getJoinedDate = () => {
+    if (!user) return "N/A";
+    
+    // Check for createdDate array (e.g., [2024, 3, 19])
+    const dateSource = (user as any).createdDate || user.createdAt;
+    if (Array.isArray(dateSource) && dateSource.length >= 3) {
+      return new Date(
+        dateSource[0],
+        dateSource[1] - 1,
+        dateSource[2],
+      ).toLocaleDateString(undefined, { 
+        day: "numeric",
+        month: "long", 
+        year: "numeric" 
+      });
+    }
+
+    if (user.createdTimestamp) {
+      return new Date(user.createdTimestamp).toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
+
+    if (typeof user.createdAt === "string") {
+      return new Date(user.createdAt).toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
+    return "N/A";
+  };
+
+  const InfoField = ({ label, value, icon: Icon }: any) => (
+    <div className="space-y-2">
+      <Label className="flex items-center gap-2">
+        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+        {label}
+      </Label>
+      <p className="text-sm font-medium py-2 break-all">{value || "N/A"}</p>
+    </div>
+  );
+
   if (loading) {
     return (
       <MainLayout title="User Details">
@@ -105,11 +202,13 @@ export function UserDetailsPage() {
       <MainLayout title="User Details">
         <div className="flex flex-col items-center justify-center h-[50vh] gap-4">
           <p className="text-muted-foreground">{error || "User not found"}</p>
-          <Button onClick={goBack}>Back to Users</Button>
+          <Button onClick={goBack}>Back to {getBackLabel()}</Button>
         </div>
       </MainLayout>
     );
   }
+
+  const displayRole = user.role || "member";
 
   return (
     <MainLayout title="User Details">
@@ -121,23 +220,24 @@ export function UserDetailsPage() {
             onClick={goBack}
             className="gap-2"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to Users
+            <ArrowLeft className="h-4 w-4" /> Back to {getBackLabel()}
           </Button>
+
           {canEdit && !isSelf && (
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleEdit}
-                className="gap-2"
+                className="gap-2 shadow-sm"
               >
-                <Edit className="h-4 w-4" /> Edit
+                <Edit className="h-4 w-4" /> Edit Profile
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={handleDelete}
-                className="gap-2"
+                className="gap-2 shadow-sm"
               >
                 <Trash2 className="h-4 w-4" /> Delete
               </Button>
@@ -145,14 +245,112 @@ export function UserDetailsPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
-          <UserProfileCard user={user} />
+        {/* Profile Header Card */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+              <div className="relative">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={user.avatarUrl} alt={user.username} />
+                  <AvatarFallback className="text-2xl">
+                    {getInitials(user.username || "")}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
 
-          <div className="space-y-6">
-            <UserPersonalInfo user={user} />
-            <UserDocuments user={user} />
-          </div>
-        </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h2 className="text-2xl font-semibold">{user.username}</h2>
+                <p className="text-muted-foreground">{user.primaryEmail}</p>
+                <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-2">
+                  <Badge className={roleColors[displayRole] || "bg-slate-500"}>
+                    {roleLabels[displayRole] || displayRole}
+                  </Badge>
+                  <Badge
+                    variant={user.status === "active" ? "secondary" : "outline"}
+                  >
+                    {user.status === "active" ? "Active Account" : "Unknown Status"}
+                  </Badge>
+                </div>
+              </div>
+
+
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Personal Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Personal Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <InfoField
+                label="Full Name"
+                value={user.username}
+                icon={User}
+              />
+              <InfoField
+                label="Email Address"
+                value={user.primaryEmail}
+                icon={Mail}
+              />
+              <InfoField
+                label="Phone Number"
+                value={user.phone}
+                icon={Phone}
+              />
+              <InfoField
+                label="Department"
+                value={user.department}
+                icon={Building}
+              />
+              <InfoField
+                label="User ID"
+                value={user.id}
+                icon={Hash}
+              />
+              {user.User_Id && (
+                <InfoField
+                  label="Internal ID"
+                  value={user.User_Id}
+                  icon={Hash}
+                />
+              )}
+              {user.universityId && displayRole === "student" && (
+                <InfoField
+                  label="University ID"
+                  value={user.universityId}
+                  icon={Hash}
+                />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Account Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Account Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <InfoField
+                label="System Role"
+                value={roleLabels[displayRole] || displayRole}
+                icon={User}
+              />
+              <InfoField
+                label="Member Since"
+                value={getJoinedDate()}
+                icon={Calendar}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Documents */}
+        <UserDocuments user={user} />
       </div>
     </MainLayout>
   );

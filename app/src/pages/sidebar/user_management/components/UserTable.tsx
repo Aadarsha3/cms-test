@@ -113,7 +113,12 @@ export function UserTable({
   });
 
   const openUserDetails = (userId: string) => {
-    setLocation(`/users/${userId}`);
+    let from = "dashboard";
+    if (roleFilter === "student") from = "students";
+    else if (roleFilter === "teacher") from = "teachers";
+    else if (roleFilter === "staff,admin") from = "staff";
+
+    setLocation(`/users/${userId}?from=${from}`);
   };
 
   const handleNextPage = () => {

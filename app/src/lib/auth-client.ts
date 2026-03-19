@@ -36,7 +36,7 @@ export async function authCodeFlow(
      */
     // TODO: Make this dynamic based on environment or window.location
     const redirect_uri = "http://localhost:5173/login/oauth2/code/react-client";
-    const scope = "openid email profile offline_access"; // Scope of the access request
+    const scope = "openid email profile"; // Scope of the access request
     /**
      * PKCE: The following MUST be generated for every redirect to the
      * authorization_endpoint. You must store the code_verifier and state in the
