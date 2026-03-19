@@ -28,6 +28,9 @@ export function CallbackPage() {
                 if (tokens.id_token) {
                     localStorage.setItem("id_token", tokens.id_token);
                 }
+                if (tokens.refresh_token) {
+                    localStorage.setItem("refresh_token", tokens.refresh_token);
+                }
 
                 const email = userinfo.email as string;
                 let role: UserRole = "student"; // Default fallback

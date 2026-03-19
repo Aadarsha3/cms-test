@@ -1,6 +1,35 @@
 import axios from 'axios';
 
-// Create an Axios instance with default configuration
+// State to track if a refresh is currently in progress
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+/**
+ * Helper to process the queue of failed requests after a token refresh
+ */
+const processQueue = (error: any, token: string | null = null) => {
+    failedQueue.forEach((promise) => {
+        if (error) {
+            promise.reject(error);
+        } else {
+            promise.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
+/**
+ * Shared logout helper
+ */
+const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('authUser');
+    localStorage.removeItem('id_token');
+    localStorage.removeItem('rolePermissions');
+    localStorage.removeItem('refresh_token');
+    window.location.href = '/login';
+};
+
 // Helper to configure interceptors
 const configureInterceptors = (instance: any) => {
     instance.interceptors.request.use(
@@ -20,14 +49,77 @@ const configureInterceptors = (instance: any) => {
         (response: any) => {
             return response;
         },
-        (error: any) => {
-            if (error.response && error.response.status === 401) {
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('authUser');
-                localStorage.removeItem('id_token');
-                localStorage.removeItem('rolePermissions');
-                window.location.href = '/login';
+        async (error: any) => {
+            const originalRequest = error.config;
+
+            // Handle 401 Unauthorized errors (Token likely expired)
+            if (error.response && error.response.status === 401 && !originalRequest._retry) {
+                
+                // If we are already refreshing the token, add originalRequest to the queue
+                if (isRefreshing) {
+                    return new Promise((resolve, reject) => {
+                        failedQueue.push({ resolve, reject });
+                    })
+                        .then((token) => {
+                            originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                            return instance(originalRequest);
+                        })
+                        .catch((err) => {
+                            return Promise.reject(err);
+                        });
+                }
+
+                originalRequest._retry = true;
+                isRefreshing = true;
+
+                const refreshToken = localStorage.getItem('refresh_token');
+
+                if (refreshToken) {
+                    try {
+                        // Exchange refresh_token for a new access_token/refresh_token
+                        // We use a clean axios instance to avoid infinite loops
+                        const refreshResponse = await axios.post(
+                            'http://localhost:8001/oauth2/token',
+                            new URLSearchParams({
+                                grant_type: 'refresh_token',
+                                refresh_token: refreshToken,
+                                client_id: 'react-client',
+                            }),
+                            {
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                            }
+                        );
+
+                        const { access_token, refresh_token: newRefreshToken } = refreshResponse.data;
+
+                        // Save new tokens to storage
+                        localStorage.setItem('access_token', access_token);
+                        if (newRefreshToken) {
+                            localStorage.setItem('refresh_token', newRefreshToken);
+                        }
+
+                        // Release the queue of pending requests
+                        processQueue(null, access_token);
+                        isRefreshing = false;
+
+                        // Retry the original request
+                        originalRequest.headers['Authorization'] = 'Bearer ' + access_token;
+                        return instance(originalRequest);
+                    } catch (refreshErr) {
+                        // Refresh failed, clean up and logout
+                        processQueue(refreshErr, null);
+                        isRefreshing = false;
+                        handleLogout();
+                        return Promise.reject(refreshErr);
+                    }
+                } else {
+                    // No refresh token available
+                    handleLogout();
+                }
             }
+
             return Promise.reject(error);
         }
     );

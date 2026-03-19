@@ -109,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("access_token");
     localStorage.removeItem("id_token");
     localStorage.removeItem("rolePermissions");
+    localStorage.removeItem("refresh_token");
 
     // Update state
     setUser(null);
