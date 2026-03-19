@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import {
   Edit,
   Trash2,
   Loader2,
+  Save,
   User,
   Mail,
   Phone,
@@ -35,6 +37,9 @@ export function UserDetailsPage() {
   const [user, setUser] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState<Partial<UserDetail>>({});
+  const [saving, setSaving] = useState(false);
 
   const userId = params?.id;
   const isSelf = currentUser?.id === userId;
@@ -48,6 +53,7 @@ export function UserDetailsPage() {
       try {
         const response = await userApi.get<UserDetail>(`/users/${userId}`);
         setUser(response.data);
+        setEditFormData(response.data);
       } catch (err: any) {
         console.error("Failed to fetch user details:", err);
         setError(err.message || "Failed to fetch user details");
@@ -128,8 +134,34 @@ export function UserDetailsPage() {
 
   const handleEdit = () => {
     if (user) {
-      setLocation(`/users/${user.id}/edit`);
+      setEditFormData(user);
+      setIsEditing(true);
     }
+  };
+
+  const handleSave = async () => {
+    if (!userId || !editFormData) return;
+    setSaving(true);
+    try {
+      await userApi.put(`/users/${userId}`, editFormData);
+      setUser({ ...user, ...editFormData } as UserDetail);
+      setIsEditing(false);
+      toast({ title: "Success", description: "User details updated successfully." });
+    } catch (err: any) {
+      console.error("Failed to update user:", err);
+      toast({
+        title: "Update failed",
+        description: err.response?.data?.detail || err.message || "Could not update user",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditFormData(user || {});
+    setIsEditing(false);
   };
 
   const getInitials = (name: string) => {
@@ -177,13 +209,23 @@ export function UserDetailsPage() {
     return "N/A";
   };
 
-  const InfoField = ({ label, value, icon: Icon }: any) => (
+  const InfoField = ({ label, value, icon: Icon, isEditable = false, fieldKey = "" }: any) => (
     <div className="space-y-2">
       <Label className="flex items-center gap-2">
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
         {label}
       </Label>
-      <p className="text-sm font-medium py-2 break-all">{value || "N/A"}</p>
+      {isEditable && isEditing ? (
+        <Input
+          className="h-9"
+          value={editFormData[fieldKey as keyof UserDetail] as string || ""}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+            setEditFormData({ ...editFormData, [fieldKey]: e.target.value })
+          }
+        />
+      ) : (
+        <p className="text-sm font-medium py-2 break-all">{value || "N/A"}</p>
+      )}
     </div>
   );
 
@@ -225,22 +267,46 @@ export function UserDetailsPage() {
 
           {canEdit && !isSelf && (
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleEdit}
-                className="gap-2 shadow-sm"
-              >
-                <Edit className="h-4 w-4" /> Edit Profile
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleDelete}
-                className="gap-2 shadow-sm"
-              >
-                <Trash2 className="h-4 w-4" /> Delete
-              </Button>
+              {isEditing ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancel}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="gap-2"
+                  >
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    Save Changes
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleEdit}
+                    className="gap-2 shadow-sm"
+                  >
+                    <Edit className="h-4 w-4" /> Edit Profile
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDelete}
+                    className="gap-2 shadow-sm"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -289,21 +355,29 @@ export function UserDetailsPage() {
                 label="Full Name"
                 value={user.username}
                 icon={User}
+                isEditable
+                fieldKey="username"
               />
               <InfoField
                 label="Email Address"
                 value={user.primaryEmail}
                 icon={Mail}
+                isEditable
+                fieldKey="primaryEmail"
               />
               <InfoField
                 label="Phone Number"
                 value={user.phone}
                 icon={Phone}
+                isEditable
+                fieldKey="phone"
               />
               <InfoField
                 label="Department"
                 value={user.department}
                 icon={Building}
+                isEditable
+                fieldKey="department"
               />
               <InfoField
                 label="User ID"
@@ -315,6 +389,8 @@ export function UserDetailsPage() {
                   label="Internal ID"
                   value={user.User_Id}
                   icon={Hash}
+                  isEditable
+                  fieldKey="User_Id"
                 />
               )}
               {user.universityId && displayRole === "student" && (
@@ -322,6 +398,8 @@ export function UserDetailsPage() {
                   label="University ID"
                   value={user.universityId}
                   icon={Hash}
+                  isEditable
+                  fieldKey="universityId"
                 />
               )}
             </div>
