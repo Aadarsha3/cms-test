@@ -58,32 +58,61 @@ export function UserTable({
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
+  // The backend caps page size at a fixed limit (e.g. 20).
+  // To show more rows, we fetch multiple backend pages and merge them.
+  const BACKEND_PAGE_SIZE = 20;
+
   const fetchUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      const params: any = { page, size, pageSize: size, limit: size, sort, direction };
-      if (roleFilter) {
-        params.role = roleFilter;
-      }
+      const allUsers: UserResponse[] = [];
+      const startIndex = page * size; // virtual offset into the full dataset
+      const backendStartPage = Math.floor(startIndex / BACKEND_PAGE_SIZE);
+      const pagesNeeded = Math.ceil(size / BACKEND_PAGE_SIZE);
+      let fetchedTotal = 0;
+      let reachedEnd = false;
 
-      const response = await userApi.get<UserResponse[]>("/users", { params });
+      for (let i = 0; i < pagesNeeded && !reachedEnd; i++) {
+        const params: any = {
+          page: backendStartPage + i,
+          size: BACKEND_PAGE_SIZE,
+          sort,
+          direction,
+        };
+        if (roleFilter) {
+          params.role = roleFilter;
+        }
 
-      if (Array.isArray(response.data)) {
-        setApiUsers(response.data);
-        setTotalElements(response.data.length);
-      } else {
-        const data = response.data as any;
-        if (data && Array.isArray(data.content)) {
-          setApiUsers(data.content);
-          setTotalElements(data.totalElements || data.content.length);
+        const response = await userApi.get<UserResponse[]>("/users", { params });
+
+        let pageData: UserResponse[] = [];
+        if (Array.isArray(response.data)) {
+          pageData = response.data;
         } else {
-          console.warn("Unexpected API response format:", response.data);
-          setApiUsers([]);
-          setTotalElements(0);
-          setError("Invalid response format from server");
+          const data = response.data as any;
+          if (data && Array.isArray(data.content)) {
+            pageData = data.content;
+            if (data.totalElements) {
+              fetchedTotal = data.totalElements;
+            }
+          }
+        }
+
+        allUsers.push(...pageData);
+
+        // If this page returned fewer than BACKEND_PAGE_SIZE, we've hit the end
+        if (pageData.length < BACKEND_PAGE_SIZE) {
+          reachedEnd = true;
         }
       }
+
+      // Trim to the offset within the first backend page and the requested size
+      const offsetInFirstPage = startIndex % BACKEND_PAGE_SIZE;
+      const sliced = allUsers.slice(offsetInFirstPage, offsetInFirstPage + size);
+
+      setApiUsers(sliced);
+      setTotalElements(fetchedTotal || allUsers.length);
     } catch (err: any) {
       console.error("Failed to fetch users:", err);
       setError(err.message || "Failed to load users");
@@ -110,8 +139,6 @@ export function UserTable({
     const givenName = u.givenName?.toLowerCase() || "";
     const familyName = u.familyName?.toLowerCase() || "";
     const fullName = `${givenName} ${familyName}`.trim();
-    const createdDate = u.createdDate;
-    console.log("abc :" + createdDate);
 
     return (
       username.includes(searchLower) ||
@@ -242,7 +269,6 @@ export function UserTable({
                       {error ? (
                         <span className="text-destructive">
                           Failed to load data.
-                          8001?
                         </span>
                       ) : (
                         "No matching users found."
