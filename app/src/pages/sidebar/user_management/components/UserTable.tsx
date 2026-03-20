@@ -164,7 +164,9 @@ export function UserTable({
 
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground hidden lg:inline">Rows:</span>
+              <span className="text-sm text-muted-foreground hidden lg:inline">
+                Rows:
+              </span>
               <Select
                 value={String(size)}
                 onValueChange={(v) => {
@@ -173,15 +175,16 @@ export function UserTable({
                 }}
               >
                 <SelectTrigger className="h-11 w-[85px] bg-white dark:bg-zinc-950 border-[#243F76]/10 dark:border-white/10 shadow-sm">
-                  <SelectValue placeholder={size >= 99999 ? "All" : String(size)} />
+                  <SelectValue
+                    placeholder={size >= 99999 ? "All" : String(size)}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {[5, 10, 20, 50, 100, 500, 1000].map((v) => (
+                  {[5, 10, 20, 50, 100, 500, 1000, 10000].map((v) => (
                     <SelectItem key={v} value={String(v)}>
                       {v}
                     </SelectItem>
                   ))}
-                  <SelectItem value="9999">All</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -265,9 +268,9 @@ export function UserTable({
                       <TableCell>
                         {user.createdDate
                           ? (() => {
-                            const [y, m, d] = user.createdDate;
-                            return `${y} /${m}/${d}`;
-                          })()
+                              const [y, m, d] = user.createdDate;
+                              return `${y} /${m}/${d}`;
+                            })()
                           : "-"}
                       </TableCell>
                     </TableRow>
@@ -281,7 +284,8 @@ export function UserTable({
         {!loading && apiUsers.length > 0 && (
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              Showing {page * size + 1}-{page * size + apiUsers.length} of {totalElements} entries
+              Showing {page * size + 1}-{page * size + apiUsers.length} of{" "}
+              {totalElements} entries
             </div>
             <div className="flex gap-2">
               <Button
