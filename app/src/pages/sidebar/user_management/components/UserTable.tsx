@@ -13,6 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -40,10 +47,11 @@ export function UserTable({
 }: UserTableProps) {
   const [apiUsers, setApiUsers] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalElements, setTotalElements] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [size] = useState(10);
+  const [size, setSize] = useState(10);
   const [sort] = useState("id");
   const [direction] = useState("DESC");
 
@@ -54,7 +62,7 @@ export function UserTable({
     setLoading(true);
     setError(null);
     try {
-      const params: any = { page, size, sort, direction };
+      const params: any = { page, size, pageSize: size, limit: size, sort, direction };
       if (roleFilter) {
         params.role = roleFilter;
       }
@@ -63,13 +71,16 @@ export function UserTable({
 
       if (Array.isArray(response.data)) {
         setApiUsers(response.data);
+        setTotalElements(response.data.length);
       } else {
         const data = response.data as any;
         if (data && Array.isArray(data.content)) {
           setApiUsers(data.content);
+          setTotalElements(data.totalElements || data.content.length);
         } else {
           console.warn("Unexpected API response format:", response.data);
           setApiUsers([]);
+          setTotalElements(0);
           setError("Invalid response format from server");
         }
       }
@@ -154,6 +165,29 @@ export function UserTable({
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground hidden lg:inline">Rows:</span>
+              <Select
+                value={String(size)}
+                onValueChange={(v) => {
+                  setSize(Number(v));
+                  setPage(0);
+                }}
+              >
+                <SelectTrigger className="h-11 w-[85px] bg-white dark:bg-zinc-950 border-[#243F76]/10 dark:border-white/10 shadow-sm">
+                  <SelectValue placeholder={size >= 99999 ? "All" : String(size)} />
+                </SelectTrigger>
+                <SelectContent>
+                  {[5, 10, 20, 50, 100, 500, 1000].map((v) => (
+                    <SelectItem key={v} value={String(v)}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="9999">All</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <Button
               variant="outline"
               size="icon"
@@ -234,9 +268,9 @@ export function UserTable({
                       <TableCell>
                         {user.createdDate
                           ? (() => {
-                              const [y, m, d] = user.createdDate;
-                              return `${y} /${m}/${d}`;
-                            })()
+                            const [y, m, d] = user.createdDate;
+                            return `${y} /${m}/${d}`;
+                          })()
                           : "-"}
                       </TableCell>
                     </TableRow>
@@ -250,7 +284,7 @@ export function UserTable({
         {!loading && apiUsers.length > 0 && (
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              Showing {page * size + 1}-{page * size + apiUsers.length} entries
+              Showing {page * size + 1}-{page * size + apiUsers.length} of {totalElements} entries
             </div>
             <div className="flex gap-2">
               <Button

@@ -1,50 +1,89 @@
-import { useRef, ChangeEvent } from "react";
+import { useRef, ChangeEvent, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, Download } from "lucide-react";
+import { Upload, FileText, Download, Loader2 } from "lucide-react";
 import { UserDetail } from "../../user.types";
 import { useToast } from "@/hooks/use-toast";
+import { userApi } from "@/lib/api";
 
 interface UserDocumentsProps {
   user: UserDetail;
+  isEditing?: boolean;
 }
 
-export function UserDocuments({ user }: UserDocumentsProps) {
+export function UserDocuments({ user, isEditing = false }: UserDocumentsProps) {
   const { toast } = useToast();
+  const [uploading, setUploading] = useState(false);
   const documentInputRef = useRef<HTMLInputElement>(null);
 
   const triggerDocumentInput = () => {
     documentInputRef.current?.click();
   };
 
-  const handleDocumentUpload = (_e: ChangeEvent<HTMLInputElement>) => {
-    toast({
-      title: "Document upload is not yet available.",
-      variant: "default",
-    });
+  const handleDocumentUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user.id) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      await userApi.post(`/users/${user.id}/documents`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      toast({
+        title: "Success",
+        description: "Document uploaded successfully.",
+      });
+      
+      // Note: Ideally, we should trigger a re-fetch of the user data here
+      // But for now, we'll just indicate success.
+    } catch (err: any) {
+      console.error("Document upload failed:", err);
+      toast({
+        title: "Upload failed",
+        description: err.response?.data?.detail || err.message || "Failed to upload document",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      if (documentInputRef.current) documentInputRef.current.value = "";
+    }
   };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Documents</CardTitle>
-        <div className="flex items-center gap-2">
-          <input
-            type="file"
-            ref={documentInputRef}
-            className="hidden"
-            onChange={handleDocumentUpload}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={triggerDocumentInput}
-            className="gap-2"
-            disabled={true}
-          >
-            <Upload className="h-3 w-3" /> Upload
-          </Button>
-        </div>
+        {isEditing && (
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              ref={documentInputRef}
+              className="hidden"
+              onChange={handleDocumentUpload}
+              disabled={uploading}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={triggerDocumentInput}
+              className="gap-2"
+              disabled={uploading}
+            >
+              {uploading ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Upload className="h-3 w-3" />
+              )}
+              {uploading ? "Uploading..." : "Upload"}
+            </Button>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-3">

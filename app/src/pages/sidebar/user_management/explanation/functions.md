@@ -76,7 +76,7 @@ Handles the **Next** button click on steps 1 and 2.
 
 Handles the **Complete Enrollment** / **Update User** button on step 3.
 
-1. Validates department (required unless `super_admin`), phone, and all student fields if role is `student`.
+1. Validates phone, and all student fields if role is `student`.
 2. Builds the payload combining profile, student, and name data.
 3. Calls `PUT /users/:id` to persist the full profile.
 4. On success: shows a toast and redirects to `/users`.

@@ -31,7 +31,6 @@ export function DashboardPage() {
     content: "",
     isEveryone: true,
     targetRoles: ["all"],
-    targetDepartments: ["all"],
     targetPrograms: ["all"],
     targetGroups: ["all"],
   });
@@ -82,7 +81,6 @@ export function DashboardPage() {
       content: "",
       isEveryone: true,
       targetRoles: ["all"],
-      targetDepartments: ["all"],
       targetPrograms: ["all"],
       targetGroups: ["all"]
     });
@@ -91,7 +89,6 @@ export function DashboardPage() {
 
   const handleOpenEditDialog = (announcement: Announcement) => {
     const isEveryone = announcement.targetRoles.includes("all") &&
-      announcement.targetDepartments.includes("all") &&
       announcement.targetGroups.includes("all");
 
     setEditingAnnouncementId(announcement.id);
@@ -100,7 +97,6 @@ export function DashboardPage() {
       content: announcement.content || "",
       isEveryone,
       targetRoles: announcement.targetRoles || ["all"],
-      targetDepartments: announcement.targetDepartments || ["all"],
       targetPrograms: announcement.targetPrograms || ["all"],
       targetGroups: announcement.targetGroups || ["all"],
     });
@@ -137,11 +133,10 @@ export function DashboardPage() {
     if (isSuperAdmin) return true;
 
     const roleMatch = a.targetRoles.includes("all") || a.targetRoles.includes(user.role);
-    const deptMatch = a.targetDepartments.includes("all") || (user.department && a.targetDepartments.includes(user.department));
     const programMatch = a.targetPrograms?.includes("all") || (user.program && a.targetPrograms?.includes(user.program));
     const groupMatch = a.targetGroups?.includes("all") || (user.group && a.targetGroups?.includes(user.group));
 
-    return roleMatch && deptMatch && programMatch && groupMatch;
+    return roleMatch && programMatch && groupMatch;
   });
 
   const handleDeleteAnnouncement = (id: number) => {

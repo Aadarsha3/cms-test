@@ -54,7 +54,6 @@ givenName       — first name
 familyName      — last name
 createdAt       — when the account was made
 role            — "student", "admin", "teacher", etc.
-department      — which department they belong to
 status          — "active" or "inactive"
 phone           — phone number
 User_Id         — a separate internal identifier
@@ -78,7 +77,7 @@ firstName, lastName, userId (username), email, password
 
 #### `ProfileFormData` — Steps 2 and 3 of the enroll form
 ```
-role, subRoles, department, phone, status
+role, subRoles, phone, status
 ```
 
 #### `StudentFormData` — Extra student-only fields in Step 3
@@ -119,7 +118,7 @@ This is a **custom React hook** — a function that contains all the logic (stat
 
 ```ts
 initialAccountData  = { firstName: "", lastName: "", userId: "", email: "", password: "" }
-initialProfileData  = { role: "student", subRoles: [], department: "", phone: "", status: "active" }
+initialProfileData  = { role: "student", subRoles: [], phone: "", status: "active" }
 initialStudentData  = { universityId: "", dateOfBirth: "", gender: "", currentClass: "",
                         semester: "", guardianName: "", guardianContact: "", guardianRelationship: "" }
 ```
@@ -189,7 +188,7 @@ useEffect(() => {
 **Specifically it maps:**
 - `username` → split into `firstName` + `lastName` for `accountData`
 - `primaryEmail` → `accountData.email`
-- `role`, `department`, `phone`, `status` → `profileData`
+- `role`, `phone`, `status` → `profileData`
 - All student fields → `studentData` (only if the role is "student")
 - `password` is always left blank — you only set it if you want to change it
 
@@ -244,7 +243,7 @@ Called when clicking **Complete Enrollment** or **Update User** on Step 3.
 
 ```
 1. Clear any existing error
-2. Check that department is selected (unless super_admin, who has access to all)
+2. Check that phone is not empty
 3. Check that phone is not empty
 4. If role is "student", check ALL student fields:
    - dateOfBirth, gender, currentClass, semester
@@ -253,7 +252,7 @@ Called when clicking **Complete Enrollment** or **Update User** on Step 3.
 5. Build the payload:
    {
      name: firstName + " " + lastName,
-     role, department, phone, status,
+     role, phone, status,
      ...all studentData fields (spread in, ignored by backend if not student),
      subRoles
    }
@@ -525,26 +524,11 @@ setAvatarUpload(URL.createObjectURL(file))
 
 ### `ProfileDetailsForm.tsx`
 
-A card with dropdowns for department, phone input, and status (Active/Inactive).
+A card with phone input and status (Active/Inactive).
 
 **Props:**
 - `data` / `setData` — controlled `ProfileFormData`
-- `isAdmin` — if true, the department is locked to the admin's own department
-- `userDepartment` — the admin's department (used when locked)
-
-**Department locking:**
-```ts
-const displayDepartment = isAdmin ? userDepartment : data.department
-// ...
-<Select disabled={isAdmin} value={displayDepartment}>
-```
-When an `admin` (not super-admin) creates a user, they can only assign users to their own department. `super_admin` gets a full free-choice dropdown.
-
-**Department filter:**
-```ts
-departments.filter(d => data.role === "super_admin" || d !== "Administration")
-```
-The "Administration" department is hidden from the list unless the role being enrolled is `super_admin`. Regular roles don't belong to the Administration department.
+- `isEditing` — whether the form is in edit mode
 
 ---
 
@@ -610,7 +594,7 @@ The left column of the profile page. Shows:
 - Large avatar with initials fallback
 - Username in large bold text
 - Role badge (color from `roleColors`, label from `roleLabels`)
-- A list of contact details with Lucide icons: email, phone, department, status, join date
+- A list of contact details with Lucide icons: email, phone, status, join date
 
 **`getInitials(name)`**
 Same as in `StepThreeProfileDetails` — takes a name and returns 1–2 initials. Defined locally so this component has zero external utility dependencies.
@@ -618,7 +602,6 @@ Same as in `StepThreeProfileDetails` — takes a name and returns 1–2 initials
 **Fallback values:**
 ```ts
 const displayRole = user.role || "member"       // if role is missing
-const displayDepartment = user.department || "N/A"
 ```
 
 ---
@@ -677,10 +660,10 @@ STEP 2 — Role Selection
     → currentStep = 3
 
 STEP 3 — User Details
-  User fills: Department, Phone, Class, Semester, Guardian details, Avatar, Docs
+  User fills: Phone, Class, Semester, Guardian details, Avatar, Docs
   [Clicks Complete Enrollment]
     → validate all required fields
-    → PUT /users/abc123 { name, role, department, phone, ...student fields }
+    → PUT /users/abc123 { name, role, phone, ...student fields }
     → backend saves profile
     → toast: "User profile updated successfully"
     → navigate to /users

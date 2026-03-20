@@ -17,10 +17,8 @@ import { X } from "lucide-react";
 import { AnnouncementForm } from "../types";
 import {
     availableRoles,
-    availableDepartments,
     availablePrograms,
     availableGroups,
-    departmentPrograms,
 } from "../constants";
 
 interface AnnouncementDialogProps {
@@ -59,42 +57,6 @@ export function AnnouncementDialog({
         }
 
         setForm({ ...form, [field]: next });
-    };
-
-    const handleDeptToggle = (deptId: string) => {
-        const currentDepts = form.targetDepartments || [];
-
-        if (deptId === "all") {
-            setForm({
-                ...form,
-                targetDepartments: ["all"],
-                targetPrograms: ["all"],
-            });
-            return;
-        }
-
-        let nextDepts = currentDepts.filter((d) => d !== "all");
-        if (nextDepts.includes(deptId)) {
-            nextDepts = nextDepts.filter((d) => d !== deptId);
-        } else {
-            nextDepts.push(deptId);
-        }
-
-        if (nextDepts.length === 0) {
-            setForm({ ...form, targetDepartments: ["all"], targetPrograms: ["all"] });
-        } else {
-            // Sync programs: only keep those belonging to selected departments
-            const allowedPrograms = nextDepts.flatMap((d) => departmentPrograms[d] || []);
-            const nextPrograms = form.targetPrograms.filter(
-                (p) => p === "all" || allowedPrograms.includes(p)
-            );
-
-            setForm({
-                ...form,
-                targetDepartments: nextDepts,
-                targetPrograms: nextPrograms.length > 0 ? nextPrograms : ["all"],
-            });
-        }
     };
 
     return (
@@ -160,25 +122,12 @@ export function AnnouncementDialog({
                                     items={availableRoles}
                                     selected={form.targetRoles}
                                     onToggle={(id) => toggleItem("targetRoles", id)}
+                                />                                <TargetSection
+                                    title="Specific Programs"
+                                    items={availablePrograms}
+                                    selected={form.targetPrograms}
+                                    onToggle={(id) => toggleItem("targetPrograms", id)}
                                 />
-
-                                <TargetSection
-                                    title="Departments"
-                                    items={availableDepartments}
-                                    selected={form.targetDepartments}
-                                    onToggle={handleDeptToggle}
-                                />
-
-                                {!form.targetDepartments.includes("all") && (
-                                    <TargetSection
-                                        title="Specific Programs"
-                                        items={availablePrograms.filter((p) =>
-                                            form.targetDepartments.includes(p.dept)
-                                        )}
-                                        selected={form.targetPrograms}
-                                        onToggle={(id) => toggleItem("targetPrograms", id)}
-                                    />
-                                )}
 
                                 <TargetSection
                                     title="Groups / Sections"

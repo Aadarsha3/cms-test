@@ -172,6 +172,7 @@ export function EnrollUserPage() {
               <div className="bg-card border rounded-lg overflow-hidden">
                 <div className="p-6">
                   <StepThreeProfileDetails
+                    accountData={accountData}
                     profileData={profileData}
                     setProfileData={setProfileData}
                     studentData={studentData}
@@ -179,10 +180,10 @@ export function EnrollUserPage() {
                     documents={newDocuments}
                     setDocuments={setNewDocuments}
                     isAdmin={isAdmin}
-                    userDepartment={user?.department}
                     userFullName={`${accountData.firstName} ${accountData.lastName}`}
                     avatarUpload={avatarUpload}
                     setAvatarUpload={setAvatarUpload}
+                    isEditing={!!editingUserId}
                   />
                 </div>
 

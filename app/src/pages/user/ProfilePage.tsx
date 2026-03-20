@@ -1,5 +1,5 @@
 import { useState, useRef, ChangeEvent } from "react";
-import { Camera, Save, User, Mail, Phone, Building, Calendar } from "lucide-react";
+import { Camera, Save, User, Mail, Phone, Calendar } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,6 @@ export function ProfilePage() {
     name: user?.name || "",
     email: user?.email || "",
     phone: "+1 555-0100",
-    department: user?.department || "",
   });
 
   if (!user) return null;
@@ -163,7 +162,6 @@ export function ProfilePage() {
               <InfoField label="Full Name" value={formData.name} icon={User} isEditable fieldKey="name" />
               <InfoField label="Email Address" value={formData.email} icon={Mail} isEditable fieldKey="email" />
               <InfoField label="Phone Number" value={user.phone || formData.phone} icon={Phone} isEditable fieldKey="phone" />
-              <InfoField label="Department" value={formData.department} icon={Building} />
             </div>
           </CardContent>
         </Card>

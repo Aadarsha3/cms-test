@@ -1,15 +1,19 @@
 import { ProfileDetailsForm } from "./ProfileDetailsForm";
 import { StudentAcademicForm } from "./StudentAcademicForm";
 import { UserDocumentUpload } from "./UserDocumentUpload";
-import { ProfileFormData, StudentFormData } from "../../user.types";
+import { ProfileFormData, StudentFormData, AccountFormData } from "../../user.types";
 import { useRef, ChangeEvent } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Camera, Upload, User, Mail, Hash, ShieldCheck, Activity } from "lucide-react";
+import { roleLabels, roleColors } from "../../user.types";
 
 interface StepThreeProfileDetailsProps {
+    accountData: AccountFormData;
     profileData: ProfileFormData;
     setProfileData: (data: ProfileFormData) => void;
     studentData: StudentFormData;
@@ -17,13 +21,14 @@ interface StepThreeProfileDetailsProps {
     documents: any[];
     setDocuments: React.Dispatch<React.SetStateAction<any[]>>;
     isAdmin: boolean;
-    userDepartment?: string;
     userFullName: string;
     avatarUpload: string | null;
     setAvatarUpload: (url: string | null) => void;
+    isEditing?: boolean;
 }
 
 export function StepThreeProfileDetails({
+    accountData,
     profileData,
     setProfileData,
     studentData,
@@ -31,10 +36,10 @@ export function StepThreeProfileDetails({
     documents,
     setDocuments,
     isAdmin,
-    userDepartment,
     userFullName,
     avatarUpload,
     setAvatarUpload,
+    isEditing,
 }: StepThreeProfileDetailsProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
@@ -67,6 +72,17 @@ export function StepThreeProfileDetails({
     const triggerFileInput = () => {
         fileInputRef.current?.click();
     };
+
+    const ReadOnlyField = ({ label, value, icon: Icon }: { label: string, value: React.ReactNode, icon: any }) => (
+        <div className="space-y-1 min-w-0">
+            <Label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Icon className="h-3 w-3" /> {label}
+            </Label>
+            <div className="text-sm font-medium truncate" title={typeof value === 'string' ? value : undefined}>
+                {value}
+            </div>
+        </div>
+    );
 
     return (
         <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
@@ -108,11 +124,38 @@ export function StepThreeProfileDetails({
                     </CardContent>
                 </Card>
 
+                <Card className="bg-muted/20 border-dashed">
+                    <CardContent className={`p-4 grid gap-4 grid-cols-1 sm:grid-cols-2 ${isEditing ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
+                        <ReadOnlyField label="Username" value={accountData.userId} icon={User} />
+                        <ReadOnlyField label="Email" value={accountData.email} icon={Mail} />
+                        <ReadOnlyField 
+                            label="Role" 
+                            value={
+                                <Badge variant="secondary" className={`text-[10px] h-5 ${roleColors[profileData.role]}`}>
+                                    {roleLabels[profileData.role] || profileData.role}
+                                </Badge>
+                            } 
+                            icon={ShieldCheck} 
+                        />
+                        {isEditing && (
+                            <ReadOnlyField 
+                                label="Status" 
+                                value={
+                                    <Badge variant="outline" className="text-[10px] h-5 capitalize">
+                                        {profileData.status}
+                                    </Badge>
+                                } 
+                                icon={Activity} 
+                            />
+                        )}
+                    </CardContent>
+                </Card>
+
                 <ProfileDetailsForm
                     data={profileData}
                     setData={setProfileData}
                     isAdmin={isAdmin}
-                    userDepartment={userDepartment}
+                    isEditing={isEditing}
                 />
 
                 {profileData.role === "student" && (

@@ -10,7 +10,6 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   subRoles?: string[];
-  department?: string;
   avatarUrl?: string;
   // Staff-specific fields
   assignedCourses?: string[]; // Course codes that staff teaches

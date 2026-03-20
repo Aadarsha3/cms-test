@@ -7,7 +7,6 @@ export interface Announcement {
     content?: string;
     isEveryone?: boolean;
     targetRoles: string[];
-    targetDepartments: string[];
     targetPrograms: string[];
     targetGroups: string[];
 }
@@ -37,7 +36,6 @@ export interface AnnouncementForm {
     content: string;
     isEveryone: boolean;
     targetRoles: string[];
-    targetDepartments: string[];
     targetPrograms: string[];
     targetGroups: string[];
 }

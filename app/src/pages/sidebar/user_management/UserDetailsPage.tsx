@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,16 +18,80 @@ import {
   User,
   Mail,
   Phone,
-  Building,
   Calendar,
   Hash,
+  Activity,
   MapPin,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useLocation, useRoute } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 import { UserDocuments } from "./components/features/UserDocuments";
 import { UserDetail, roleLabels, roleColors } from "./user.types";
+
+interface InfoFieldProps {
+  label: string;
+  value: any;
+  icon?: any;
+  isEditable?: boolean;
+  isEditing?: boolean;
+  fieldKey?: string;
+  editFormData?: Partial<UserDetail>;
+  setEditFormData?: (data: any) => void;
+}
+
+const InfoField = ({
+  label,
+  value,
+  icon: Icon,
+  isEditable = false,
+  isEditing = false,
+  fieldKey = "",
+  editFormData = {},
+  setEditFormData,
+}: InfoFieldProps) => (
+  <div className="space-y-2">
+    <Label className="flex items-center gap-2">
+      {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+      {label}
+    </Label>
+    {isEditable && isEditing && setEditFormData ? (
+      fieldKey === "status" ? (
+        <Select
+          value={(editFormData[fieldKey as keyof UserDetail] as string) || "active"}
+          onValueChange={(v) =>
+            setEditFormData({ ...editFormData, [fieldKey]: v })
+          }
+        >
+          <SelectTrigger className="h-9">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      ) : (
+        <Input
+          className="h-9"
+          value={(editFormData[fieldKey as keyof UserDetail] as string) || ""}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setEditFormData({ ...editFormData, [fieldKey]: e.target.value })
+          }
+        />
+      )
+    ) : (
+      <p className="text-sm font-medium py-2 break-all">{value || "N/A"}</p>
+    )}
+  </div>
+);
 
 export function UserDetailsPage() {
   const { user: currentUser } = useAuth();
@@ -209,25 +274,7 @@ export function UserDetailsPage() {
     return "N/A";
   };
 
-  const InfoField = ({ label, value, icon: Icon, isEditable = false, fieldKey = "" }: any) => (
-    <div className="space-y-2">
-      <Label className="flex items-center gap-2">
-        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-        {label}
-      </Label>
-      {isEditable && isEditing ? (
-        <Input
-          className="h-9"
-          value={editFormData[fieldKey as keyof UserDetail] as string || ""}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-            setEditFormData({ ...editFormData, [fieldKey]: e.target.value })
-          }
-        />
-      ) : (
-        <p className="text-sm font-medium py-2 break-all">{value || "N/A"}</p>
-      )}
-    </div>
-  );
+
 
   if (loading) {
     return (
@@ -356,33 +403,30 @@ export function UserDetailsPage() {
                 value={user.username}
                 icon={User}
                 isEditable
+                isEditing={isEditing}
                 fieldKey="username"
+                editFormData={editFormData}
+                setEditFormData={setEditFormData}
               />
               <InfoField
                 label="Email Address"
                 value={user.primaryEmail}
                 icon={Mail}
                 isEditable
+                isEditing={isEditing}
                 fieldKey="primaryEmail"
+                editFormData={editFormData}
+                setEditFormData={setEditFormData}
               />
               <InfoField
                 label="Phone Number"
                 value={user.phone}
                 icon={Phone}
                 isEditable
+                isEditing={isEditing}
                 fieldKey="phone"
-              />
-              <InfoField
-                label="Department"
-                value={user.department}
-                icon={Building}
-                isEditable
-                fieldKey="department"
-              />
-              <InfoField
-                label="User ID"
-                value={user.id}
-                icon={Hash}
+                editFormData={editFormData}
+                setEditFormData={setEditFormData}
               />
               {user.User_Id && (
                 <InfoField
@@ -390,7 +434,10 @@ export function UserDetailsPage() {
                   value={user.User_Id}
                   icon={Hash}
                   isEditable
+                  isEditing={isEditing}
                   fieldKey="User_Id"
+                  editFormData={editFormData}
+                  setEditFormData={setEditFormData}
                 />
               )}
               {user.universityId && displayRole === "student" && (
@@ -399,7 +446,10 @@ export function UserDetailsPage() {
                   value={user.universityId}
                   icon={Hash}
                   isEditable
+                  isEditing={isEditing}
                   fieldKey="universityId"
+                  editFormData={editFormData}
+                  setEditFormData={setEditFormData}
                 />
               )}
             </div>
@@ -412,7 +462,7 @@ export function UserDetailsPage() {
             <CardTitle className="text-lg">Account Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <InfoField
                 label="System Role"
                 value={roleLabels[displayRole] || displayRole}
@@ -423,12 +473,22 @@ export function UserDetailsPage() {
                 value={getJoinedDate()}
                 icon={Calendar}
               />
+              <InfoField
+                label="Account Status"
+                value={user.status}
+                icon={Activity}
+                isEditable
+                isEditing={isEditing}
+                fieldKey="status"
+                editFormData={editFormData}
+                setEditFormData={setEditFormData}
+              />
             </div>
           </CardContent>
         </Card>
 
         {/* Documents */}
-        <UserDocuments user={user} />
+        <UserDocuments user={user} isEditing={isEditing} />
       </div>
     </MainLayout>
   );

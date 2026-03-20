@@ -6,7 +6,6 @@ export interface UserRecord {
     email: string;
     role: string;
     subRoles?: string[];
-    department: string;
     status: "active" | "inactive";
     phone?: string;
     User_Id?: string;
@@ -37,7 +36,6 @@ const mockUsers: UserRecord[] = [
         name: "Dr. Sarah Johnson",
         email: "sarah.johnson@college.edu",
         role: "super_admin",
-        department: "Administration",
         status: "active",
         phone: "+1 555-0101",
         User_Id: "SA2024001",
@@ -47,7 +45,6 @@ const mockUsers: UserRecord[] = [
         name: "Prof. Alan Turing",
         email: "deptadmin@college.edu",
         role: "admin",
-        department: "Computer Science",
         status: "active",
         phone: "+1 555-0110",
         User_Id: "ADM2024002",
@@ -57,7 +54,6 @@ const mockUsers: UserRecord[] = [
         name: "Prof. Michael Chen",
         email: "michael.chen@college.edu",
         role: "staff",
-        department: "Computer Science",
         status: "active",
         phone: "+1 555-0102",
         User_Id: "STF2024001",
@@ -67,7 +63,6 @@ const mockUsers: UserRecord[] = [
         name: "Emily Parker",
         email: "emily.parker@student.college.edu",
         role: "student",
-        department: "Computer Science",
         User_Id: "COL2024001",
         universityId: "UNI2024001",
         dateOfBirth: "2002-05-15",
@@ -103,7 +98,6 @@ const mockUsers: UserRecord[] = [
         name: "Dr. Lisa Wang",
         email: "lisa.wang@college.edu",
         role: "staff",
-        department: "Computer Science",
         status: "active",
         phone: "+1 555-0104",
     },
@@ -112,7 +106,6 @@ const mockUsers: UserRecord[] = [
         name: "James Wilson",
         email: "james.wilson@student.college.edu",
         role: "student",
-        department: "Business Administration",
         User_Id: "COL2024002",
         universityId: "UNI2024002",
         dateOfBirth: "2001-08-22",
@@ -131,7 +124,6 @@ const mockUsers: UserRecord[] = [
         name: "Robert Lee",
         email: "robert.lee@student.college.edu",
         role: "student",
-        department: "Mechanical Engineering",
         User_Id: "COL2023015",
         universityId: "UNI2023015",
         dateOfBirth: "2000-11-10",
@@ -150,7 +142,6 @@ const mockUsers: UserRecord[] = [
         name: "Alice Williams",
         email: "alice.williams@student.college.edu",
         role: "student",
-        department: "Computer Science",
         User_Id: "COL2024003",
         universityId: "UNI2024003",
         dateOfBirth: "2003-03-15",
@@ -170,7 +161,6 @@ const mockUsers: UserRecord[] = [
         name: "Bob Brown",
         email: "bob.brown@student.college.edu",
         role: "student",
-        department: "Computer Science",
         User_Id: "COL2024004",
         universityId: "UNI2024004",
         dateOfBirth: "2002-07-20",
@@ -190,7 +180,6 @@ const mockUsers: UserRecord[] = [
         name: "Charlie Davis",
         email: "charlie.davis@student.college.edu",
         role: "student",
-        department: "Mechanical Engineering",
         User_Id: "COL2024005",
         universityId: "UNI2024005",
         dateOfBirth: "2001-12-05",
@@ -210,7 +199,6 @@ const mockUsers: UserRecord[] = [
         name: "Diana Evans",
         email: "diana.evans@student.college.edu",
         role: "student",
-        department: "Computer Science",
         User_Id: "COL2024006",
         universityId: "UNI2024006",
         dateOfBirth: "2003-09-12",
@@ -230,7 +218,6 @@ const mockUsers: UserRecord[] = [
         name: "Evan Wright",
         email: "evan.wright@student.college.edu",
         role: "student",
-        department: "Business Administration",
         User_Id: "COL2024007",
         universityId: "UNI2024007",
         dateOfBirth: "2000-05-25",

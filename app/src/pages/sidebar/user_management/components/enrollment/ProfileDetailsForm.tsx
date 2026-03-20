@@ -20,25 +20,15 @@ interface ProfileDetailsFormProps {
   data: ProfileFormData;
   setData: (data: ProfileFormData) => void;
   isAdmin: boolean;
-  userDepartment?: string;
+  isEditing?: boolean;
 }
-
-const departments = [
-  "Administration",
-  "Computer Science",
-  "Business Administration",
-  "Mechanical Engineering",
-  "Physics",
-  "Mathematics",
-];
 
 export function ProfileDetailsForm({
   data,
   setData,
   isAdmin,
-  userDepartment,
+  isEditing,
 }: ProfileDetailsFormProps) {
-  const displayDepartment = isAdmin ? userDepartment : data.department;
 
   return (
     <Card>
@@ -48,32 +38,6 @@ export function ProfileDetailsForm({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="department">
-              Department <span className="text-destructive">*</span>
-            </Label>
-            <Select
-              value={displayDepartment}
-              onValueChange={(v) => setData({ ...data, department: v })}
-              disabled={isAdmin}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select department" />
-              </SelectTrigger>
-              <SelectContent>
-                {departments
-                  .filter(
-                    (d) =>
-                      data.role === "super_admin" || d !== "Administration",
-                  )
-                  .map((d) => (
-                    <SelectItem key={d} value={d}>
-                      {d}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
           <div className="space-y-2">
             <Label htmlFor="enroll-user-phone">
               Phone <span className="text-destructive">*</span>
@@ -86,23 +50,25 @@ export function ProfileDetailsForm({
               autoComplete="tel"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={data.status}
-              onValueChange={(v) =>
-                setData({ ...data, status: v as "active" | "inactive" })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {isEditing && (
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={data.status}
+                onValueChange={(v) =>
+                  setData({ ...data, status: v as "active" | "inactive" })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -134,7 +134,6 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
         permissions: [
             { id: "settings_manage", name: "Manage System Settings", description: "Access system configuration", action: "manage" },
             { id: "permissions_manage", name: "Manage Permissions", description: "Configure role-based access", action: "manage" },
-            { id: "departments_manage", name: "Manage Departments", description: "Add/Edit university departments", action: "manage" },
             { id: "groups_manage", name: "Manage Groups", description: "Access Groups & Orgs management", action: "manage" },
         ],
     },

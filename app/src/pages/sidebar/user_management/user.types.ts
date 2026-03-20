@@ -7,7 +7,6 @@ export interface UserDetail {
     createdAt?: string | number[];
     createdTimestamp?: number;
     role?: string;
-    department?: string;
     status?: string;
     phone?: string;
     User_Id?: string;
@@ -47,7 +46,6 @@ export interface AccountFormData {
 export interface ProfileFormData {
     role: string;
     subRoles: string[];
-    department: string;
     phone: string;
     status: "active" | "inactive";
 }

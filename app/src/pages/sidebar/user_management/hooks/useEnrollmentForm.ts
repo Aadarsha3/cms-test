@@ -18,7 +18,6 @@ const initialAccountData: AccountFormData = {
 const initialProfileData: ProfileFormData = {
     role: "student",
     subRoles: [],
-    department: "",
     phone: "",
     status: "active",
 };
@@ -104,7 +103,6 @@ export function useEnrollmentForm() {
                         setProfileData({
                             role: userToEdit.role || "student",
                             subRoles: userToEdit.subRoles || [],
-                            department: userToEdit.department || "",
                             phone: userToEdit.phone || "",
                             status: userToEdit.status || "active",
                         });
@@ -212,9 +210,6 @@ export function useEnrollmentForm() {
 
     const handleSave = async () => {
         setError(null);
-        if (!profileData.department && profileData.role !== "super_admin") {
-            return setError("Please select a Department");
-        }
         if (!profileData.phone.trim()) {
             return setError("Phone number is required");
         }
@@ -238,7 +233,6 @@ export function useEnrollmentForm() {
         const payload = {
             name: fullName,
             role: profileData.role,
-            department: profileData.department,
             phone: profileData.phone,
             status: profileData.status,
             ...studentData,

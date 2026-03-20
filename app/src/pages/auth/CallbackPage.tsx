@@ -34,7 +34,6 @@ export function CallbackPage() {
 
                 const email = userinfo.email as string;
                 let role: UserRole = "student"; // Default fallback
-                let department = "General";
 
                 // Decode Access Token to find roles
                 if (tokens.access_token) {
@@ -80,7 +79,6 @@ export function CallbackPage() {
                     name: (userinfo.name as string) || (userinfo.preferred_username as string) || (userinfo.given_name as string) || (userinfo.nickname as string) || (userinfo.email as string) || "User",
                     email: email || "unknown@example.com",
                     role: role,
-                    department: department,
                     avatarUrl: (userinfo.picture as string) || undefined,
                     // Add default values for required fields to avoid type errors
                     User_Id: "OIDC_" + (userinfo.sub?.substring(0, 8) || "USER"),
