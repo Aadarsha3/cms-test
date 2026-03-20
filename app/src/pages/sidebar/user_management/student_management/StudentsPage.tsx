@@ -1,12 +1,5 @@
-import { UserTable } from "../components/UserTable";
+import { StudentTable } from "./StudentTable";
 
 export function StudentsPage() {
-    return (
-        <UserTable 
-            title="Student Management" 
-            roleFilter="student" 
-            enrollLabel="Enroll Student"
-            enrollPath="/users/enroll?context=student"
-        />
-    );
+    return <StudentTable />;
 }

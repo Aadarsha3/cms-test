@@ -14,11 +14,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { ProfileFormData } from "../../user.types";
+import { ProfileFormData, StudentFormData } from "../../user.types";
 
 interface ProfileDetailsFormProps {
   data: ProfileFormData;
   setData: (data: ProfileFormData) => void;
+  studentData: StudentFormData;
+  setStudentData: (data: StudentFormData) => void;
   isAdmin: boolean;
   isEditing?: boolean;
 }
@@ -26,6 +28,8 @@ interface ProfileDetailsFormProps {
 export function ProfileDetailsForm({
   data,
   setData,
+  studentData,
+  setStudentData,
   isAdmin,
   isEditing,
 }: ProfileDetailsFormProps) {
@@ -33,11 +37,38 @@ export function ProfileDetailsForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User Details</CardTitle>
+        <CardTitle>Student Details</CardTitle>
         <CardDescription>Enter additional profile information.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+            <Input
+              id="dateOfBirth"
+              type="date"
+              value={studentData.dateOfBirth}
+              onChange={(e) =>
+                setStudentData({ ...studentData, dateOfBirth: e.target.value })
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="gender">Gender</Label>
+            <Select
+              value={studentData.gender}
+              onValueChange={(v) => setStudentData({ ...studentData, gender: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="enroll-user-phone">
               Phone <span className="text-destructive">*</span>

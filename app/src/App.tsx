@@ -16,6 +16,7 @@ import { ChangePasswordPage } from "@/pages/user/ChangePasswordPage";
 import { EnrollUserPage } from "@/pages/sidebar/user_management/EnrollUserPage";
 import { UserDetailsPage } from "@/pages/sidebar/user_management/UserDetailsPage";
 import { StudentsPage } from "@/pages/sidebar/user_management/student_management/StudentsPage";
+import { StudentDetailsPage } from "@/pages/sidebar/user_management/student_management/StudentDetailsPage";
 import { TeachersPage } from "@/pages/sidebar/user_management/teacher_management/TeachersPage";
 import { StaffPage } from "@/pages/sidebar/user_management/staff_management/StaffPage";
 import NotFound from "@/pages/common/not-found";
@@ -99,6 +100,9 @@ function Router() {
 
       <Route path="/students">
         <ProtectedRoute component={StudentsPage} permission="students_view" />
+      </Route>
+      <Route path="/student/:id">
+        <ProtectedRoute component={StudentDetailsPage} permission="students_view" />
       </Route>
       <Route path="/teachers">
         <ProtectedRoute component={TeachersPage} permission="users_view" />

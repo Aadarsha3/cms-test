@@ -54,7 +54,7 @@ const configureInterceptors = (instance: any) => {
 
             // Handle 401 Unauthorized errors (Token likely expired)
             if (error.response && error.response.status === 401 && !originalRequest._retry) {
-                
+
                 // If we are already refreshing the token, add originalRequest to the queue
                 if (isRefreshing) {
                     return new Promise((resolve, reject) => {

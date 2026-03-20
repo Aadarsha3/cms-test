@@ -38,90 +38,6 @@ export function StudentAcademicForm({
     <div className="space-y-6">
       <div>
         <h3 className="mb-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">
-          Student Academic Details
-        </h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="enroll-university-id">University ID</Label>
-            <Input
-              id="enroll-university-id"
-              value={data.universityId}
-              onChange={(e) =>
-                setData({ ...data, universityId: e.target.value })
-              }
-              placeholder="e.g., UNI2024001"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="dateOfBirth">Date of Birth</Label>
-            <Input
-              id="dateOfBirth"
-              type="date"
-              value={data.dateOfBirth}
-              onChange={(e) =>
-                setData({ ...data, dateOfBirth: e.target.value })
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="gender">Gender</Label>
-            <Select
-              value={data.gender}
-              onValueChange={(v) => setData({ ...data, gender: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="currentClass">Class</Label>
-            <Select
-              value={data.currentClass}
-              onValueChange={(v) => setData({ ...data, currentClass: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select class" />
-              </SelectTrigger>
-              <SelectContent>
-                {classes.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="semester">Semester</Label>
-            <Select
-              value={data.semester}
-              onValueChange={(v) => setData({ ...data, semester: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select semester" />
-              </SelectTrigger>
-              <SelectContent>
-                {semesters.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    Semester {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div>
-        <h3 className="mb-4 text-sm font-medium text-muted-foreground uppercase tracking-wider">
           Guardian Information
         </h3>
         <div className="grid md:grid-cols-2 gap-4">
@@ -160,7 +76,6 @@ export function StudentAcademicForm({
           </div>
         </div>
       </div>
-      <Separator />
     </div>
   );
 }

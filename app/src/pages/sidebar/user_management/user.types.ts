@@ -24,6 +24,19 @@ export interface UserDetail {
     documents?: any[];
 }
 
+export interface StudentDetail {
+    id: string;
+    fullName: string;
+    email: string;
+    dateOfBirth: string;
+    phoneNumber: string;
+    presentAddress: string;
+    gender: string;
+    guardianName: string;
+    guardianPhoneNumber: string;
+    guardianRelation: string;
+}
+
 export interface StudentFormData {
     universityId: string;
     dateOfBirth: string;
