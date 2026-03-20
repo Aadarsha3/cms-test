@@ -180,7 +180,7 @@ export function UserTable({
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {[5, 10, 20, 50, 100, 500, 1000, 10000].map((v) => (
+                  {[5, 10, 20, 50, 100].map((v) => (
                     <SelectItem key={v} value={String(v)}>
                       {v}
                     </SelectItem>
@@ -268,9 +268,9 @@ export function UserTable({
                       <TableCell>
                         {user.createdDate
                           ? (() => {
-                              const [y, m, d] = user.createdDate;
-                              return `${y} /${m}/${d}`;
-                            })()
+                            const [y, m, d] = user.createdDate;
+                            return `${y} /${m}/${d}`;
+                          })()
                           : "-"}
                       </TableCell>
                     </TableRow>
