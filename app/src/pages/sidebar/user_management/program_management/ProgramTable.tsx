@@ -168,7 +168,7 @@ export function ProgramTable() {
               />
             </Button>
             <Button
-              onClick={() => toast({ title: "Feature coming soon", description: "Adding programs will be available soon." })}
+              onClick={() => setLocation("/programs/create")}
               className="gap-2 h-11 px-6 shadow-md hover:shadow-lg transition-all"
             >
               <Plus className="h-4 w-4" />
