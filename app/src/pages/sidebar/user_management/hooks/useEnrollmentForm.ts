@@ -23,14 +23,12 @@ const initialProfileData: ProfileFormData = {
 };
 
 const initialStudentData: StudentFormData = {
-    universityId: "",
     dateOfBirth: "",
     gender: "",
-    currentClass: "",
-    semester: "",
+    presentAddress: "",
     guardianName: "",
-    guardianContact: "",
-    guardianRelationship: "",
+    guardianPhoneNumber: "",
+    guardianRelation: "",
 };
 
 export function useEnrollmentForm() {
@@ -109,14 +107,12 @@ export function useEnrollmentForm() {
 
                         if (userToEdit.role === "student") {
                             setStudentData({
-                                universityId: userToEdit.universityId || "",
                                 dateOfBirth: userToEdit.dateOfBirth || "",
                                 gender: userToEdit.gender || "",
-                                currentClass: userToEdit.currentClass || "",
-                                semester: userToEdit.semester || "",
+                                presentAddress: userToEdit.presentAddress || "",
                                 guardianName: userToEdit.guardianName || "",
-                                guardianContact: userToEdit.guardianContact || "",
-                                guardianRelationship: userToEdit.guardianRelationship || "",
+                                guardianPhoneNumber: userToEdit.guardianPhoneNumber || userToEdit.guardianContact || "",
+                                guardianRelation: userToEdit.guardianRelation || userToEdit.guardianRelationship || "",
                             });
                         }
                     }
@@ -218,11 +214,10 @@ export function useEnrollmentForm() {
             if (
                 !studentData.dateOfBirth ||
                 !studentData.gender ||
-                !studentData.currentClass ||
-                !studentData.semester ||
+                !studentData.presentAddress.trim() ||
                 !studentData.guardianName.trim() ||
-                !studentData.guardianContact.trim() ||
-                !studentData.guardianRelationship.trim()
+                !studentData.guardianPhoneNumber.trim() ||
+                !studentData.guardianRelation.trim()
             ) {
                 return setError("Please fill in all student details");
             }
@@ -240,11 +235,29 @@ export function useEnrollmentForm() {
         };
 
         try {
-            const { userApi: api } = await import("@/lib/api");
+            const { userApi: api, dashboardApi } = await import("@/lib/api");
             const targetUserId = editingUserId || createdUserId;
 
             if (targetUserId) {
                 if (!accountData.password) delete (payload as any).password;
+                
+                // If student, also save to dashboard database
+                if (!editingUserId && profileData.role === "student") {
+                    const studentPayload = {
+                        id: targetUserId,
+                        fullName: fullName,
+                        email: accountData.email.trim(),
+                        dateOfBirth: studentData.dateOfBirth,
+                        phoneNumber: profileData.phone,
+                        presentAddress: studentData.presentAddress,
+                        gender: studentData.gender,
+                        guardianName: studentData.guardianName,
+                        guardianPhoneNumber: studentData.guardianPhoneNumber,
+                        guardianRelation: studentData.guardianRelation,
+                    };
+                    await dashboardApi.post("/students", studentPayload);
+                }
+
                 await api.put(`/users/${targetUserId}`, payload);
                 toast({ title: "User profile updated successfully" });
                 if (context === "student" || profileData.role === "student") setLocation("/students");

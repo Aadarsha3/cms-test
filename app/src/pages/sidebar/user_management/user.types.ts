@@ -38,14 +38,12 @@ export interface StudentDetail {
 }
 
 export interface StudentFormData {
-    universityId: string;
     dateOfBirth: string;
     gender: string;
-    currentClass: string;
-    semester: string;
+    presentAddress: string;
     guardianName: string;
-    guardianContact: string;
-    guardianRelationship: string;
+    guardianPhoneNumber: string;
+    guardianRelation: string;
 }
 
 export interface AccountFormData {

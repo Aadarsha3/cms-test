@@ -56,9 +56,9 @@ export function StudentAcademicForm({
             <Label htmlFor="guardianContact">Guardian Contact</Label>
             <Input
               id="guardianContact"
-              value={data.guardianContact}
+              value={data.guardianPhoneNumber}
               onChange={(e) =>
-                setData({ ...data, guardianContact: e.target.value })
+                setData({ ...data, guardianPhoneNumber: e.target.value })
               }
               placeholder="e.g., +1 555-0100"
             />
@@ -67,9 +67,9 @@ export function StudentAcademicForm({
             <Label htmlFor="guardianRelationship">Relationship</Label>
             <Input
               id="guardianRelationship"
-              value={data.guardianRelationship}
+              value={data.guardianRelation}
               onChange={(e) =>
-                setData({ ...data, guardianRelationship: e.target.value })
+                setData({ ...data, guardianRelation: e.target.value })
               }
               placeholder="e.g., Father"
             />

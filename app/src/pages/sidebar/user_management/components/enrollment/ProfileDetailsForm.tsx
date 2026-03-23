@@ -81,6 +81,17 @@ export function ProfileDetailsForm({
               autoComplete="tel"
             />
           </div>
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="presentAddress">Present Address</Label>
+            <Input
+              id="presentAddress"
+              value={studentData.presentAddress}
+              onChange={(e) =>
+                setStudentData({ ...studentData, presentAddress: e.target.value })
+              }
+              placeholder="e.g., 123 Main St, Springfield"
+            />
+          </div>
           {isEditing && (
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
