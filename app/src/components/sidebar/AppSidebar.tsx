@@ -64,6 +64,12 @@ const navItems: NavItem[] = [
     icon: Users,
     permissionId: "users_view",
   },
+  {
+    title: "Program Management",
+    url: "/programs",
+    icon: Building2,
+    permissionId: "users_view",
+  },
 ];
 
 

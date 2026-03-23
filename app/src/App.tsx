@@ -19,6 +19,7 @@ import { StudentsPage } from "@/pages/sidebar/user_management/student_management
 import { StudentDetailsPage } from "@/pages/sidebar/user_management/student_management/StudentDetailsPage";
 import { TeachersPage } from "@/pages/sidebar/user_management/teacher_management/TeachersPage";
 import { StaffPage } from "@/pages/sidebar/user_management/staff_management/StaffPage";
+import ProgramsPage from "@/pages/sidebar/user_management/program_management/ProgramsPage";
 import NotFound from "@/pages/common/not-found";
 
 function ProtectedRoute({
@@ -109,6 +110,9 @@ function Router() {
       </Route>
       <Route path="/staff">
         <ProtectedRoute component={StaffPage} permission="users_view" />
+      </Route>
+      <Route path="/programs">
+        <ProtectedRoute component={ProgramsPage} permission="users_view" />
       </Route>
 
       <Route component={NotFound} />
