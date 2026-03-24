@@ -1,0 +1,265 @@
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { dashboardApi } from "@/lib/api";
+import { ChevronLeft, Save, Loader2, BookOpen } from "lucide-react";
+
+interface Program {
+  id: string;
+  name: string;
+}
+
+export default function CreateCoursePage() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [fetchingPrograms, setFetchingPrograms] = useState(true);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    courseCode: "",
+    creditHours: "3",
+    description: "",
+    programId: "",
+    semester: "",
+  });
+
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      try {
+        const response = await dashboardApi.get("/programs");
+        const data = Array.isArray(response.data) ? response.data : 
+                     (response.data as any)?.content || [];
+        setPrograms(data);
+      } catch (err) {
+        console.error("Failed to fetch programs:", err);
+      } finally {
+        setFetchingPrograms(false);
+      }
+    };
+    fetchPrograms();
+  }, []);
+
+  const semesterOptions = [
+    "1st Semester", "2nd Semester", "3rd Semester", "4th Semester",
+    "5th Semester", "6th Semester", "7th Semester", "8th Semester",
+    "1st Year", "2nd Year", "3rd Year", "4th Year"
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.courseCode || !formData.creditHours) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = {
+        name: formData.name,
+        courseCode: formData.courseCode,
+        creditHours: parseInt(formData.creditHours),
+        description: formData.description,
+        programId: formData.programId || null,
+        semester: formData.semester || null,
+      };
+
+      await dashboardApi.post("/courses", payload);
+      toast({
+        title: "Success",
+        description: "Course created successfully.",
+      });
+      setLocation("/courses");
+    } catch (err: any) {
+      console.error("Failed to create course:", err?.response?.data || err);
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        "Failed to create course.";
+        
+      toast({
+        title: "Error",
+        description: typeof errorMsg === 'string' ? errorMsg : "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <MainLayout title="Create New Course">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation("/courses")}
+            className="rounded-full"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex items-center gap-3">
+             <div className="bg-[#243F76]/10 p-2 rounded-lg">
+                <BookOpen className="h-6 w-6 text-[#243F76]" />
+             </div>
+             <h1 className="text-2xl font-bold tracking-tight text-[#243F76] dark:text-white">
+               Course Details
+             </h1>
+          </div>
+        </div>
+
+        <Card className="border-[#243F76]/10 dark:border-white/10 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-lg font-medium">New Course Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="course-name">
+                      Course Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="course-name"
+                      placeholder="e.g. Advanced Mathematics"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="course-code">
+                      Course Code <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="course-code"
+                      placeholder="e.g. MATH301"
+                      value={formData.courseCode}
+                      onChange={(e) => setFormData({ ...formData, courseCode: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="credit-hours">
+                    Credit Hours <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="credit-hours"
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={formData.creditHours}
+                    onChange={(e) => setFormData({ ...formData, creditHours: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="program-id">Academic Program</Label>
+                    <Select
+                      value={formData.programId}
+                      onValueChange={(v) => setFormData({ ...formData, programId: v })}
+                      disabled={fetchingPrograms}
+                    >
+                      <SelectTrigger id="program-id">
+                        <SelectValue placeholder={fetchingPrograms ? "Loading programs..." : "Select program"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {programs.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name}
+                          </SelectItem>
+                        ))}
+                        {programs.length === 0 && !fetchingPrograms && (
+                          <SelectItem value="none" disabled>No programs found</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="semester">Semester / Year</Label>
+                    <Select
+                      value={formData.semester}
+                      onValueChange={(v) => setFormData({ ...formData, semester: v })}
+                    >
+                      <SelectTrigger id="semester">
+                        <SelectValue placeholder="Select semester/year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {semesterOptions.map((opt) => (
+                          <SelectItem key={opt} value={opt}>
+                            {opt}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="course-description">Description</Label>
+                  <Textarea
+                    id="course-description"
+                    placeholder="Brief description of the course content..."
+                    className="min-h-[120px] resize-none"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#243F76]/10 dark:border-white/10">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setLocation("/courses")}
+                  disabled={loading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-[#243F76] hover:bg-[#1a2e56] text-white gap-2"
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  Create Course
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </MainLayout>
+  );
+}

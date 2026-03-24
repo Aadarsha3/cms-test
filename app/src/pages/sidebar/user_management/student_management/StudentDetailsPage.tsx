@@ -68,7 +68,7 @@ const InfoField = ({
 );
 
 export function StudentDetailsPage() {
-  const { user: currentUser } = useAuth();
+  const { hasPermission } = useAuth();
   const [, params] = useRoute("/student/:id");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -81,7 +81,7 @@ export function StudentDetailsPage() {
   const [saving, setSaving] = useState(false);
 
   const studentId = params?.id;
-  const canEdit = currentUser?.role === "super_admin" || currentUser?.role === "admin";
+  const canEdit = hasPermission("users_edit");
 
   useEffect(() => {
     const fetchStudent = async () => {
@@ -89,14 +89,30 @@ export function StudentDetailsPage() {
       setLoading(true);
       try {
         const response = await dashboardApi.get<StudentDetail>(`/students/${studentId}`);
-        setStudent(response.data);
-        setEditFormData(response.data);
+        const data = response.data;
+
+        // Fix Spring Boot LocalDate array serialization
+        if (Array.isArray(data.dateOfBirth)) {
+          const [y, m, d] = data.dateOfBirth;
+          data.dateOfBirth = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+
+        setStudent(data);
+        setEditFormData(data);
       } catch (err: any) {
-        console.error("Failed to fetch student details:", err);
-        setError(err.message || "Failed to fetch student details");
+        console.error("Failed to fetch student details:", err?.response?.data || err);
+        const detailedError =
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          err.response?.data?.detail ||
+          (typeof err.response?.data === 'string' ? err.response.data : null) ||
+          err.message ||
+          "Failed to fetch student details";
+
+        setError(detailedError);
         toast({
-          title: "Error",
-          description: "Could not load student details.",
+          title: "Error fetching profile",
+          description: detailedError,
           variant: "destructive",
         });
       } finally {
@@ -125,7 +141,7 @@ export function StudentDetailsPage() {
     if (!studentId) return;
     if (confirm("Are you sure you want to delete this student? This action cannot be undone.")) {
       try {
-        await dashboardApi.delete(`/students/${studentId}`);
+        await dashboardApi.delete(`/students/${studentId}`, { data: {} });
         toast({ title: "Student deleted successfully" });
         setLocation("/students");
       } catch (err: any) {
@@ -147,11 +163,31 @@ export function StudentDetailsPage() {
   };
 
   const handleSave = async () => {
-    if (!studentId || !editFormData) return;
+    if (!studentId || !editFormData || !student) return;
     setSaving(true);
     try {
-      await dashboardApi.put(`/students/${studentId}`, editFormData);
-      setStudent({ ...student, ...editFormData } as StudentDetail);
+      // Build JSON Patch (RFC 6902) array from changed fields
+      const editableFields: (keyof StudentDetail)[] = [
+        "fullName", "email", "phoneNumber", "dateOfBirth",
+        "gender", "presentAddress", "guardianName",
+        "guardianPhoneNumber", "guardianRelation",
+      ];
+
+      const patchOps: { op: string; path: string; value: any }[] = [];
+      for (const field of editableFields) {
+        if (editFormData[field] !== undefined && editFormData[field] !== student[field]) {
+          patchOps.push({ op: "replace", path: `/${field}`, value: editFormData[field] });
+        }
+      }
+
+      if (patchOps.length === 0) {
+        setIsEditing(false);
+        return;
+      }
+
+      console.log("[DEBUG] PATCH /students/" + studentId, patchOps);
+      const response = await dashboardApi.patch(`/students/${studentId}`, patchOps);
+      setStudent(response.data || { ...student, ...editFormData } as StudentDetail);
       setIsEditing(false);
       toast({ title: "Success", description: "Student details updated successfully." });
     } catch (err: any) {

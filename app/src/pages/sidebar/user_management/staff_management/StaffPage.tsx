@@ -4,7 +4,7 @@ export function StaffPage() {
     return (
         <UserTable 
             title="Staff Management" 
-            roleFilter="staff,admin" 
+            roleFilter="staff,admin,teacher" 
             enrollLabel="Enroll Staff"
             enrollPath="/users/enroll?context=staff"
         />

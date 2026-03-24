@@ -14,9 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { ProfileFormData, StudentFormData } from "../../user.types";
+import { ProfileFormData, StudentFormData, roleLabels } from "../../user.types";
 
-interface ProfileDetailsFormProps {
+interface StaffDetailsFormProps {
   data: ProfileFormData;
   setData: (data: ProfileFormData) => void;
   studentData: StudentFormData;
@@ -25,20 +25,21 @@ interface ProfileDetailsFormProps {
   isEditing?: boolean;
 }
 
-export function ProfileDetailsForm({
+export function StaffDetailsForm({
   data,
   setData,
   studentData,
   setStudentData,
   isAdmin,
   isEditing,
-}: ProfileDetailsFormProps) {
+}: StaffDetailsFormProps) {
+  const roleLabel = roleLabels[data.role] || "User";
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Student Details</CardTitle>
-        <CardDescription>Enter additional profile information.</CardDescription>
+        <CardTitle>{roleLabel} Details</CardTitle>
+        <CardDescription>Enter additional profile information for the {roleLabel.toLowerCase()}.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid md:grid-cols-2 gap-4">
@@ -92,47 +93,6 @@ export function ProfileDetailsForm({
               placeholder="e.g., 123 Main St, Springfield"
             />
           </div>
-
-          {/* Guardian Information */}
-          <div className="md:col-span-2 pt-4">
-            <h4 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wider">Guardian Information</h4>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="guardianName">Guardian Name</Label>
-                <Input
-                  id="guardianName"
-                  value={studentData.guardianName}
-                  onChange={(e) =>
-                    setStudentData({ ...studentData, guardianName: e.target.value })
-                  }
-                  placeholder="e.g., Robert Smith"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="guardianPhoneNumber">Guardian Contact</Label>
-                <Input
-                  id="guardianPhoneNumber"
-                  value={studentData.guardianPhoneNumber}
-                  onChange={(e) =>
-                    setStudentData({ ...studentData, guardianPhoneNumber: e.target.value })
-                  }
-                  placeholder="e.g., +1 555-0100"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="guardianRelation">Relationship</Label>
-                <Input
-                  id="guardianRelation"
-                  value={studentData.guardianRelation}
-                  onChange={(e) =>
-                    setStudentData({ ...studentData, guardianRelation: e.target.value })
-                  }
-                  placeholder="e.g., Father"
-                />
-              </div>
-            </div>
-          </div>
-
           {isEditing && (
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>

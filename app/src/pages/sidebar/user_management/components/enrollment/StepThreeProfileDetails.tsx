@@ -1,5 +1,5 @@
 import { ProfileDetailsForm } from "./ProfileDetailsForm";
-import { StudentAcademicForm } from "./StudentAcademicForm";
+import { StaffDetailsForm } from "./StaffDetailsForm";
 import { ProfileFormData, StudentFormData, AccountFormData } from "../../user.types";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +19,7 @@ interface StepThreeProfileDetailsProps {
     avatarUpload: string | null;
     setAvatarUpload: (url: string | null) => void;
     isEditing?: boolean;
+    context?: string | null;
 }
 
 export function StepThreeProfileDetails({
@@ -34,6 +35,7 @@ export function StepThreeProfileDetails({
     avatarUpload,
     setAvatarUpload,
     isEditing,
+    context,
 }: StepThreeProfileDetailsProps) {
     const { toast } = useToast();
 
@@ -59,17 +61,24 @@ export function StepThreeProfileDetails({
                     </CardContent>
                 </Card>
 
-                <ProfileDetailsForm
-                    data={profileData}
-                    setData={setProfileData}
-                    studentData={studentData}
-                    setStudentData={setStudentData}
-                    isAdmin={isAdmin}
-                    isEditing={isEditing}
-                />
-
-                {profileData.role === "student" && (
-                    <StudentAcademicForm data={studentData} setData={setStudentData} />
+                {context === "student" ? (
+                    <ProfileDetailsForm
+                        data={profileData}
+                        setData={setProfileData}
+                        studentData={studentData}
+                        setStudentData={setStudentData}
+                        isAdmin={isAdmin}
+                        isEditing={isEditing}
+                    />
+                ) : (
+                    <StaffDetailsForm
+                        data={profileData}
+                        setData={setProfileData}
+                        studentData={studentData}
+                        setStudentData={setStudentData}
+                        isAdmin={isAdmin}
+                        isEditing={isEditing}
+                    />
                 )}
             </div>
         </div>

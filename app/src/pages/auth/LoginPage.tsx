@@ -10,6 +10,19 @@ export function LoginPage() {
   const { toast } = useToast();
   const onLogin = useAuthCodeFlow();
 
+  // Auto-reauth: if we got here because the access token expired,
+  // silently trigger the OAuth flow (auth server session is still active).
+  useEffect(() => {
+    const expired = localStorage.getItem('sessionExpired');
+    if (expired === 'true') {
+      localStorage.removeItem('sessionExpired');
+      setIsLoading(true);
+      onLogin().catch((err) => {
+        console.error("Auto-reauth failed:", err);
+        setIsLoading(false);
+      });
+    }
+  }, []);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);

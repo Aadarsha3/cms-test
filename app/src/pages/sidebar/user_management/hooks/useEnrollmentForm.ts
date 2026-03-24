@@ -16,7 +16,7 @@ const initialAccountData: AccountFormData = {
 };
 
 const initialProfileData: ProfileFormData = {
-    role: "student",
+    role: "",
     subRoles: [],
     phone: "",
     status: "active",
@@ -44,8 +44,7 @@ export function useEnrollmentForm() {
 
     let allowedRoles = ["student", "teacher", "staff", "admin", "super_admin"];
     if (context === "student") allowedRoles = ["student"];
-    else if (context === "teacher") allowedRoles = ["teacher"];
-    else if (context === "staff") allowedRoles = ["staff", "admin", "super_admin"];
+    else if (context === "staff") allowedRoles = ["staff", "admin", "super_admin", "teacher"];
 
     const [currentStep, setCurrentStep] = useState(1);
     const [createdUserId, setCreatedUserId] = useState<string | null>(null);
@@ -53,13 +52,22 @@ export function useEnrollmentForm() {
     // Form States
     const [accountData, setAccountData] = useState<AccountFormData>(initialAccountData);
     const [profileData, setProfileData] = useState<ProfileFormData>(() => {
-        let initialRole = "student";
-        if (context === "student" || context === "teacher" || context === "staff") {
-            initialRole = context;
+        let initialRole = "";
+        let initialGroup = undefined;
+        
+        if (context === "student") {
+            initialRole = "student";
+            // Group will be auto-assigned after fetching from API
+        } else if (context === "staff") {
+            // For staff, we want the placeholder "Choose group", so leave role/group empty
+            initialRole = "";
+            initialGroup = undefined;
         }
+
         return {
             ...initialProfileData,
             role: initialRole,
+            group: initialGroup,
         };
     });
     const [studentData, setStudentData] = useState<StudentFormData>(initialStudentData);
@@ -178,28 +186,42 @@ export function useEnrollmentForm() {
                 setError(serverMessage);
             }
         } else if (currentStep === 2) {
+            // For student context, skip group assignment — student creation is handled in handleSave
+            if (context === "student") {
+                setCurrentStep(3);
+                return;
+            }
+
             if (!profileData.role) {
-                return setError("Please select a role");
+                return setError("Please select a group");
             }
 
             const targetUserId = editingUserId || createdUserId;
             if (!targetUserId) {
-                return setError("Error: User ID missing. Cannot assign role without user ID.");
+                return setError("Error: User ID missing. Cannot assign group without user ID.");
             }
 
             try {
                 const { userApi: api } = await import("@/lib/api");
-                const authority = profileData.role.toUpperCase();
-
-                await api.post(`/users/${targetUserId}/authorities`, {
-                    authority: authority,
+                
+                // Ensure hydration: fallback to ID if object is missing but role exists
+                const groupObject = profileData.group || { id: profileData.role, name: profileData.role };
+                
+                console.log("[DEBUG] Assigning Group:", { 
+                    userId: targetUserId, 
+                    group: groupObject,
+                    rawRole: profileData.role 
                 });
 
-                toast({ title: "Role assigned successfully" });
+                // Assign the user to the selected group via POST with groupId in the path
+                console.log("[DEBUG] POST /users/" + targetUserId + "/groups/" + groupObject.id);
+                await api.post(`/users/${targetUserId}/groups/${groupObject.id}`);
+
+                toast({ title: "Group assigned successfully" });
                 setCurrentStep(3);
             } catch (err: any) {
-                console.error("Failed to assign role:", err);
-                setError(err.response?.data?.message || err.message || "Could not assign role to user");
+                console.error("Failed to assign group:", err);
+                setError(err.response?.data?.message || err.message || "Could not assign group to user");
             }
         }
     };
@@ -210,7 +232,9 @@ export function useEnrollmentForm() {
             return setError("Phone number is required");
         }
 
-        if (profileData.role === "student") {
+        const isStudent = context === "student" || profileData.role === "student";
+
+        if (isStudent) {
             if (
                 !studentData.dateOfBirth ||
                 !studentData.gender ||
@@ -225,47 +249,58 @@ export function useEnrollmentForm() {
 
         const fullName = `${accountData.firstName.trim()} ${accountData.lastName.trim()}`;
 
-        const payload = {
-            name: fullName,
-            role: profileData.role,
-            phone: profileData.phone,
-            status: profileData.status,
-            ...studentData,
-            subRoles: profileData.subRoles,
-        };
-
         try {
             const { userApi: api, dashboardApi } = await import("@/lib/api");
             const targetUserId = editingUserId || createdUserId;
 
-            if (targetUserId) {
+            if (!targetUserId) {
+                return setError("Error: User ID missing");
+            }
+
+            if (isStudent && !editingUserId) {
+                // Use POST /api/v1/students to create the student and finish enrollment
+                const studentPayload = {
+                    userId: targetUserId,
+                    fullName: fullName,
+                    email: accountData.email.trim(),
+                    dateOfBirth: studentData.dateOfBirth,
+                    phoneNumber: profileData.phone,
+                    presentAddress: studentData.presentAddress,
+                    gender: studentData.gender,
+                    guardianName: studentData.guardianName,
+                    guardianPhoneNumber: studentData.guardianPhoneNumber,
+                    guardianRelation: studentData.guardianRelation,
+                };
+
+                console.log("[DEBUG] POST /students payload:", studentPayload);
+                await dashboardApi.post("/students", studentPayload);
+
+                toast({ title: "Student enrolled successfully" });
+                setLocation(`/student/${targetUserId}`);
+            } else {
+                // Staff / edit flow
+                const payload = {
+                    name: fullName,
+                    role: profileData.role,
+                    phone: profileData.phone,
+                    status: profileData.status,
+                    subRoles: profileData.subRoles,
+                    // Include basic info but skip guardian fields for staff
+                    dateOfBirth: studentData.dateOfBirth,
+                    gender: studentData.gender,
+                    presentAddress: studentData.presentAddress,
+                };
+
                 if (!accountData.password) delete (payload as any).password;
-                
-                // If student, also save to dashboard database
-                if (!editingUserId && profileData.role === "student") {
-                    const studentPayload = {
-                        id: targetUserId,
-                        fullName: fullName,
-                        email: accountData.email.trim(),
-                        dateOfBirth: studentData.dateOfBirth,
-                        phoneNumber: profileData.phone,
-                        presentAddress: studentData.presentAddress,
-                        gender: studentData.gender,
-                        guardianName: studentData.guardianName,
-                        guardianPhoneNumber: studentData.guardianPhoneNumber,
-                        guardianRelation: studentData.guardianRelation,
-                    };
-                    await dashboardApi.post("/students", studentPayload);
-                }
 
                 await api.put(`/users/${targetUserId}`, payload);
                 toast({ title: "User profile updated successfully" });
-                if (context === "student" || profileData.role === "student") setLocation("/students");
-                else if (context === "teacher" || profileData.role === "teacher") setLocation("/teachers");
-                else if (context === "staff" || ["staff", "admin", "super_admin"].includes(profileData.role)) setLocation("/staff");
-                else setLocation("/dashboard");
-            } else {
-                setError("Error: User ID missing");
+
+                if (context === "staff" || ["staff", "admin", "super_admin", "teacher"].includes(profileData.role)) {
+                    setLocation("/staff");
+                } else {
+                    setLocation("/dashboard");
+                }
             }
         } catch (err: any) {
             console.error("Failed to save user details:", err);
@@ -276,7 +311,6 @@ export function useEnrollmentForm() {
     const goBack = () => {
         if (editingUserId) setLocation(`/users/${editingUserId}`);
         else if (context === "student") setLocation("/students");
-        else if (context === "teacher") setLocation("/teachers");
         else if (context === "staff") setLocation("/staff");
         else setLocation("/dashboard");
     };
@@ -303,6 +337,7 @@ export function useEnrollmentForm() {
         error,
         setError,
         allowedRoles,
-        goBack
+        goBack,
+        context
     };
 }

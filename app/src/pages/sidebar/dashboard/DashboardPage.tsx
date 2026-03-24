@@ -69,10 +69,8 @@ export function DashboardPage() {
 
   const cleanName = user.name.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.|Mrs\.)\s+/i, '').split(" ")[0];
 
-  const primaryStat = stats[0];
-
-  const ctaLabel = user.role === 'student' ? 'Check Attendance' : (isStaff ? 'Mark Attendance' : 'Manage Users');
-  const ctaLink = user.role === 'student' ? '/attendance' : (isStaff ? '/attendance' : '/users');
+  const ctaLabel = user.role === 'student' ? 'Check Attendance' : (isStaff ? 'Mark Attendance' : 'Student Management');
+  const ctaLink = user.role === 'student' ? '/attendance' : (isStaff ? '/attendance' : '/students');
 
   const handleOpenCreateDialog = () => {
     setEditingAnnouncementId(null);
@@ -154,7 +152,6 @@ export function DashboardPage() {
       <div className="space-y-6">
         <WelcomeBanner
           name={cleanName}
-          primaryStat={primaryStat}
           ctaLabel={ctaLabel}
           ctaLink={ctaLink}
         />

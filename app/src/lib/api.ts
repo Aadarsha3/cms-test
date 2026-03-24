@@ -19,7 +19,7 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 /**
- * Shared logout helper
+ * Shared logout helper — used for hard logouts (manual sign-out)
  */
 const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -27,6 +27,20 @@ const handleLogout = () => {
     localStorage.removeItem('id_token');
     localStorage.removeItem('rolePermissions');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('sessionExpired');
+    window.location.href = '/login';
+};
+
+/**
+ * Soft re-auth: token expired but auth-server session is likely still active.
+ * We preserve authUser/rolePermissions so the callback can restore state,
+ * set a flag so LoginPage auto-triggers the OAuth flow, and redirect.
+ */
+const handleSessionExpired = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('id_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.setItem('sessionExpired', 'true');
     window.location.href = '/login';
 };
 
@@ -108,15 +122,15 @@ const configureInterceptors = (instance: any) => {
                         originalRequest.headers['Authorization'] = 'Bearer ' + access_token;
                         return instance(originalRequest);
                     } catch (refreshErr) {
-                        // Refresh failed, clean up and logout
+                        // Refresh failed — try silent re-auth
                         processQueue(refreshErr, null);
                         isRefreshing = false;
-                        handleLogout();
+                        handleSessionExpired();
                         return Promise.reject(refreshErr);
                     }
                 } else {
-                    // No refresh token available
-                    handleLogout();
+                    // No refresh token available — try silent re-auth
+                    handleSessionExpired();
                 }
             }
 

@@ -56,6 +56,7 @@ export interface AccountFormData {
 
 export interface ProfileFormData {
     role: string;
+    group?: { id: string; name: string };
     subRoles: string[];
     phone: string;
     status: "active" | "inactive";

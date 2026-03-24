@@ -53,12 +53,6 @@ const navItems: NavItem[] = [
     permissionId: "students_view",
   },
   {
-    title: "Teacher Management",
-    url: "/teachers",
-    icon: BookOpen,
-    permissionId: "users_view",
-  },
-  {
     title: "Staff Management",
     url: "/staff",
     icon: Users,
@@ -68,6 +62,12 @@ const navItems: NavItem[] = [
     title: "Program Management",
     url: "/programs",
     icon: Building2,
+    permissionId: "users_view",
+  },
+  {
+    title: "Course Management",
+    url: "/courses",
+    icon: BookOpen,
     permissionId: "users_view",
   },
 ];

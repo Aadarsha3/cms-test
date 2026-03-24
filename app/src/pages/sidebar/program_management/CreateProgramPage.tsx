@@ -42,17 +42,30 @@ export default function CreateProgramPage() {
 
     setLoading(true);
     try {
-      await dashboardApi.post("/programs", formData);
+      const payload = {
+        name: formData.name,
+        duration: formData.duration,
+        programCode: formData.code,
+      };
+
+      await dashboardApi.post("/programs", payload);
       toast({
         title: "Success",
         description: "Program created successfully.",
       });
       setLocation("/programs");
     } catch (err: any) {
-      console.error("Failed to create program:", err);
+      console.error("Failed to create program:", err?.response?.data || err);
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        JSON.stringify(err.response?.data) ||
+        err.message ||
+        "Failed to create program.";
+        
       toast({
         title: "Error",
-        description: err.response?.data?.message || "Failed to create program.",
+        description: typeof errorMsg === 'string' ? errorMsg : "An error occurred",
         variant: "destructive",
       });
     } finally {

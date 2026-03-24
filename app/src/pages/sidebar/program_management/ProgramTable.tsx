@@ -26,8 +26,8 @@ import { useLocation } from "wouter";
 interface ProgramResponse {
   id: string;
   name: string;
-  code: string;
-  description: string;
+  programCode: string;
+  duration: string;
 }
 
 export function ProgramTable() {
@@ -89,13 +89,13 @@ export function ProgramTable() {
     if (!p) return false;
     const searchLower = search.toLowerCase();
     const name = p.name?.toLowerCase() || "";
-    const code = p.code?.toLowerCase() || "";
-    const description = p.description?.toLowerCase() || "";
+    const code = p.programCode?.toLowerCase() || "";
+    const duration = p.duration?.toLowerCase() || "";
 
     return (
       name.includes(searchLower) ||
       code.includes(searchLower) ||
-      description.includes(searchLower)
+      duration.includes(searchLower)
     );
   });
 
@@ -186,7 +186,7 @@ export function ProgramTable() {
                   <TableHead className="w-12">SN</TableHead>
                   <TableHead>Program Name</TableHead>
                   <TableHead>Code</TableHead>
-                  <TableHead>Description</TableHead>
+                  <TableHead>Duration</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -219,15 +219,15 @@ export function ProgramTable() {
                     <TableRow
                       key={program.id || index}
                       className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => toast({ title: "Program Selected", description: `You selected ${program.name}` })}
+                      onClick={() => setLocation(`/programs/${program.id}`)}
                     >
                       <TableCell>{page * size + index + 1}</TableCell>
                       <TableCell className="font-medium">
                         {program.name || "-"}
                       </TableCell>
-                      <TableCell>{program.code || "-"}</TableCell>
+                      <TableCell>{program.programCode || "-"}</TableCell>
                       <TableCell className="max-w-[300px] truncate">
-                        {program.description || "No description"}
+                        {program.duration || "No duration"}
                       </TableCell>
                     </TableRow>
                   ))

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 
 import { StepOneAccount } from "./components/enrollment/StepOneAccount";
-import { StepTwoRoleSelection } from "./components/enrollment/StepTwoRoleSelection";
+import { StepTwoGroupSelection } from "./components/enrollment/StepTwoGroupSelection";
 import { StepThreeProfileDetails } from "./components/enrollment/StepThreeProfileDetails";
 import { useEnrollmentForm } from "./hooks/useEnrollmentForm";
 
@@ -43,7 +43,8 @@ export function EnrollUserPage() {
     setLocation,
     error,
     allowedRoles,
-    goBack
+    goBack,
+    context
   } = useEnrollmentForm();
 
   return (
@@ -95,7 +96,7 @@ export function EnrollUserPage() {
             <span
               className={`text-sm font-medium bg-background px-2 ${currentStep >= 2 ? "text-primary" : "text-muted-foreground"}`}
             >
-              Role
+              Group
             </span>
           </div>
 
@@ -143,13 +144,10 @@ export function EnrollUserPage() {
           {currentStep === 2 && (
             <Card className="animate-in slide-in-from-right-4 duration-300">
               <CardHeader>
-                <CardTitle>Role Selection</CardTitle>
-                <CardDescription>
-                  Assign a primary role for the new user.
-                </CardDescription>
+                <CardTitle>Group Selection</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <StepTwoRoleSelection
+                <StepTwoGroupSelection
                   profileData={profileData}
                   setProfileData={setProfileData}
                   isSuperAdmin={isSuperAdmin}
@@ -184,6 +182,7 @@ export function EnrollUserPage() {
                     avatarUpload={avatarUpload}
                     setAvatarUpload={setAvatarUpload}
                     isEditing={!!editingUserId}
+                    context={context}
                   />
                 </div>
 

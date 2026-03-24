@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { dashboardApi } from "@/lib/api";
-import { UserPlus, Search, Loader2, RefreshCw } from "lucide-react";
+import { Plus, Search, Loader2, RefreshCw, BookOpen } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,62 +23,76 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
-interface StudentResponse {
-  userId: string;
-  fullName: string;
-  email: string;
-  dateOfBirth: string;
-  phoneNumber: string;
-  presentAddress: string;
-  gender: string;
-  guardianName: string;
-  guardianPhoneNumber: string;
-  guardianRelation: string;
+interface CourseResponse {
+  id: string;
+  name: string;
+  courseCode: string;
+  creditHours: number;
+  description?: string;
+  programId?: string;
+  semester?: string;
 }
 
-export function StudentTable() {
-  const [students, setStudents] = useState<StudentResponse[]>([]);
+interface Program {
+  id: string;
+  name: string;
+}
+
+export function CourseTable() {
+  const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalElements, setTotalElements] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
-  const [sort] = useState("userId");
+  const [sort] = useState("id");
   const [direction] = useState("DESC");
+  const [programs, setPrograms] = useState<Program[]>([]);
 
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  const fetchStudents = async () => {
+  const fetchPrograms = async () => {
+    try {
+      const response = await dashboardApi.get("/programs");
+      const data = Array.isArray(response.data) ? response.data : 
+                   (response.data as any)?.content || [];
+      setPrograms(data);
+    } catch (err) {
+      console.error("Failed to fetch programs:", err);
+    }
+  };
+
+  const fetchCourses = async () => {
     setLoading(true);
     setError(null);
     try {
       const params: any = { page, size, sort, direction };
-      const response = await dashboardApi.get<StudentResponse[]>("/students", {
+      const response = await dashboardApi.get<CourseResponse[]>("/courses", {
         params,
       });
 
       if (Array.isArray(response.data)) {
-        setStudents(response.data);
+        setCourses(response.data);
         setTotalElements(response.data.length);
       } else {
         const data = response.data as any;
         if (data && Array.isArray(data.content)) {
-          setStudents(data.content);
+          setCourses(data.content);
           setTotalElements(data.totalElements || data.content.length);
         } else {
           console.warn("Unexpected API response format:", response.data);
-          setStudents([]);
+          setCourses([]);
           setTotalElements(0);
           setError("Invalid response format from server");
         }
       }
     } catch (err: any) {
-      console.error("Failed to fetch students:", err);
-      setError(err.message || "Failed to load students");
+      console.error("Failed to fetch courses:", err);
+      setError(err.message || "Failed to load courses");
       toast({
-        title: "Error fetching students",
+        title: "Error fetching courses",
         description: err.message || "Could not connect to the server",
         variant: "destructive",
       });
@@ -88,31 +102,24 @@ export function StudentTable() {
   };
 
   useEffect(() => {
-    fetchStudents();
+    fetchCourses();
+    fetchPrograms();
   }, [page, size, sort, direction]);
 
-  const filteredStudents = students.filter((s) => {
-    if (!s) return false;
+  const filteredCourses = courses.filter((c) => {
+    if (!c) return false;
     const searchLower = search.toLowerCase();
-    const fullName = s.fullName?.toLowerCase() || "";
-    const email = s.email?.toLowerCase() || "";
-    const userId = s.userId?.toLowerCase() || "";
-    const phone = s.phoneNumber?.toLowerCase() || "";
+    const name = c.name?.toLowerCase() || "";
+    const code = c.courseCode?.toLowerCase() || "";
 
     return (
-      fullName.includes(searchLower) ||
-      email.includes(searchLower) ||
-      userId.includes(searchLower) ||
-      phone.includes(searchLower)
+      name.includes(searchLower) ||
+      code.includes(searchLower)
     );
   });
 
-  const openStudentDetails = (studentId: string) => {
-    setLocation(`/student/${studentId}`);
-  };
-
   const handleNextPage = () => {
-    if (students.length === size) {
+    if (courses.length === size) {
       setPage((prev) => prev + 1);
     }
   };
@@ -128,14 +135,14 @@ export function StudentTable() {
   }, [search]);
 
   return (
-    <MainLayout title="Student Management">
+    <MainLayout title="Course Management">
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              id="student-search-query"
-              placeholder="Search by name, email, or phone..."
+              id="course-search-query"
+              placeholder="Search by course name or code..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 h-11 bg-white dark:bg-zinc-950 border-[#243F76]/10 dark:border-white/10 shadow-sm"
@@ -171,7 +178,7 @@ export function StudentTable() {
             <Button
               variant="outline"
               size="icon"
-              onClick={fetchStudents}
+              onClick={fetchCourses}
               className="h-11 w-11 shrink-0"
               title="Refresh List"
             >
@@ -180,14 +187,12 @@ export function StudentTable() {
               />
             </Button>
             <Button
-              onClick={() =>
-                setLocation("/users/enroll?context=student")
-              }
+              onClick={() => setLocation("/courses/create")}
               className="gap-2 h-11 px-6 shadow-md hover:shadow-lg transition-all"
             >
-              <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Enroll Student</span>
-              <span className="sm:hidden">Enroll</span>
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Add Course</span>
+              <span className="sm:hidden">Add</span>
             </Button>
           </div>
         </div>
@@ -198,26 +203,27 @@ export function StudentTable() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">SN</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Gender</TableHead>
+                  <TableHead>Course Name</TableHead>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Program</TableHead>
+                  <TableHead>Term</TableHead>
+                  <TableHead>Credits</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={6} className="h-24 text-center">
                       <div className="flex items-center justify-center gap-2 text-muted-foreground">
                         <Loader2 className="h-5 w-5 animate-spin" />
                         Loading...
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : filteredStudents.length === 0 ? (
+                ) : filteredCourses.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className="h-24 text-center text-muted-foreground"
                     >
                       {error ? (
@@ -225,34 +231,39 @@ export function StudentTable() {
                           Failed to load data.
                         </span>
                       ) : (
-                        "No matching students found."
+                        "No matching courses found."
                       )}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredStudents.map((student, index) => (
+                  filteredCourses.map((course, index) => (
                     <TableRow
-                      key={student.userId || index}
+                      key={course.id || index}
                       className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => {
-                        const targetId = student.userId || (student as any).id || (student as any).studentId;
-                        if (targetId) {
-                          openStudentDetails(targetId);
-                        } else {
-                          const keys = Object.keys(student).join(', ');
-                          toast({ title: "Missing ID", description: `Fields returned by API: ${keys}. No id found.`, variant: "destructive", duration: 10000 });
-                          console.error("Clicked student has no ID:", student);
-                        }
-                      }}
+                      onClick={() => setLocation(`/courses/${course.id}`)}
                     >
                       <TableCell>{page * size + index + 1}</TableCell>
                       <TableCell className="font-medium">
-                        {student.fullName || "-"}
+                        <div className="flex items-center gap-3">
+                          <div className="bg-[#243F76]/10 p-2 rounded">
+                            <BookOpen className="h-4 w-4 text-[#243F76]" />
+                          </div>
+                          {course.name || "-"}
+                        </div>
                       </TableCell>
-                      <TableCell>{student.email || "N/A"}</TableCell>
-                      <TableCell>{student.phoneNumber || "-"}</TableCell>
-                      <TableCell className="capitalize">
-                        {student.gender || "-"}
+                      <TableCell>
+                        <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded font-mono text-xs">
+                          {course.courseCode || "-"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="max-w-[150px] truncate">
+                        {programs.find(p => p.id === course.programId)?.name || "-"}
+                      </TableCell>
+                      <TableCell>
+                        {course.semester || "-"}
+                      </TableCell>
+                      <TableCell>
+                        {course.creditHours || "0"}
                       </TableCell>
                     </TableRow>
                   ))
@@ -262,10 +273,10 @@ export function StudentTable() {
           </CardContent>
         </Card>
 
-        {!loading && students.length > 0 && (
+        {!loading && courses.length > 0 && (
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              Showing {page * size + 1}-{page * size + students.length} of{" "}
+              Showing {page * size + 1}-{page * size + courses.length} of{" "}
               {totalElements} entries
             </div>
             <div className="flex gap-2">
@@ -281,7 +292,7 @@ export function StudentTable() {
                 variant="outline"
                 size="sm"
                 onClick={handleNextPage}
-                disabled={students.length < size}
+                disabled={courses.length < size}
               >
                 Next
               </Button>

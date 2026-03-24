@@ -17,10 +17,13 @@ import { EnrollUserPage } from "@/pages/sidebar/user_management/EnrollUserPage";
 import { UserDetailsPage } from "@/pages/sidebar/user_management/UserDetailsPage";
 import { StudentsPage } from "@/pages/sidebar/user_management/student_management/StudentsPage";
 import { StudentDetailsPage } from "@/pages/sidebar/user_management/student_management/StudentDetailsPage";
-import { TeachersPage } from "@/pages/sidebar/user_management/teacher_management/TeachersPage";
 import { StaffPage } from "@/pages/sidebar/user_management/staff_management/StaffPage";
-import ProgramsPage from "@/pages/sidebar/user_management/program_management/ProgramsPage";
-import CreateProgramPage from "@/pages/sidebar/user_management/program_management/CreateProgramPage";
+import ProgramsPage from "@/pages/sidebar/program_management/ProgramsPage";
+import CreateProgramPage from "@/pages/sidebar/program_management/CreateProgramPage";
+import ProgramDetailsPage from "@/pages/sidebar/program_management/ProgramDetailsPage";
+import CoursesPage from "@/pages/sidebar/course_management/CoursesPage";
+import CreateCoursePage from "@/pages/sidebar/course_management/CreateCoursePage";
+import CourseDetailsPage from "@/pages/sidebar/course_management/CourseDetailsPage";
 import NotFound from "@/pages/common/not-found";
 
 function ProtectedRoute({
@@ -106,9 +109,6 @@ function Router() {
       <Route path="/student/:id">
         <ProtectedRoute component={StudentDetailsPage} permission="students_view" />
       </Route>
-      <Route path="/teachers">
-        <ProtectedRoute component={TeachersPage} permission="users_view" />
-      </Route>
       <Route path="/staff">
         <ProtectedRoute component={StaffPage} permission="users_view" />
       </Route>
@@ -117,6 +117,19 @@ function Router() {
       </Route>
       <Route path="/programs/create">
         <ProtectedRoute component={CreateProgramPage} permission="users_view" />
+      </Route>
+      <Route path="/programs/:id">
+        <ProtectedRoute component={ProgramDetailsPage} permission="users_view" />
+      </Route>
+
+      <Route path="/courses">
+        <ProtectedRoute component={CoursesPage} permission="users_view" />
+      </Route>
+      <Route path="/courses/create">
+        <ProtectedRoute component={CreateCoursePage} permission="users_view" />
+      </Route>
+      <Route path="/courses/:id">
+        <ProtectedRoute component={CourseDetailsPage} permission="users_view" />
       </Route>
 
       <Route component={NotFound} />
