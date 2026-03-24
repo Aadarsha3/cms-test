@@ -1,42 +1,62 @@
+// pages/CreateProgramPage.tsx
+
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { dashboardApi } from "@/lib/api";
+import { ProgramForm } from "@/components/forms/ProgramForm";
+import { extractErrorMessage, logError, validateRequiredFields } from "@/lib/error-handler";
 import { ChevronLeft, Save, Loader2 } from "lucide-react";
+
+interface FormData {
+  name: string;
+  code: string;
+  type: string;
+  duration: string;
+}
 
 export default function CreateProgramPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     code: "",
     type: "",
     duration: "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name || !formData.code || !formData.type || !formData.duration) {
+  const handleFieldChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const validateForm = (): boolean => {
+    const validationError = validateRequiredFields({
+      name: formData.name,
+      code: formData.code,
+      duration: formData.duration,
+    });
+
+    if (validationError) {
       toast({
         title: "Validation Error",
-        description: "Please fill in all required fields.",
+        description: validationError,
         variant: "destructive",
       });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
       return;
     }
 
@@ -49,43 +69,26 @@ export default function CreateProgramPage() {
       };
 
       await dashboardApi.post("/programs", payload);
+
       toast({
         title: "Success",
         description: "Program created successfully.",
       });
+
       setLocation("/programs");
     } catch (err: any) {
-      console.error("Failed to create program:", err?.response?.data || err);
-      const errorMsg =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        JSON.stringify(err.response?.data) ||
-        err.message ||
-        "Failed to create program.";
-        
+      logError("CreateProgram", err);
+      const errorMsg = extractErrorMessage(err, "Failed to create program.");
+
       toast({
         title: "Error",
-        description: typeof errorMsg === 'string' ? errorMsg : "An error occurred",
+        description: errorMsg,
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
-
-  const programTypes = ["Bachelor", "Master"];
-  const durationOptions = [
-    { label: "1 Year", value: "1 year" },
-    { label: "2 Years", value: "2 year" },
-    { label: "3 Years", value: "3 year" },
-    { label: "4 Years", value: "4 year" },
-    { label: "5 Years", value: "5 year" },
-    { label: "6 Years", value: "6 year" },
-    { label: "2 Semesters", value: "2 sem" },
-    { label: "4 Semesters", value: "4 sem" },
-    { label: "6 Semesters", value: "6 sem" },
-    { label: "8 Semesters", value: "8 sem" },
-  ];
 
   return (
     <MainLayout title="Create New Program">
@@ -110,77 +113,11 @@ export default function CreateProgramPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="program-name">
-                      Program Name <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="program-name"
-                      placeholder="e.g. Computer Science"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="program-code">
-                      Program Code <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="program-code"
-                      placeholder="e.g. CS101"
-                      value={formData.code}
-                      onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="program-type">
-                      Program Type <span className="text-destructive">*</span>
-                    </Label>
-                    <Select
-                      value={formData.type}
-                      onValueChange={(v) => setFormData({ ...formData, type: v })}
-                    >
-                      <SelectTrigger id="program-type">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {programTypes.map((t) => (
-                          <SelectItem key={t} value={t.toLowerCase()}>
-                            {t}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="program-duration">
-                      Program Duration <span className="text-destructive">*</span>
-                    </Label>
-                    <Select
-                      value={formData.duration}
-                      onValueChange={(v) => setFormData({ ...formData, duration: v })}
-                    >
-                      <SelectTrigger id="program-duration">
-                        <SelectValue placeholder="Select duration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {durationOptions.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
+              <ProgramForm
+                data={formData}
+                onChange={handleFieldChange}
+                isLoading={loading}
+              />
 
               <div className="flex justify-end gap-3 pt-4 border-t border-[#243F76]/10 dark:border-white/10">
                 <Button

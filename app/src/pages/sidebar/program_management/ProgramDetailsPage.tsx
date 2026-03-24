@@ -1,19 +1,15 @@
+// pages/ProgramDetailsPage.tsx
+
 import { useState, useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import { dashboardApi } from "@/lib/api";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { ProgramForm } from "@/components/forms/ProgramForm";
+import { ProgramDetailsView } from "@/components/program/ProgramDetailsView";
+import { extractErrorMessage, logError, validateRequiredFields } from "@/lib/error-handler";
 import { ChevronLeft, Edit2, Save, Trash2, X, Loader2, Building2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -34,6 +30,14 @@ interface ProgramDetail {
   name: string;
   duration: string;
   programCode: string;
+  type?: string;
+}
+
+interface EditData {
+  name: string;
+  code: string;
+  type: string;
+  duration: string;
 }
 
 export default function ProgramDetailsPage() {
@@ -41,29 +45,21 @@ export default function ProgramDetailsPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { hasPermission } = useAuth();
-  
+
   const [program, setProgram] = useState<ProgramDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
-  const [editData, setEditData] = useState<Partial<ProgramDetail>>({});
 
-  const durationOptions = [
-    { label: "1 Year", value: "1 year" },
-    { label: "2 Years", value: "2 year" },
-    { label: "3 Years", value: "3 year" },
-    { label: "4 Years", value: "4 year" },
-    { label: "5 Years", value: "5 year" },
-    { label: "6 Years", value: "6 year" },
-    { label: "2 Semesters", value: "2 sem" },
-    { label: "4 Semesters", value: "4 sem" },
-    { label: "6 Semesters", value: "6 sem" },
-    { label: "8 Semesters", value: "8 sem" },
-  ];
+  const [editData, setEditData] = useState<EditData>({
+    name: "",
+    code: "",
+    type: "",
+    duration: "",
+  });
 
   const fetchProgram = async () => {
     setLoading(true);
@@ -71,13 +67,19 @@ export default function ProgramDetailsPage() {
     try {
       const response = await dashboardApi.get<ProgramDetail>(`/programs/${id}`);
       setProgram(response.data);
-      setEditData(response.data);
+      setEditData({
+        name: response.data.name,
+        code: response.data.programCode,
+        type: response.data.type || "",
+        duration: response.data.duration,
+      });
     } catch (err: any) {
-      console.error("Failed to fetch program:", err);
-      setError(err.message || "Failed to load program details");
+      logError("FetchProgram", err);
+      const errorMsg = extractErrorMessage(err, "Failed to load program details");
+      setError(errorMsg);
       toast({
         title: "Error fetching program",
-        description: err.response?.data?.message || err.message,
+        description: errorMsg,
         variant: "destructive",
       });
     } finally {
@@ -91,55 +93,83 @@ export default function ProgramDetailsPage() {
     }
   }, [id]);
 
-  const handleEditChange = (field: keyof ProgramDetail, value: string) => {
+  const handleEditFieldChange = (field: keyof EditData, value: string) => {
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const validateEdit = (): boolean => {
+    const validationError = validateRequiredFields({
+      name: editData.name,
+      code: editData.code,
+      duration: editData.duration,
+    });
+
+    if (validationError) {
+      toast({
+        title: "Validation Error",
+        description: validationError,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
+    if (!program) return;
+
     if (
-      editData.name === program?.name &&
-      editData.duration === program?.duration &&
-      editData.programCode === program?.programCode
+      editData.name === program.name &&
+      editData.duration === program.duration &&
+      editData.code === program.programCode &&
+      editData.type === (program.type || "")
     ) {
       setIsEditing(false);
       return;
     }
 
-    if (!editData.name || !editData.programCode || !editData.duration) {
-      toast({
-        title: "Validation Error",
-        description: "All fields are required.",
-        variant: "destructive",
-      });
+    if (!validateEdit()) {
       return;
     }
 
     setIsSaving(true);
     try {
       const payload: { op: string; path: string; value: any }[] = [];
-      
-      if (editData.name !== program?.name) {
+
+      if (editData.name !== program.name) {
         payload.push({ op: "replace", path: "/name", value: editData.name });
       }
-      if (editData.duration !== program?.duration) {
+      if (editData.duration !== program.duration) {
         payload.push({ op: "replace", path: "/duration", value: editData.duration });
       }
-      if (editData.programCode !== program?.programCode) {
-        payload.push({ op: "replace", path: "/programCode", value: editData.programCode });
+      if (editData.code !== program.programCode) {
+        payload.push({ op: "replace", path: "/programCode", value: editData.code });
       }
 
-      const response = await dashboardApi.patch(`/programs/${id}`, payload);
-      setProgram(response.data || { ...program, ...editData } as ProgramDetail);
+      if (payload.length > 0) {
+        const response = await dashboardApi.patch(`/programs/${id}`, payload);
+        const updatedProgram = response.data || {
+          ...program,
+          name: editData.name,
+          programCode: editData.code,
+          type: editData.type,
+          duration: editData.duration,
+        };
+        setProgram(updatedProgram);
+      }
+
       setIsEditing(false);
       toast({
         title: "Success",
         description: "Program details updated successfully.",
       });
     } catch (err: any) {
-      console.error("Failed to update program:", err);
+      logError("UpdateProgram", err);
+      const errorMsg = extractErrorMessage(err, "Failed to update program.");
       toast({
         title: "Error updating program",
-        description: err.response?.data?.message || err.message,
+        description: errorMsg,
         variant: "destructive",
       });
     } finally {
@@ -150,17 +180,18 @@ export default function ProgramDetailsPage() {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await dashboardApi.delete(`/programs/${id}`, { data: {} });
+      await dashboardApi.delete(`/programs/${id}`);
       toast({
         title: "Program Deleted",
         description: "The program has been successfully deleted.",
       });
       setLocation("/programs");
     } catch (err: any) {
-      console.error("Failed to delete program:", err);
+      logError("DeleteProgram", err);
+      const errorMsg = extractErrorMessage(err, "Failed to delete the program.");
       toast({
         title: "Delete Failed",
-        description: err.response?.data?.message || "Failed to delete the program.",
+        description: errorMsg,
         variant: "destructive",
       });
       setIsDeleting(false);
@@ -178,7 +209,11 @@ export default function ProgramDetailsPage() {
             <Skeleton className="h-8 w-64" />
           </div>
           <Card>
-            <CardContent className="p-6">
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-72 mt-2" />
+            </CardHeader>
+            <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="space-y-2">
@@ -240,10 +275,7 @@ export default function ProgramDetailsPage() {
                 <>
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      setEditData(program);
-                      setIsEditing(true);
-                    }}
+                    onClick={() => setIsEditing(true)}
                     className="gap-2"
                   >
                     <Edit2 className="h-4 w-4" /> Edit Program
@@ -260,7 +292,7 @@ export default function ProgramDetailsPage() {
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
                           This action cannot be undone. This will permanently delete the program
-                          "{program.name}" ({program.programCode}) and remote data from our servers.
+                          "{program.name}" ({program.programCode}) and all associated data.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -287,7 +319,12 @@ export default function ProgramDetailsPage() {
                     variant="outline"
                     onClick={() => {
                       setIsEditing(false);
-                      setEditData(program);
+                      setEditData({
+                        name: program.name,
+                        code: program.programCode,
+                        type: program.type || "",
+                        duration: program.duration,
+                      });
                     }}
                     disabled={isSaving}
                   >
@@ -314,73 +351,20 @@ export default function ProgramDetailsPage() {
         <Card className="border-[#243F76]/10 dark:border-white/10 shadow-sm overflow-hidden">
           <CardHeader className="bg-muted/40 pb-4 border-b border-border">
             <CardTitle className="text-lg font-medium">Basic Information</CardTitle>
-            <CardDescription>View or manage the program basics.</CardDescription>
+            <CardDescription>
+              {isEditing ? "Update the program details below." : "View the program basics."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="programName" className="text-muted-foreground">
-                  Program Name
-                </Label>
-                {isEditing ? (
-                  <Input
-                    id="programName"
-                    value={editData.name || ""}
-                    onChange={(e) => handleEditChange("name", e.target.value)}
-                  />
-                ) : (
-                  <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
-                    {program.name || "-"}
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="programCode" className="text-muted-foreground">
-                  Program Code
-                </Label>
-                {isEditing ? (
-                  <Input
-                    id="programCode"
-                    value={editData.programCode || ""}
-                    onChange={(e) => handleEditChange("programCode", e.target.value)}
-                  />
-                ) : (
-                  <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
-                    <div className="px-2 py-1 bg-zinc-200 dark:bg-zinc-800 rounded font-mono text-sm inline-block">
-                      {program.programCode || "-"}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="programDuration" className="text-muted-foreground">
-                  Duration
-                </Label>
-                {isEditing ? (
-                  <Select
-                    value={editData.duration || ""}
-                    onValueChange={(value) => handleEditChange("duration", value)}
-                  >
-                    <SelectTrigger id="programDuration">
-                      <SelectValue placeholder="Select duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {durationOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
-                    {program.duration || "-"}
-                  </div>
-                )}
-              </div>
-            </div>
+            {isEditing ? (
+              <ProgramForm
+                data={editData}
+                onChange={handleEditFieldChange}
+                isLoading={isSaving}
+              />
+            ) : (
+              <ProgramDetailsView program={program} />
+            )}
           </CardContent>
         </Card>
       </div>

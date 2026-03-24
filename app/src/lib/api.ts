@@ -19,27 +19,18 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 /**
- * Shared logout helper — used for hard logouts (manual sign-out)
- */
-const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('authUser');
-    localStorage.removeItem('id_token');
-    localStorage.removeItem('rolePermissions');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('sessionExpired');
-    window.location.href = '/login';
-};
-
-/**
  * Soft re-auth: token expired but auth-server session is likely still active.
  * We preserve authUser/rolePermissions so the callback can restore state,
  * set a flag so LoginPage auto-triggers the OAuth flow, and redirect.
  */
 const handleSessionExpired = () => {
+    // Clear all session data for a clean re-auth state
+    localStorage.removeItem('authUser');
     localStorage.removeItem('access_token');
     localStorage.removeItem('id_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('rolePermissions');
+    
     localStorage.setItem('sessionExpired', 'true');
     window.location.href = '/login';
 };
