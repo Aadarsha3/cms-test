@@ -68,9 +68,6 @@ export const roleLabels: Record<string, string> = {
     staff: "Staff",
     student: "Student",
     teacher: "Teacher",
-    student_council_president: "Student Council President",
-    student_council_member: "Student Council Member",
-    sports_committee_member: "Sports Committee Member",
 };
 
 export const roleColors: Record<string, string> = {
@@ -79,7 +76,4 @@ export const roleColors: Record<string, string> = {
     staff: "bg-secondary text-secondary-foreground",
     student: "bg-muted text-muted-foreground",
     teacher: "bg-amber-500 text-white",
-    student_council_president: "bg-indigo-500 text-white",
-    student_council_member: "bg-indigo-400 text-white",
-    sports_committee_member: "bg-emerald-500 text-white",
 };

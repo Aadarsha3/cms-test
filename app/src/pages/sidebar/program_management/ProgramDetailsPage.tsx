@@ -146,6 +146,9 @@ export default function ProgramDetailsPage() {
       if (editData.code !== program.programCode) {
         payload.push({ op: "replace", path: "/programCode", value: editData.code });
       }
+      if (editData.type !== (program.type || "")) {
+        payload.push({ op: "replace", path: "/type", value: editData.type });
+      }
 
       if (payload.length > 0) {
         const response = await dashboardApi.patch(`/programs/${id}`, payload);

@@ -31,6 +31,7 @@ interface ProgramResponse {
   name: string;
   programCode: string;
   duration: string;
+  type?: string;
 }
 
 interface PaginatedResponse {
@@ -207,6 +208,7 @@ export function ProgramTable() {
                   <TableHead className="w-12">SN</TableHead>
                   <TableHead>Program Name</TableHead>
                   <TableHead>Code</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Duration</TableHead>
                 </TableRow>
               </TableHeader>
@@ -250,6 +252,7 @@ export function ProgramTable() {
                         {program.name || "-"}
                       </TableCell>
                       <TableCell>{program.programCode || "-"}</TableCell>
+                      <TableCell className="capitalize">{program.type || "-"}</TableCell>
                       <TableCell className="max-w-[300px] truncate">
                         {program.duration || "No duration"}
                       </TableCell>

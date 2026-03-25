@@ -6,9 +6,6 @@ export const roleLabels: Record<UserRole, string> = {
     staff: "Staff Member",
     student: "Student",
     teacher: "Teacher",
-    student_council_president: "Student Council President",
-    student_council_member: "Student Council Member",
-    sports_committee_member: "Sports Committee Member",
 };
 
 export const roleColors: Record<UserRole, string> = {
@@ -17,9 +14,6 @@ export const roleColors: Record<UserRole, string> = {
     staff: "bg-primary text-primary-foreground",
     student: "bg-primary text-primary-foreground",
     teacher: "bg-primary text-primary-foreground",
-    student_council_president: "bg-primary text-primary-foreground",
-    student_council_member: "bg-primary text-primary-foreground",
-    sports_committee_member: "bg-primary text-primary-foreground",
 };
 
 export const PROGRAM_DURATIONS = [
@@ -36,8 +30,8 @@ export const PROGRAM_DURATIONS = [
 ] as const;
 
 export const PROGRAM_TYPES = [
-  { label: "Bachelor", value: "bachelor" },
-  { label: "Master", value: "master" },
+  { label: "Bachelor", value: "BACHELOR" },
+  { label: "Master", value: "MASTER" },
 ] as const;
 
 export type ProgramDurationValue = typeof PROGRAM_DURATIONS[number]["value"];

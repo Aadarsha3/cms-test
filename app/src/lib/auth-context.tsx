@@ -2,14 +2,13 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import { DEFAULT_ROLE_PERMISSIONS, type RolePermissions } from "./permissions";
 import { signOutRedirect } from "./auth-client";
 
-export type UserRole = "super_admin" | "admin" | "staff" | "student" | "teacher" | "student_council_president" | "student_council_member" | "sports_committee_member";
+export type UserRole = "super_admin" | "admin" | "staff" | "student" | "teacher";
 
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
   role: UserRole;
-  subRoles?: string[];
   avatarUrl?: string;
   // Staff-specific fields
   assignedCourses?: string[]; // Course codes that staff teaches
@@ -79,14 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check main role permissions
     const rolePerms = permissions[user.role] || [];
     if (rolePerms.includes(permissionId)) return true;
-
-    // Check sub-role permissions
-    if (user.subRoles && user.subRoles.length > 0) {
-      for (const subRole of user.subRoles) {
-        const subRolePerms = permissions[subRole] || [];
-        if (subRolePerms.includes(permissionId)) return true;
-      }
-    }
 
     return false;
   };

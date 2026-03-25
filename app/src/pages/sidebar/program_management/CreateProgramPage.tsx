@@ -66,6 +66,7 @@ export default function CreateProgramPage() {
         name: formData.name,
         duration: formData.duration,
         programCode: formData.code,
+        type: formData.type,
       };
 
       await dashboardApi.post("/programs", payload);
