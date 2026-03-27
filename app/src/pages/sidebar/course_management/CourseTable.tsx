@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/course_management/CourseTable.tsx
+
 import { useState, useEffect } from "react";
 import { dashboardApi } from "@/lib/api";
 import { Plus, Search, Loader2, RefreshCw, BookOpen } from "lucide-react";

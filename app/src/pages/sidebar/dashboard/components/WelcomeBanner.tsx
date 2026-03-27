@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/dashboard/components/WelcomeBanner.tsx
+
 import { Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";

@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/dashboard/components/AnnouncementsCard.tsx
+
 import {
     Card,
     CardContent,

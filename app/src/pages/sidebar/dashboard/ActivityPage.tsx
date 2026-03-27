@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/dashboard/ActivityPage.tsx
+
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell, CheckCircle, AlertCircle, Info, Filter } from "lucide-react";

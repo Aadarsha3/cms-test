@@ -1,4 +1,4 @@
-// pages/CreateProgramPage.tsx
+// frontend/app/src/pages/sidebar/program_management/CreateProgramPage.tsx
 
 import { useState } from "react";
 import { useLocation } from "wouter";

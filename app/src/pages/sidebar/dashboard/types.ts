@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/dashboard/types.ts
+
 import { LucideIcon } from "lucide-react";
 
 export interface Announcement {

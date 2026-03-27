@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/user_management/UserDetailsPage.tsx
+
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";

@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/dashboard/constants.ts
+
 import { Users, GraduationCap, BookOpen, ClipboardCheck, TrendingUp, FileText, CreditCard } from "lucide-react";
 import { DashboardStats } from "./types";
 

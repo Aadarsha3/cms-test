@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/dashboard/components/QuickActions.tsx
+
 import { GraduationCap, Users, ClipboardCheck, BookOpen, Calendar, TrendingUp, CreditCard } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

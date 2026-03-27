@@ -1,19 +1,19 @@
 import { type UserRole } from "@/lib/auth-context";
 
 export const roleLabels: Record<UserRole, string> = {
-    super_admin: "Super Admin",
-    admin: "Admin",
-    staff: "Staff Member",
-    student: "Student",
-    teacher: "Teacher",
+  super_admin: "Super Admin",
+  admin: "Admin",
+  staff: "Staff Member",
+  student: "Student",
+  teacher: "Teacher",
 };
 
 export const roleColors: Record<UserRole, string> = {
-    super_admin: "bg-destructive text-destructive-foreground",
-    admin: "bg-primary text-primary-foreground",
-    staff: "bg-primary text-primary-foreground",
-    student: "bg-primary text-primary-foreground",
-    teacher: "bg-primary text-primary-foreground",
+  super_admin: "bg-destructive text-destructive-foreground",
+  admin: "bg-primary text-primary-foreground",
+  staff: "bg-primary text-primary-foreground",
+  student: "bg-primary text-primary-foreground",
+  teacher: "bg-primary text-primary-foreground",
 };
 
 export const PROGRAM_DURATIONS = [
@@ -30,8 +30,8 @@ export const PROGRAM_DURATIONS = [
 ] as const;
 
 export const PROGRAM_TYPES = [
-  { label: "Bachelor", value: "BACHELOR" },
-  { label: "Master", value: "MASTER" },
+  { label: "BACHELOR", value: "BACHELOR" },
+  { label: "MASTERS", value: "MASTERS" },
 ] as const;
 
 export type ProgramDurationValue = typeof PROGRAM_DURATIONS[number]["value"];

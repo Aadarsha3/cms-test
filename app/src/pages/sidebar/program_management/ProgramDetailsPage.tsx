@@ -1,4 +1,4 @@
-// pages/ProgramDetailsPage.tsx
+// frontend/app/src/pages/sidebar/program_management/ProgramDetailsPage.tsx
 
 import { useState, useEffect } from "react";
 import { useLocation, useParams } from "wouter";

@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/course_management/CreateCoursePage.tsx
+
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -36,7 +38,6 @@ export default function CreateCoursePage() {
     creditHours: "3",
     description: "",
     programId: "",
-    semester: "",
   });
 
   useEffect(() => {
@@ -55,11 +56,6 @@ export default function CreateCoursePage() {
     fetchPrograms();
   }, []);
 
-  const semesterOptions = [
-    "1st Semester", "2nd Semester", "3rd Semester", "4th Semester",
-    "5th Semester", "6th Semester", "7th Semester", "8th Semester",
-    "1st Year", "2nd Year", "3rd Year", "4th Year"
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +77,6 @@ export default function CreateCoursePage() {
         creditHours: parseInt(formData.creditHours),
         description: formData.description,
         programId: formData.programId || null,
-        semester: formData.semester || null,
       };
 
       await dashboardApi.post("/courses", payload);
@@ -137,6 +132,29 @@ export default function CreateCoursePage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="program-id">Academic Program</Label>
+                  <Select
+                    value={formData.programId}
+                    onValueChange={(v) => setFormData({ ...formData, programId: v })}
+                    disabled={fetchingPrograms}
+                  >
+                    <SelectTrigger id="program-id">
+                      <SelectValue placeholder={fetchingPrograms ? "Loading programs..." : "Select program"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {programs.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                      {programs.length === 0 && !fetchingPrograms && (
+                        <SelectItem value="none" disabled>No programs found</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="course-name">
@@ -163,7 +181,6 @@ export default function CreateCoursePage() {
                     />
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="credit-hours">
                     Credit Hours <span className="text-destructive">*</span>
@@ -177,49 +194,6 @@ export default function CreateCoursePage() {
                     onChange={(e) => setFormData({ ...formData, creditHours: e.target.value })}
                     required
                   />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="program-id">Academic Program</Label>
-                    <Select
-                      value={formData.programId}
-                      onValueChange={(v) => setFormData({ ...formData, programId: v })}
-                      disabled={fetchingPrograms}
-                    >
-                      <SelectTrigger id="program-id">
-                        <SelectValue placeholder={fetchingPrograms ? "Loading programs..." : "Select program"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {programs.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name}
-                          </SelectItem>
-                        ))}
-                        {programs.length === 0 && !fetchingPrograms && (
-                          <SelectItem value="none" disabled>No programs found</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="semester">Semester / Year</Label>
-                    <Select
-                      value={formData.semester}
-                      onValueChange={(v) => setFormData({ ...formData, semester: v })}
-                    >
-                      <SelectTrigger id="semester">
-                        <SelectValue placeholder="Select semester/year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {semesterOptions.map((opt) => (
-                          <SelectItem key={opt} value={opt}>
-                            {opt}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
 
                 <div className="space-y-2">

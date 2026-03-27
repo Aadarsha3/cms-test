@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/course_management/CourseDetailsPage.tsx
+
 import { useState, useEffect } from "react";
 import { useLocation, useParams } from "wouter";
 import { dashboardApi } from "@/lib/api";
@@ -64,11 +66,6 @@ export default function CourseDetailsPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [fetchingPrograms, setFetchingPrograms] = useState(true);
 
-  const semesterOptions = [
-    "1st Semester", "2nd Semester", "3rd Semester", "4th Semester",
-    "5th Semester", "6th Semester", "7th Semester", "8th Semester",
-    "1st Year", "2nd Year", "3rd Year", "4th Year"
-  ];
 
   const fetchCourse = async () => {
     setLoading(true);
@@ -120,8 +117,7 @@ export default function CourseDetailsPage() {
       editData.courseCode === course?.courseCode &&
       editData.creditHours === course?.creditHours &&
       editData.description === course?.description &&
-      editData.programId === course?.programId &&
-      editData.semester === course?.semester
+      editData.programId === course?.programId
     ) {
       setIsEditing(false);
       return;
@@ -154,9 +150,6 @@ export default function CourseDetailsPage() {
       }
       if (editData.programId !== course?.programId) {
         payload.push({ op: "replace", path: "/programId", value: editData.programId });
-      }
-      if (editData.semester !== course?.semester) {
-        payload.push({ op: "replace", path: "/semester", value: editData.semester });
       }
 
       const response = await dashboardApi.patch(`/courses/${id}`, payload);
@@ -350,6 +343,34 @@ export default function CourseDetailsPage() {
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
+                <Label htmlFor="programId" className="text-muted-foreground">
+                  Academic Program
+                </Label>
+                {isEditing ? (
+                  <Select
+                    value={editData.programId || ""}
+                    onValueChange={(v) => handleEditChange("programId", v)}
+                    disabled={fetchingPrograms}
+                  >
+                    <SelectTrigger id="programId">
+                      <SelectValue placeholder={fetchingPrograms ? "Loading..." : "Select program"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {programs.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
+                    {programs.find(p => p.id === course.programId)?.name || "-"}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="courseName" className="text-muted-foreground">
                   Course Name
                 </Label>
@@ -403,60 +424,6 @@ export default function CourseDetailsPage() {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="programId" className="text-muted-foreground">
-                  Academic Program
-                </Label>
-                {isEditing ? (
-                  <Select
-                    value={editData.programId || ""}
-                    onValueChange={(v) => handleEditChange("programId", v)}
-                    disabled={fetchingPrograms}
-                  >
-                    <SelectTrigger id="programId">
-                      <SelectValue placeholder={fetchingPrograms ? "Loading..." : "Select program"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {programs.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
-                    {programs.find(p => p.id === course.programId)?.name || "-"}
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="semester" className="text-muted-foreground">
-                  Semester / Year
-                </Label>
-                {isEditing ? (
-                  <Select
-                    value={editData.semester || ""}
-                    onValueChange={(v) => handleEditChange("semester", v)}
-                  >
-                    <SelectTrigger id="semester">
-                      <SelectValue placeholder="Select semester/year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {semesterOptions.map((opt) => (
-                        <SelectItem key={opt} value={opt}>
-                          {opt}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
-                    {course.semester || "-"}
-                  </div>
-                )}
-              </div>
             </div>
 
             <div className="mt-6 space-y-2">

@@ -1,3 +1,5 @@
+// /app/src/pages/sidebar/dashboard/DashboardPage.tsx
+
 import { useState, useEffect } from "react";
 import { dashboardApi } from "@/lib/api";
 import { MainLayout } from "@/components/layout/MainLayout";
