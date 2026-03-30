@@ -116,7 +116,6 @@ export default function CourseDetailsPage() {
       editData.name === course?.name &&
       editData.courseCode === course?.courseCode &&
       editData.creditHours === course?.creditHours &&
-      editData.description === course?.description &&
       editData.programId === course?.programId
     ) {
       setIsEditing(false);
@@ -144,9 +143,6 @@ export default function CourseDetailsPage() {
       }
       if (editData.creditHours !== course?.creditHours) {
         payload.push({ op: "replace", path: "/creditHours", value: parseInt(String(editData.creditHours)) });
-      }
-      if (editData.description !== course?.description) {
-        payload.push({ op: "replace", path: "/description", value: editData.description });
       }
       if (editData.programId !== course?.programId) {
         payload.push({ op: "replace", path: "/programId", value: editData.programId });
@@ -426,23 +422,6 @@ export default function CourseDetailsPage() {
 
             </div>
 
-            <div className="mt-6 space-y-2">
-              <Label htmlFor="description" className="text-muted-foreground">
-                Description
-              </Label>
-              {isEditing ? (
-                <Textarea
-                  id="description"
-                  value={editData.description || ""}
-                  onChange={(e) => handleEditChange("description", e.target.value)}
-                  className="min-h-[100px]"
-                />
-              ) : (
-                <div className="text-sm p-3 bg-muted/20 border border-transparent rounded-md min-h-20">
-                  {course.description || "No description provided."}
-                </div>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>

@@ -36,7 +36,6 @@ export default function CreateCoursePage() {
     name: "",
     courseCode: "",
     creditHours: "3",
-    description: "",
     programId: "",
   });
 
@@ -75,7 +74,6 @@ export default function CreateCoursePage() {
         name: formData.name,
         courseCode: formData.courseCode,
         creditHours: parseInt(formData.creditHours),
-        description: formData.description,
         programId: formData.programId || null,
       };
 
@@ -196,16 +194,6 @@ export default function CreateCoursePage() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="course-description">Description</Label>
-                  <Textarea
-                    id="course-description"
-                    placeholder="Brief description of the course content..."
-                    className="min-h-[120px] resize-none"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  />
-                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-[#243F76]/10 dark:border-white/10">
