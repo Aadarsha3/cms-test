@@ -1,33 +1,20 @@
 // /app/src/pages/sidebar/course_management/CreateCoursePage.tsx
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { dashboardApi } from "@/lib/api";
 import { ChevronLeft, Save, Loader2, BookOpen } from "lucide-react";
-
-interface Program {
-  id: string;
-  name: string;
-}
 
 interface FormData {
   name: string;
   courseCode: string;
   creditHour: string;
-  program: string;
 }
 
 export default function CreateCoursePage() {
@@ -35,38 +22,12 @@ export default function CreateCoursePage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [fetchingPrograms, setFetchingPrograms] = useState(true);
-
   const [formData, setFormData] = useState<FormData>({
     name: "",
     courseCode: "",
     creditHour: "3",
-    program: "",
   });
 
-  useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const response = await dashboardApi.get("/programs");
-        const data = Array.isArray(response.data) ? response.data :
-          (response.data as any)?.content || [];
-        setPrograms(data);
-      } catch (err) {
-        console.error("Failed to fetch programs:", err);
-        toast({
-          title: "Error",
-          description: "Failed to load programs",
-          variant: "destructive",
-        });
-      } finally {
-        setFetchingPrograms(false);
-      }
-    };
-    fetchPrograms();
-  }, [toast]);
-
-  // ✅ Fixed: Validate all required fields
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
       toast({
@@ -95,16 +56,6 @@ export default function CreateCoursePage() {
       return false;
     }
 
-    // ✅ Fixed: Require program selection
-    if (!formData.program) {
-      toast({
-        title: "Validation Error",
-        description: "Please select an academic program",
-        variant: "destructive",
-      });
-      return false;
-    }
-
     return true;
   };
 
@@ -117,12 +68,11 @@ export default function CreateCoursePage() {
 
     setLoading(true);
     try {
-      // ✅ Fixed: Send program as the selected ID (not null)
       const payload = {
         name: formData.name.trim(),
         courseCode: formData.courseCode.trim(),
         creditHour: formData.creditHour,
-        program: formData.program, // ✅ This is now the program ID
+        program: "",
       };
 
       const response = await dashboardApi.post("/courses", payload);
@@ -132,7 +82,6 @@ export default function CreateCoursePage() {
         description: "Course created successfully.",
       });
 
-      // ✅ Redirect to the new course details page
       if (response.data?.id) {
         setLocation(`/courses/${response.data.id}`);
       } else {
@@ -185,48 +134,6 @@ export default function CreateCoursePage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
-                {/* ✅ Fixed: Program field now shows required indicator */}
-                <div className="space-y-2">
-                  <Label htmlFor="program-id">
-                    Academic Program <span className="text-destructive">*</span>
-                  </Label>
-                  <Select
-                    value={formData.program}
-                    onValueChange={(v) => setFormData({ ...formData, program: v })}
-                    disabled={fetchingPrograms || loading}
-                  >
-                    <SelectTrigger id="program-id">
-                      <SelectValue
-                        placeholder={
-                          fetchingPrograms
-                            ? "Loading programs..."
-                            : programs.length === 0
-                              ? "No programs available"
-                              : "Select program"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {programs.length > 0 ? (
-                        programs.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="none" disabled>
-                          {fetchingPrograms ? "Loading..." : "No programs found"}
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {programs.length === 0 && !fetchingPrograms && (
-                    <p className="text-xs text-muted-foreground">
-                      ⚠️ No programs found. Please create a program first.
-                    </p>
-                  )}
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="course-name">
@@ -290,7 +197,7 @@ export default function CreateCoursePage() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading || fetchingPrograms}
+                  disabled={loading}
                   className="bg-[#243F76] hover:bg-[#1a2e56] text-white gap-2"
                 >
                   {loading ? (

@@ -22,33 +22,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-context";
 
-interface Program {
-  id: string;
-  name: string;
-}
 
 interface CourseDetail {
   id: string;
   name: string;
   courseCode: string;
   creditHour: string;
-  program?: string | { id: string; name: string };
 }
 
 interface EditData {
   name: string;
   courseCode: string;
   creditHour: string;
-  program: string;
 }
 
 export default function CourseDetailsPage() {
@@ -69,31 +56,9 @@ export default function CourseDetailsPage() {
     name: "",
     courseCode: "",
     creditHour: "",
-    program: "",
   });
 
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [fetchingPrograms, setFetchingPrograms] = useState(true);
 
-  // ✅ Fixed: Helper to extract program ID consistently
-  const getProgramId = (program: CourseDetail["program"]): string => {
-    if (typeof program === "object" && program?.id) {
-      return program.id;
-    }
-    if (typeof program === "string") {
-      return program;
-    }
-    return "";
-  };
-
-  // ✅ Fixed: Helper to get program name consistently
-  const getProgramName = (program: CourseDetail["program"], programsList: Program[]): string => {
-    const programId = getProgramId(program);
-    if (typeof program === "object" && program?.name) {
-      return program.name;
-    }
-    return programsList.find(p => p.id === programId)?.name || "-";
-  };
 
   const fetchCourse = async () => {
     setLoading(true);
@@ -103,13 +68,10 @@ export default function CourseDetailsPage() {
       const courseData = response.data;
       setCourse(courseData);
 
-      // ✅ Fixed: Properly populate editData with consistent program ID
-      const programId = getProgramId(courseData.program);
       setEditData({
         name: courseData.name,
         courseCode: courseData.courseCode,
         creditHour: courseData.creditHour,
-        program: programId,
       });
     } catch (err: any) {
       console.error("Failed to fetch course:", err);
@@ -125,24 +87,9 @@ export default function CourseDetailsPage() {
     }
   };
 
-  const fetchPrograms = async () => {
-    try {
-      const response = await dashboardApi.get("/programs");
-      const data = Array.isArray(response.data)
-        ? response.data
-        : (response.data as any)?.content || [];
-      setPrograms(data);
-    } catch (err) {
-      console.error("Failed to fetch programs:", err);
-    } finally {
-      setFetchingPrograms(false);
-    }
-  };
-
   useEffect(() => {
     if (id) {
       fetchCourse();
-      fetchPrograms();
     }
   }, [id]);
 
@@ -153,15 +100,10 @@ export default function CourseDetailsPage() {
   const handleSave = async () => {
     if (!course) return;
 
-    // ✅ Fixed: Consistent program ID comparison
-    const currentProgramId = getProgramId(course.program);
-
-    // Check if anything changed
     if (
       editData.name === course.name &&
       editData.courseCode === course.courseCode &&
-      editData.creditHour === course.creditHour &&
-      editData.program === currentProgramId
+      editData.creditHour === course.creditHour
     ) {
       setIsEditing(false);
       return;
@@ -190,10 +132,6 @@ export default function CourseDetailsPage() {
       if (editData.creditHour !== course.creditHour) {
         payload.push({ op: "replace", path: "/creditHour", value: editData.creditHour });
       }
-      // ✅ Fixed: Send program changes
-      if (editData.program !== currentProgramId) {
-        payload.push({ op: "replace", path: "/program", value: editData.program || null });
-      }
 
       const response = await dashboardApi.patch(`/courses/${id}`, payload);
 
@@ -203,7 +141,6 @@ export default function CourseDetailsPage() {
         name: editData.name,
         courseCode: editData.courseCode,
         creditHour: editData.creditHour,
-        program: editData.program,
       };
       setCourse(updatedCourse);
 
@@ -362,12 +299,10 @@ export default function CourseDetailsPage() {
                     onClick={() => {
                       setIsEditing(false);
                       // Reset to original values
-                      const programId = getProgramId(course.program);
-                      setEditData({
+                       setEditData({
                         name: course.name,
                         courseCode: course.courseCode,
                         creditHour: course.creditHour,
-                        program: programId,
                       });
                     }}
                     disabled={isSaving}
@@ -401,34 +336,6 @@ export default function CourseDetailsPage() {
           </CardHeader>
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Program Field */}
-              <div className="space-y-2">
-                <Label htmlFor="programId" className="text-muted-foreground">
-                  Academic Program
-                </Label>
-                {isEditing ? (
-                  <Select
-                    value={editData.program}
-                    onValueChange={(v) => handleEditChange("program", v)}
-                    disabled={fetchingPrograms || isSaving}
-                  >
-                    <SelectTrigger id="programId">
-                      <SelectValue placeholder={fetchingPrograms ? "Loading..." : "Select program"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {programs.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
-                    {getProgramName(course.program, programs)}
-                  </div>
-                )}
-              </div>
 
               {/* Course Name Field */}
               <div className="space-y-2">

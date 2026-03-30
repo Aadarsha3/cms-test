@@ -30,8 +30,6 @@ interface CourseResponse {
   name: string;
   courseCode: string;
   creditHour: string;
-  program?: string | { id: string; name: string };
-  programId?: string;
 }
 
 interface PaginatedResponse {
@@ -56,22 +54,10 @@ export function CourseTable() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  // ✅ Fixed: Get program name from course data
-  const getProgramName = (course: CourseResponse): string => {
-    if (typeof course.program === "object" && course.program?.name) {
-      return course.program.name;
-    }
-    if (typeof course.program === "string") {
-      return course.program;
-    }
-    return "-";
-  };
-
   const fetchCourses = async () => {
     setLoading(true);
     setError(null);
     try {
-      // ✅ Fixed: Include search parameter for server-side search
       const params: any = {
         page,
         size,
@@ -92,7 +78,6 @@ export function CourseTable() {
         setTotalElements(response.data.totalElements || response.data.content.length);
         setTotalPages(response.data.totalPages || 1);
       } else if (Array.isArray(response.data)) {
-        // Fallback for simple array response
         setCourses(response.data);
         setTotalElements(response.data.length);
         setTotalPages(1);
@@ -124,21 +109,17 @@ export function CourseTable() {
     fetchCourses();
   }, [page, size, debouncedSearch]);
 
-  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
-    }, 500); // 500ms delay
-
+    }, 500);
     return () => clearTimeout(timer);
   }, [search]);
 
-  // ✅ Fixed: Reset to page 0 when search changes
   useEffect(() => {
     setPage(0);
   }, [search]);
 
-  // ✅ Fixed: Improved pagination logic using totalElements
   const handleNextPage = () => {
     const currentPageEnd = (page + 1) * size;
     if (currentPageEnd < totalElements) {
@@ -152,7 +133,6 @@ export function CourseTable() {
     }
   };
 
-  // Calculate display range
   const displayStart = totalElements === 0 ? 0 : page * size + 1;
   const displayEnd = Math.min((page + 1) * size, totalElements);
   const isLastPage = displayEnd >= totalElements;
@@ -229,14 +209,13 @@ export function CourseTable() {
                   <TableHead className="w-12">SN</TableHead>
                   <TableHead>Course Name</TableHead>
                   <TableHead>Code</TableHead>
-                  <TableHead>Program</TableHead>
                   <TableHead>Credits</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={4} className="h-24 text-center">
                       <div className="flex items-center justify-center gap-2 text-muted-foreground">
                         <Loader2 className="h-5 w-5 animate-spin" />
                         Loading...
@@ -246,7 +225,7 @@ export function CourseTable() {
                 ) : error ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={4}
                       className="h-24 text-center text-destructive"
                     >
                       Failed to load data. Please try again.
@@ -255,7 +234,7 @@ export function CourseTable() {
                 ) : courses.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={4}
                       className="h-24 text-center text-muted-foreground"
                     >
                       {search ? "No matching courses found." : "No courses created yet."}
@@ -281,9 +260,6 @@ export function CourseTable() {
                         <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded font-mono text-xs">
                           {course.courseCode || "-"}
                         </span>
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate">
-                        {getProgramName(course)}
                       </TableCell>
                       <TableCell>
                         {course.creditHour || "0"}
