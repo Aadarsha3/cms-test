@@ -49,6 +49,7 @@ export function CourseTable() {
   const [totalPages, setTotalPages] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
 
@@ -78,8 +79,8 @@ export function CourseTable() {
         direction: "DESC",
       };
 
-      if (search.trim()) {
-        params.search = search.trim();
+      if (debouncedSearch.trim()) {
+        params.search = debouncedSearch.trim();
       }
 
       const response = await dashboardApi.get<PaginatedResponse>("/courses", {
@@ -121,7 +122,16 @@ export function CourseTable() {
 
   useEffect(() => {
     fetchCourses();
-  }, [page, size, search]);
+  }, [page, size, debouncedSearch]);
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   // ✅ Fixed: Reset to page 0 when search changes
   useEffect(() => {
@@ -160,7 +170,6 @@ export function CourseTable() {
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 h-11 bg-white dark:bg-zinc-950 border-[#243F76]/10 dark:border-white/10 shadow-sm"
               autoComplete="off"
-              disabled={loading}
             />
           </div>
 
