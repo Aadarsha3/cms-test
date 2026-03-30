@@ -29,73 +29,89 @@ interface CourseResponse {
   id: string;
   name: string;
   courseCode: string;
-  creditHours: number;
-  description?: string;
+  creditHour: string;
+  program?: string | { id: string; name: string };
   programId?: string;
-  semester?: string;
 }
 
-interface Program {
-  id: string;
-  name: string;
+interface PaginatedResponse {
+  content: CourseResponse[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
 }
 
 export function CourseTable() {
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
-  const [sort] = useState("id");
-  const [direction] = useState("DESC");
-  const [programs, setPrograms] = useState<Program[]>([]);
 
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  const fetchPrograms = async () => {
-    try {
-      const response = await dashboardApi.get("/programs");
-      const data = Array.isArray(response.data) ? response.data : 
-                   (response.data as any)?.content || [];
-      setPrograms(data);
-    } catch (err) {
-      console.error("Failed to fetch programs:", err);
+  // ✅ Fixed: Get program name from course data
+  const getProgramName = (course: CourseResponse): string => {
+    if (typeof course.program === "object" && course.program?.name) {
+      return course.program.name;
     }
+    if (typeof course.program === "string") {
+      return course.program;
+    }
+    return "-";
   };
 
   const fetchCourses = async () => {
     setLoading(true);
     setError(null);
     try {
-      const params: any = { page, size, sort, direction };
-      const response = await dashboardApi.get<CourseResponse[]>("/courses", {
+      // ✅ Fixed: Include search parameter for server-side search
+      const params: any = {
+        page,
+        size,
+        sort: "id",
+        direction: "DESC",
+      };
+
+      if (search.trim()) {
+        params.search = search.trim();
+      }
+
+      const response = await dashboardApi.get<PaginatedResponse>("/courses", {
         params,
       });
 
-      if (Array.isArray(response.data)) {
+      if (response.data?.content && Array.isArray(response.data.content)) {
+        setCourses(response.data.content);
+        setTotalElements(response.data.totalElements || response.data.content.length);
+        setTotalPages(response.data.totalPages || 1);
+      } else if (Array.isArray(response.data)) {
+        // Fallback for simple array response
         setCourses(response.data);
         setTotalElements(response.data.length);
+        setTotalPages(1);
       } else {
-        const data = response.data as any;
-        if (data && Array.isArray(data.content)) {
-          setCourses(data.content);
-          setTotalElements(data.totalElements || data.content.length);
-        } else {
-          console.warn("Unexpected API response format:", response.data);
-          setCourses([]);
-          setTotalElements(0);
-          setError("Invalid response format from server");
-        }
+        console.warn("Unexpected API response format:", response.data);
+        setCourses([]);
+        setTotalElements(0);
+        setTotalPages(0);
+        setError("Invalid response format from server");
       }
     } catch (err: any) {
       console.error("Failed to fetch courses:", err);
-      setError(err.message || "Failed to load courses");
+      const errorMsg = err.message || "Failed to load courses";
+      setError(errorMsg);
+      setCourses([]);
+      setTotalElements(0);
+
       toast({
         title: "Error fetching courses",
-        description: err.message || "Could not connect to the server",
+        description: errorMsg,
         variant: "destructive",
       });
     } finally {
@@ -105,23 +121,17 @@ export function CourseTable() {
 
   useEffect(() => {
     fetchCourses();
-    fetchPrograms();
-  }, [page, size, sort, direction]);
+  }, [page, size, search]);
 
-  const filteredCourses = courses.filter((c) => {
-    if (!c) return false;
-    const searchLower = search.toLowerCase();
-    const name = c.name?.toLowerCase() || "";
-    const code = c.courseCode?.toLowerCase() || "";
+  // ✅ Fixed: Reset to page 0 when search changes
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
 
-    return (
-      name.includes(searchLower) ||
-      code.includes(searchLower)
-    );
-  });
-
+  // ✅ Fixed: Improved pagination logic using totalElements
   const handleNextPage = () => {
-    if (courses.length === size) {
+    const currentPageEnd = (page + 1) * size;
+    if (currentPageEnd < totalElements) {
       setPage((prev) => prev + 1);
     }
   };
@@ -132,9 +142,10 @@ export function CourseTable() {
     }
   };
 
-  useEffect(() => {
-    setPage(0);
-  }, [search]);
+  // Calculate display range
+  const displayStart = totalElements === 0 ? 0 : page * size + 1;
+  const displayEnd = Math.min((page + 1) * size, totalElements);
+  const isLastPage = displayEnd >= totalElements;
 
   return (
     <MainLayout title="Course Management">
@@ -149,6 +160,7 @@ export function CourseTable() {
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 h-11 bg-white dark:bg-zinc-950 border-[#243F76]/10 dark:border-white/10 shadow-sm"
               autoComplete="off"
+              disabled={loading}
             />
           </div>
 
@@ -183,6 +195,7 @@ export function CourseTable() {
               onClick={fetchCourses}
               className="h-11 w-11 shrink-0"
               title="Refresh List"
+              disabled={loading}
             >
               <RefreshCw
                 className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
@@ -208,40 +221,42 @@ export function CourseTable() {
                   <TableHead>Course Name</TableHead>
                   <TableHead>Code</TableHead>
                   <TableHead>Program</TableHead>
-                  <TableHead>Term</TableHead>
                   <TableHead>Credits</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       <div className="flex items-center justify-center gap-2 text-muted-foreground">
                         <Loader2 className="h-5 w-5 animate-spin" />
                         Loading...
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : filteredCourses.length === 0 ? (
+                ) : error ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={5}
+                      className="h-24 text-center text-destructive"
+                    >
+                      Failed to load data. Please try again.
+                    </TableCell>
+                  </TableRow>
+                ) : courses.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
                       className="h-24 text-center text-muted-foreground"
                     >
-                      {error ? (
-                        <span className="text-destructive">
-                          Failed to load data.
-                        </span>
-                      ) : (
-                        "No matching courses found."
-                      )}
+                      {search ? "No matching courses found." : "No courses created yet."}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredCourses.map((course, index) => (
+                  courses.map((course, index) => (
                     <TableRow
-                      key={course.id || index}
-                      className="cursor-pointer hover:bg-muted/50"
+                      key={course.id}
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
                       onClick={() => setLocation(`/courses/${course.id}`)}
                     >
                       <TableCell>{page * size + index + 1}</TableCell>
@@ -258,14 +273,11 @@ export function CourseTable() {
                           {course.courseCode || "-"}
                         </span>
                       </TableCell>
-                      <TableCell className="max-w-[150px] truncate">
-                        {programs.find(p => p.id === course.programId)?.name || "-"}
+                      <TableCell className="max-w-[200px] truncate">
+                        {getProgramName(course)}
                       </TableCell>
                       <TableCell>
-                        {course.semester || "-"}
-                      </TableCell>
-                      <TableCell>
-                        {course.creditHours || "0"}
+                        {course.creditHour || "0"}
                       </TableCell>
                     </TableRow>
                   ))
@@ -276,25 +288,30 @@ export function CourseTable() {
         </Card>
 
         {!loading && courses.length > 0 && (
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="text-sm text-muted-foreground">
-              Showing {page * size + 1}-{page * size + courses.length} of{" "}
-              {totalElements} entries
+              Showing {displayStart}-{displayEnd} of {totalElements} entries
             </div>
+
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handlePrevPage}
-                disabled={page === 0}
+                disabled={page === 0 || loading}
               >
                 Previous
               </Button>
+
+              <div className="flex items-center gap-2 px-3 py-1 text-sm text-muted-foreground">
+                Page {page + 1} of {totalPages || 1}
+              </div>
+
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleNextPage}
-                disabled={courses.length < size}
+                disabled={isLastPage || loading}
               >
                 Next
               </Button>

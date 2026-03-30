@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Edit2, Save, Trash2, X, Loader2, BookOpen } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,10 +40,15 @@ interface CourseDetail {
   id: string;
   name: string;
   courseCode: string;
-  creditHours: number;
-  description: string;
-  programId?: string;
-  semester?: string;
+  creditHour: string;
+  program?: string | { id: string; name: string };
+}
+
+interface EditData {
+  name: string;
+  courseCode: string;
+  creditHour: string;
+  program: string;
 }
 
 export default function CourseDetailsPage() {
@@ -52,34 +56,68 @@ export default function CourseDetailsPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { hasPermission } = useAuth();
-  
+
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
-  const [editData, setEditData] = useState<Partial<CourseDetail>>({});
-  
+
+  const [editData, setEditData] = useState<EditData>({
+    name: "",
+    courseCode: "",
+    creditHour: "",
+    program: "",
+  });
+
   const [programs, setPrograms] = useState<Program[]>([]);
   const [fetchingPrograms, setFetchingPrograms] = useState(true);
 
+  // ✅ Fixed: Helper to extract program ID consistently
+  const getProgramId = (program: CourseDetail["program"]): string => {
+    if (typeof program === "object" && program?.id) {
+      return program.id;
+    }
+    if (typeof program === "string") {
+      return program;
+    }
+    return "";
+  };
+
+  // ✅ Fixed: Helper to get program name consistently
+  const getProgramName = (program: CourseDetail["program"], programsList: Program[]): string => {
+    const programId = getProgramId(program);
+    if (typeof program === "object" && program?.name) {
+      return program.name;
+    }
+    return programsList.find(p => p.id === programId)?.name || "-";
+  };
 
   const fetchCourse = async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await dashboardApi.get<CourseDetail>(`/courses/${id}`);
-      setCourse(response.data);
-      setEditData(response.data);
+      const courseData = response.data;
+      setCourse(courseData);
+
+      // ✅ Fixed: Properly populate editData with consistent program ID
+      const programId = getProgramId(courseData.program);
+      setEditData({
+        name: courseData.name,
+        courseCode: courseData.courseCode,
+        creditHour: courseData.creditHour,
+        program: programId,
+      });
     } catch (err: any) {
       console.error("Failed to fetch course:", err);
-      setError(err.message || "Failed to load course details");
+      const errorMsg = err.message || "Failed to load course details";
+      setError(errorMsg);
       toast({
         title: "Error fetching course",
-        description: err.response?.data?.message || err.message,
+        description: err.response?.data?.message || errorMsg,
         variant: "destructive",
       });
     } finally {
@@ -90,8 +128,9 @@ export default function CourseDetailsPage() {
   const fetchPrograms = async () => {
     try {
       const response = await dashboardApi.get("/programs");
-      const data = Array.isArray(response.data) ? response.data : 
-                   (response.data as any)?.content || [];
+      const data = Array.isArray(response.data)
+        ? response.data
+        : (response.data as any)?.content || [];
       setPrograms(data);
     } catch (err) {
       console.error("Failed to fetch programs:", err);
@@ -107,22 +146,29 @@ export default function CourseDetailsPage() {
     }
   }, [id]);
 
-  const handleEditChange = (field: keyof CourseDetail, value: any) => {
+  const handleEditChange = (field: keyof EditData, value: string) => {
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSave = async () => {
+    if (!course) return;
+
+    // ✅ Fixed: Consistent program ID comparison
+    const currentProgramId = getProgramId(course.program);
+
+    // Check if anything changed
     if (
-      editData.name === course?.name &&
-      editData.courseCode === course?.courseCode &&
-      editData.creditHours === course?.creditHours &&
-      editData.programId === course?.programId
+      editData.name === course.name &&
+      editData.courseCode === course.courseCode &&
+      editData.creditHour === course.creditHour &&
+      editData.program === currentProgramId
     ) {
       setIsEditing(false);
       return;
     }
 
-    if (!editData.name || !editData.courseCode || editData.creditHours === undefined) {
+    // Validate required fields
+    if (!editData.name.trim() || !editData.courseCode.trim() || !editData.creditHour) {
       toast({
         title: "Validation Error",
         description: "Name, Code, and Credit Hours are required.",
@@ -134,22 +180,33 @@ export default function CourseDetailsPage() {
     setIsSaving(true);
     try {
       const payload: { op: string; path: string; value: any }[] = [];
-      
-      if (editData.name !== course?.name) {
-        payload.push({ op: "replace", path: "/name", value: editData.name });
+
+      if (editData.name !== course.name) {
+        payload.push({ op: "replace", path: "/name", value: editData.name.trim() });
       }
-      if (editData.courseCode !== course?.courseCode) {
-        payload.push({ op: "replace", path: "/courseCode", value: editData.courseCode });
+      if (editData.courseCode !== course.courseCode) {
+        payload.push({ op: "replace", path: "/courseCode", value: editData.courseCode.trim() });
       }
-      if (editData.creditHours !== course?.creditHours) {
-        payload.push({ op: "replace", path: "/creditHours", value: parseInt(String(editData.creditHours)) });
+      if (editData.creditHour !== course.creditHour) {
+        payload.push({ op: "replace", path: "/creditHour", value: editData.creditHour });
       }
-      if (editData.programId !== course?.programId) {
-        payload.push({ op: "replace", path: "/programId", value: editData.programId });
+      // ✅ Fixed: Send program changes
+      if (editData.program !== currentProgramId) {
+        payload.push({ op: "replace", path: "/program", value: editData.program || null });
       }
 
       const response = await dashboardApi.patch(`/courses/${id}`, payload);
-      setCourse(response.data || { ...course, ...editData } as CourseDetail);
+
+      // ✅ Fixed: Update course with the response data
+      const updatedCourse = response.data || {
+        ...course,
+        name: editData.name,
+        courseCode: editData.courseCode,
+        creditHour: editData.creditHour,
+        program: editData.program,
+      };
+      setCourse(updatedCourse);
+
       setIsEditing(false);
       toast({
         title: "Success",
@@ -200,7 +257,7 @@ export default function CourseDetailsPage() {
           <Card>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[1, 2, 3].map((i) => (
+                {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="space-y-2">
                     <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-10 w-full" />
@@ -260,10 +317,7 @@ export default function CourseDetailsPage() {
                 <>
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      setEditData(course);
-                      setIsEditing(true);
-                    }}
+                    onClick={() => setIsEditing(true)}
                     className="gap-2"
                   >
                     <Edit2 className="h-4 w-4" /> Edit Course
@@ -280,7 +334,7 @@ export default function CourseDetailsPage() {
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
                           This action cannot be undone. This will permanently delete the course
-                          "{course.name}" ({course.courseCode}) and remote data from our servers.
+                          "{course.name}" ({course.courseCode}) and all associated data.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -307,7 +361,14 @@ export default function CourseDetailsPage() {
                     variant="outline"
                     onClick={() => {
                       setIsEditing(false);
-                      setEditData(course);
+                      // Reset to original values
+                      const programId = getProgramId(course.program);
+                      setEditData({
+                        name: course.name,
+                        courseCode: course.courseCode,
+                        creditHour: course.creditHour,
+                        program: programId,
+                      });
                     }}
                     disabled={isSaving}
                   >
@@ -334,19 +395,22 @@ export default function CourseDetailsPage() {
         <Card className="border-[#243F76]/10 dark:border-white/10 shadow-sm overflow-hidden">
           <CardHeader className="bg-muted/40 pb-4 border-b border-border">
             <CardTitle className="text-lg font-medium">Basic Information</CardTitle>
-            <CardDescription>View or manage the course basics.</CardDescription>
+            <CardDescription>
+              {isEditing ? "Update the course details below." : "View the course basics."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Program Field */}
               <div className="space-y-2">
                 <Label htmlFor="programId" className="text-muted-foreground">
                   Academic Program
                 </Label>
                 {isEditing ? (
                   <Select
-                    value={editData.programId || ""}
-                    onValueChange={(v) => handleEditChange("programId", v)}
-                    disabled={fetchingPrograms}
+                    value={editData.program}
+                    onValueChange={(v) => handleEditChange("program", v)}
+                    disabled={fetchingPrograms || isSaving}
                   >
                     <SelectTrigger id="programId">
                       <SelectValue placeholder={fetchingPrograms ? "Loading..." : "Select program"} />
@@ -361,11 +425,12 @@ export default function CourseDetailsPage() {
                   </Select>
                 ) : (
                   <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
-                    {programs.find(p => p.id === course.programId)?.name || "-"}
+                    {getProgramName(course.program, programs)}
                   </div>
                 )}
               </div>
 
+              {/* Course Name Field */}
               <div className="space-y-2">
                 <Label htmlFor="courseName" className="text-muted-foreground">
                   Course Name
@@ -373,8 +438,9 @@ export default function CourseDetailsPage() {
                 {isEditing ? (
                   <Input
                     id="courseName"
-                    value={editData.name || ""}
+                    value={editData.name}
                     onChange={(e) => handleEditChange("name", e.target.value)}
+                    disabled={isSaving}
                   />
                 ) : (
                   <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
@@ -383,6 +449,7 @@ export default function CourseDetailsPage() {
                 )}
               </div>
 
+              {/* Course Code Field */}
               <div className="space-y-2">
                 <Label htmlFor="courseCode" className="text-muted-foreground">
                   Course Code
@@ -390,8 +457,9 @@ export default function CourseDetailsPage() {
                 {isEditing ? (
                   <Input
                     id="courseCode"
-                    value={editData.courseCode || ""}
+                    value={editData.courseCode}
                     onChange={(e) => handleEditChange("courseCode", e.target.value)}
+                    disabled={isSaving}
                   />
                 ) : (
                   <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
@@ -402,6 +470,7 @@ export default function CourseDetailsPage() {
                 )}
               </div>
 
+              {/* Credit Hours Field */}
               <div className="space-y-2">
                 <Label htmlFor="creditHours" className="text-muted-foreground">
                   Credit Hours
@@ -410,18 +479,18 @@ export default function CourseDetailsPage() {
                   <Input
                     id="creditHours"
                     type="number"
-                    value={editData.creditHours || ""}
-                    onChange={(e) => handleEditChange("creditHours", e.target.value)}
+                    min="1"
+                    value={editData.creditHour}
+                    onChange={(e) => handleEditChange("creditHour", e.target.value)}
+                    disabled={isSaving}
                   />
                 ) : (
                   <div className="font-medium text-base p-2 bg-muted/20 border border-transparent rounded-md min-h-10 flex items-center">
-                    {course.creditHours || "0"} Credits
+                    {course.creditHour || "0"} Credits
                   </div>
                 )}
               </div>
-
             </div>
-
           </CardContent>
         </Card>
       </div>

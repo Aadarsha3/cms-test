@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -24,6 +23,13 @@ interface Program {
   name: string;
 }
 
+interface FormData {
+  name: string;
+  courseCode: string;
+  creditHour: string;
+  program: string;
+}
+
 export default function CreateCoursePage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -32,57 +38,106 @@ export default function CreateCoursePage() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [fetchingPrograms, setFetchingPrograms] = useState(true);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     courseCode: "",
-    creditHours: "3",
-    programId: "",
+    creditHour: "3",
+    program: "",
   });
 
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
         const response = await dashboardApi.get("/programs");
-        const data = Array.isArray(response.data) ? response.data : 
-                     (response.data as any)?.content || [];
+        const data = Array.isArray(response.data) ? response.data :
+          (response.data as any)?.content || [];
         setPrograms(data);
       } catch (err) {
         console.error("Failed to fetch programs:", err);
+        toast({
+          title: "Error",
+          description: "Failed to load programs",
+          variant: "destructive",
+        });
       } finally {
         setFetchingPrograms(false);
       }
     };
     fetchPrograms();
-  }, []);
+  }, [toast]);
 
+  // ✅ Fixed: Validate all required fields
+  const validateForm = (): boolean => {
+    if (!formData.name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Course name is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.courseCode.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Course code is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.creditHour || Number(formData.creditHour) < 1) {
+      toast({
+        title: "Validation Error",
+        description: "Credit hours must be at least 1",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // ✅ Fixed: Require program selection
+    if (!formData.program) {
+      toast({
+        title: "Validation Error",
+        description: "Please select an academic program",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.courseCode || !formData.creditHours) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+
+    if (!validateForm()) {
       return;
     }
 
     setLoading(true);
     try {
+      // ✅ Fixed: Send program as the selected ID (not null)
       const payload = {
-        name: formData.name,
-        courseCode: formData.courseCode,
-        creditHours: parseInt(formData.creditHours),
-        programId: formData.programId || null,
+        name: formData.name.trim(),
+        courseCode: formData.courseCode.trim(),
+        creditHour: formData.creditHour,
+        program: formData.program, // ✅ This is now the program ID
       };
 
-      await dashboardApi.post("/courses", payload);
+      const response = await dashboardApi.post("/courses", payload);
+
       toast({
         title: "Success",
         description: "Course created successfully.",
       });
-      setLocation("/courses");
+
+      // ✅ Redirect to the new course details page
+      if (response.data?.id) {
+        setLocation(`/courses/${response.data.id}`);
+      } else {
+        setLocation("/courses");
+      }
     } catch (err: any) {
       console.error("Failed to create course:", err?.response?.data || err);
       const errorMsg =
@@ -90,7 +145,7 @@ export default function CreateCoursePage() {
         err.response?.data?.error ||
         err.message ||
         "Failed to create course.";
-        
+
       toast({
         title: "Error",
         description: typeof errorMsg === 'string' ? errorMsg : "An error occurred",
@@ -114,12 +169,12 @@ export default function CreateCoursePage() {
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">
-             <div className="bg-[#243F76]/10 p-2 rounded-lg">
-                <BookOpen className="h-6 w-6 text-[#243F76]" />
-             </div>
-             <h1 className="text-2xl font-bold tracking-tight text-[#243F76] dark:text-white">
-               Course Details
-             </h1>
+            <div className="bg-[#243F76]/10 p-2 rounded-lg">
+              <BookOpen className="h-6 w-6 text-[#243F76]" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-[#243F76] dark:text-white">
+              Course Details
+            </h1>
           </div>
         </div>
 
@@ -130,27 +185,46 @@ export default function CreateCoursePage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
+                {/* ✅ Fixed: Program field now shows required indicator */}
                 <div className="space-y-2">
-                  <Label htmlFor="program-id">Academic Program</Label>
+                  <Label htmlFor="program-id">
+                    Academic Program <span className="text-destructive">*</span>
+                  </Label>
                   <Select
-                    value={formData.programId}
-                    onValueChange={(v) => setFormData({ ...formData, programId: v })}
-                    disabled={fetchingPrograms}
+                    value={formData.program}
+                    onValueChange={(v) => setFormData({ ...formData, program: v })}
+                    disabled={fetchingPrograms || loading}
                   >
                     <SelectTrigger id="program-id">
-                      <SelectValue placeholder={fetchingPrograms ? "Loading programs..." : "Select program"} />
+                      <SelectValue
+                        placeholder={
+                          fetchingPrograms
+                            ? "Loading programs..."
+                            : programs.length === 0
+                              ? "No programs available"
+                              : "Select program"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      {programs.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
+                      {programs.length > 0 ? (
+                        programs.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="none" disabled>
+                          {fetchingPrograms ? "Loading..." : "No programs found"}
                         </SelectItem>
-                      ))}
-                      {programs.length === 0 && !fetchingPrograms && (
-                        <SelectItem value="none" disabled>No programs found</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
+                  {programs.length === 0 && !fetchingPrograms && (
+                    <p className="text-xs text-muted-foreground">
+                      ⚠️ No programs found. Please create a program first.
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -162,7 +236,10 @@ export default function CreateCoursePage() {
                       id="course-name"
                       placeholder="e.g. Advanced Mathematics"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      disabled={loading}
                       required
                     />
                   </div>
@@ -174,11 +251,15 @@ export default function CreateCoursePage() {
                       id="course-code"
                       placeholder="e.g. MATH301"
                       value={formData.courseCode}
-                      onChange={(e) => setFormData({ ...formData, courseCode: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, courseCode: e.target.value })
+                      }
+                      disabled={loading}
                       required
                     />
                   </div>
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="credit-hours">
                     Credit Hours <span className="text-destructive">*</span>
@@ -188,12 +269,14 @@ export default function CreateCoursePage() {
                     type="number"
                     min="1"
                     max="10"
-                    value={formData.creditHours}
-                    onChange={(e) => setFormData({ ...formData, creditHours: e.target.value })}
+                    value={formData.creditHour}
+                    onChange={(e) =>
+                      setFormData({ ...formData, creditHour: e.target.value })
+                    }
+                    disabled={loading}
                     required
                   />
                 </div>
-
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-[#243F76]/10 dark:border-white/10">
@@ -207,7 +290,7 @@ export default function CreateCoursePage() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || fetchingPrograms}
                   className="bg-[#243F76] hover:bg-[#1a2e56] text-white gap-2"
                 >
                   {loading ? (
