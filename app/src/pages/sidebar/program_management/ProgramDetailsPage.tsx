@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ProgramForm } from "@/components/forms/ProgramForm";
 import { ProgramDetailsView } from "@/components/program/ProgramDetailsView";
 import { extractErrorMessage, logError, validateRequiredFields } from "@/lib/error-handler";
-import { ChevronLeft, Edit2, Save, Trash2, X, Loader2, Building2 } from "lucide-react";
+import { ChevronLeft, Edit2, Save, Trash2, X, Loader2, Building2, BookOpen, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -23,6 +23,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useAuth } from "@/lib/auth-context";
 
 interface ProgramDetail {
@@ -31,6 +39,14 @@ interface ProgramDetail {
   duration: string;
   programCode: string;
   type?: string;
+}
+
+interface CourseDetail {
+  id: string;
+  name: string;
+  courseCode: string;
+  creditHour: string;
+  program?: string;
 }
 
 interface EditData {
@@ -61,6 +77,9 @@ export default function ProgramDetailsPage() {
     duration: "",
   });
 
+  const [courses, setCourses] = useState<CourseDetail[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+
   const fetchProgram = async () => {
     setLoading(true);
     setError(null);
@@ -87,9 +106,23 @@ export default function ProgramDetailsPage() {
     }
   };
 
+  const fetchProgramCourses = async () => {
+    setLoadingCourses(true);
+    try {
+      const response = await dashboardApi.get(`/programs/${id}/courses`);
+      const data = Array.isArray(response.data) ? response.data : (response.data as any)?.content || [];
+      setCourses(data);
+    } catch (err: any) {
+      logError("FetchProgramCourses", err);
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
   useEffect(() => {
     if (id) {
       fetchProgram();
+      fetchProgramCourses();
     }
   }, [id]);
 
@@ -354,9 +387,6 @@ export default function ProgramDetailsPage() {
         <Card className="border-[#243F76]/10 dark:border-white/10 shadow-sm overflow-hidden">
           <CardHeader className="bg-muted/40 pb-4 border-b border-border">
             <CardTitle className="text-lg font-medium">Basic Information</CardTitle>
-            <CardDescription>
-              {isEditing ? "Update the program details below." : "View the program basics."}
-            </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
             {isEditing ? (
@@ -368,6 +398,63 @@ export default function ProgramDetailsPage() {
             ) : (
               <ProgramDetailsView program={program} />
             )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-[#243F76]/10 dark:border-white/10 shadow-sm overflow-hidden bg-card">
+          <CardHeader className="bg-muted/40 py-3 border-b border-border flex flex-row items-center gap-3">
+            <BookOpen className="h-5 w-5 text-muted-foreground shrink-0 mt-0" />
+            <CardTitle className="text-lg font-medium mt-0">
+              Program's Course List
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-3">
+              {loadingCourses ? (
+                <div className="flex items-center justify-center h-24 text-muted-foreground border border-[#243F76]/10 dark:border-white/10 rounded-lg bg-zinc-50 dark:bg-zinc-950 shadow-sm">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  Loading courses...
+                </div>
+              ) : courses.length === 0 ? (
+                <div className="flex items-center justify-center h-24 text-muted-foreground border border-[#243F76]/10 dark:border-white/10 rounded-lg bg-zinc-50 dark:bg-zinc-950 shadow-sm">
+                  No courses found for this program.
+                </div>
+              ) : (
+                courses.map((course) => (
+                  <div
+                    key={course.id}
+                    onClick={() => setLocation(`/courses/${course.id}`)}
+                    className="group flex items-center justify-between p-3 rounded-lg border border-[#243F76]/10 dark:border-white/10 bg-zinc-50 dark:bg-zinc-950 transition-all cursor-pointer shadow-sm hover:shadow-md gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-9 w-9 rounded-md bg-[#243F76]/10 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                        <BookOpen className="h-4 w-4 text-[#243F76] dark:text-blue-400" />
+                      </div>
+                      <div className="flex items-center gap-2 min-w-0 flex-wrap sm:flex-nowrap">
+                        <h3 className="font-medium text-sm sm:text-base text-foreground truncate">
+                          {course.name || "-"}
+                        </h3>
+                        <span className="text-muted-foreground/50 hidden sm:inline">•</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-sm text-muted-foreground">
+                            {course.creditHour || "0"} Credits
+                          </span>
+                          {course.courseCode && (
+                            <span className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-900 rounded text-[10px] font-medium text-muted-foreground border dark:border-zinc-800">
+                              {course.courseCode}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 flex items-center justify-center h-6 w-6 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all">
+                      <ChevronRight className="h-4 w-4" />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

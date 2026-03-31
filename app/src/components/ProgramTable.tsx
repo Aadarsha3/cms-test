@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { dashboardApi } from "@/lib/api";
-import { Plus, Search, Loader2, RefreshCw } from "lucide-react";
+import { Plus, Search, Loader2, RefreshCw, BookOpen, Edit2, Trash2, ChevronRight } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -200,69 +200,66 @@ export function ProgramTable() {
           </div>
         </div>
 
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">SN</TableHead>
-                  <TableHead>Program Name</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Duration</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        Loading...
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : error ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="h-24 text-center text-destructive"
-                    >
-                      Failed to load data. Please try again.
-                    </TableCell>
-                  </TableRow>
-                ) : programs.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="h-24 text-center text-muted-foreground"
-                    >
-                      {search ? "No matching programs found." : "No programs created yet."}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  programs.map((program, index) => (
-                    <TableRow
-                      key={program.id}
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => setLocation(`/programs/${program.id}`)}
-                    >
-                      <TableCell>{page * size + index + 1}</TableCell>
-                      <TableCell className="font-medium">
-                        {program.name || "-"}
-                      </TableCell>
-                      <TableCell>{program.programCode || "-"}</TableCell>
-                      <TableCell className="capitalize">{program.type || "-"}</TableCell>
-                      <TableCell className="max-w-[300px] truncate">
-                        {program.duration || "No duration"}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        <div className="space-y-3">
+          {loading ? (
+             <div className="flex items-center justify-center h-24 text-muted-foreground border border-[#243F76]/10 dark:border-white/10 rounded-lg bg-card dark:bg-transparent shadow-sm">
+               <Loader2 className="h-5 w-5 animate-spin mr-2" />
+               Loading...
+             </div>
+          ) : error ? (
+            <div className="flex items-center justify-center h-24 text-destructive border border-[#243F76]/10 dark:border-white/10 rounded-lg bg-card dark:bg-transparent shadow-sm">
+              Failed to load data. Please try again.
+            </div>
+          ) : programs.length === 0 ? (
+            <div className="flex items-center justify-center h-24 text-muted-foreground border border-[#243F76]/10 dark:border-white/10 rounded-lg bg-card dark:bg-transparent shadow-sm">
+              {search ? "No matching programs found." : "No programs created yet."}
+            </div>
+          ) : (
+            programs.map((program) => (
+              <div
+                key={program.id}
+                onClick={() => setLocation(`/programs/${program.id}`)}
+                className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-[#243F76]/10 dark:border-white/10 bg-card dark:bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-950 transition-all cursor-pointer shadow-sm hover:shadow-md gap-4"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="h-12 w-12 rounded-xl bg-[#243F76]/10 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                    <BookOpen className="h-6 w-6 text-[#243F76] dark:text-blue-400" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <h3 className="font-semibold text-base sm:text-lg text-foreground truncate">
+                      {program.name || "-"}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                      {program.type && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-blue-500 text-white text-xs font-semibold capitalize tracking-wide">
+                          {program.type}
+                        </span>
+                      )}
+                      {program.type && <span className="text-muted-foreground/50">•</span>}
+                      <span className="truncate">{program.duration || "No duration"}</span>
+                      {program.programCode && (
+                        <>
+                          <span className="text-muted-foreground/50">•</span>
+                          <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-md text-xs font-medium text-muted-foreground border dark:border-zinc-700/50">
+                            {program.programCode}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+                  <div className="flex items-center gap-1">
+                    <div className="h-8 w-8 flex items-center justify-center text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all">
+                      <ChevronRight className="h-5 w-5" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
         {!loading && programs.length > 0 && (
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
