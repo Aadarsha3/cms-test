@@ -48,21 +48,10 @@ export function CourseTable() {
   const [size, setSize] = useState(10);
   const [sort] = useState("id");
   const [direction] = useState("DESC");
-  const [programs, setPrograms] = useState<Program[]>([]);
 
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  const fetchPrograms = async () => {
-    try {
-      const response = await dashboardApi.get("/programs");
-      const data = Array.isArray(response.data) ? response.data :
-        (response.data as any)?.content || [];
-      setPrograms(data);
-    } catch (err) {
-      console.error("Failed to fetch programs:", err);
-    }
-  };
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -103,7 +92,6 @@ export function CourseTable() {
 
   useEffect(() => {
     fetchCourses();
-    fetchPrograms();
   }, [page, size, sort, direction]);
 
   const filteredCourses = courses.filter((c) => {

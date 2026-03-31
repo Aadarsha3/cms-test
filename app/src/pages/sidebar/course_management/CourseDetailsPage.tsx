@@ -97,8 +97,7 @@ export default function CourseDetailsPage() {
     if (
       editData.name === course?.name &&
       editData.courseCode === course?.courseCode &&
-      editData.creditHour === course?.creditHour &&
-      editData.program === course?.program
+      editData.creditHour === course?.creditHour
     ) {
       setIsEditing(false);
       return;
@@ -122,9 +121,6 @@ export default function CourseDetailsPage() {
       }
       if (editData.courseCode !== course?.courseCode) {
         payload.push({ op: "replace", path: "/courseCode", value: editData.courseCode });
-      }
-      if (editData.creditHour !== course?.creditHour) {
-        payload.push({ op: "replace", path: "/creditHour", value: editData.creditHour });
       }
       if (editData.creditHour !== course?.creditHour) {
         payload.push({ op: "replace", path: "/creditHour", value: editData.creditHour });
