@@ -50,7 +50,6 @@ export function ProgramTable() {
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
 
@@ -68,8 +67,8 @@ export function ProgramTable() {
         direction: "DESC",
       };
 
-      if (debouncedSearch.trim()) {
-        params.search = debouncedSearch.trim();
+      if (search.trim()) {
+        params.search = search.trim();
       }
 
       const response = await dashboardApi.get<PaginatedResponse>("/programs", {
@@ -110,16 +109,7 @@ export function ProgramTable() {
 
   useEffect(() => {
     fetchPrograms();
-  }, [page, size, debouncedSearch]);
-
-  // Debounce search input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 500); // 500ms delay
-
-    return () => clearTimeout(timer);
-  }, [search]);
+  }, [page, size, search]);
 
   useEffect(() => {
     setPage(0);
@@ -160,6 +150,7 @@ export function ProgramTable() {
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 h-11 bg-white dark:bg-zinc-950 border-[#243F76]/10 dark:border-white/10 shadow-sm"
               autoComplete="off"
+              disabled={loading}
             />
           </div>
 

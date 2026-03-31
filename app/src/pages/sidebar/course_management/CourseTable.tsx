@@ -30,74 +30,70 @@ interface CourseResponse {
   name: string;
   courseCode: string;
   creditHour: string;
+  program?: string;
 }
 
-interface PaginatedResponse {
-  content: CourseResponse[];
-  totalElements: number;
-  totalPages: number;
-  currentPage: number;
-  pageSize: number;
+interface Program {
+  id: string;
+  name: string;
 }
 
 export function CourseTable() {
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalElements, setTotalElements] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
+  const [sort] = useState("id");
+  const [direction] = useState("DESC");
+  const [programs, setPrograms] = useState<Program[]>([]);
 
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+
+  const fetchPrograms = async () => {
+    try {
+      const response = await dashboardApi.get("/programs");
+      const data = Array.isArray(response.data) ? response.data :
+        (response.data as any)?.content || [];
+      setPrograms(data);
+    } catch (err) {
+      console.error("Failed to fetch programs:", err);
+    }
+  };
 
   const fetchCourses = async () => {
     setLoading(true);
     setError(null);
     try {
-      const params: any = {
-        page,
-        size,
-        sort: "id",
-        direction: "DESC",
-      };
-
-      if (debouncedSearch.trim()) {
-        params.search = debouncedSearch.trim();
-      }
-
-      const response = await dashboardApi.get<PaginatedResponse>("/courses", {
+      const params: any = { page, size, sort, direction };
+      const response = await dashboardApi.get<CourseResponse[]>("/courses", {
         params,
       });
 
-      if (response.data?.content && Array.isArray(response.data.content)) {
-        setCourses(response.data.content);
-        setTotalElements(response.data.totalElements || response.data.content.length);
-        setTotalPages(response.data.totalPages || 1);
-      } else if (Array.isArray(response.data)) {
+      if (Array.isArray(response.data)) {
         setCourses(response.data);
         setTotalElements(response.data.length);
-        setTotalPages(1);
       } else {
-        console.warn("Unexpected API response format:", response.data);
-        setCourses([]);
-        setTotalElements(0);
-        setTotalPages(0);
-        setError("Invalid response format from server");
+        const data = response.data as any;
+        if (data && Array.isArray(data.content)) {
+          setCourses(data.content);
+          setTotalElements(data.totalElements || data.content.length);
+        } else {
+          console.warn("Unexpected API response format:", response.data);
+          setCourses([]);
+          setTotalElements(0);
+          setError("Invalid response format from server");
+        }
       }
     } catch (err: any) {
       console.error("Failed to fetch courses:", err);
-      const errorMsg = err.message || "Failed to load courses";
-      setError(errorMsg);
-      setCourses([]);
-      setTotalElements(0);
-
+      setError(err.message || "Failed to load courses");
       toast({
         title: "Error fetching courses",
-        description: errorMsg,
+        description: err.message || "Could not connect to the server",
         variant: "destructive",
       });
     } finally {
@@ -107,22 +103,23 @@ export function CourseTable() {
 
   useEffect(() => {
     fetchCourses();
-  }, [page, size, debouncedSearch]);
+    fetchPrograms();
+  }, [page, size, sort, direction]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [search]);
+  const filteredCourses = courses.filter((c) => {
+    if (!c) return false;
+    const searchLower = search.toLowerCase();
+    const name = c.name?.toLowerCase() || "";
+    const code = c.courseCode?.toLowerCase() || "";
 
-  useEffect(() => {
-    setPage(0);
-  }, [search]);
+    return (
+      name.includes(searchLower) ||
+      code.includes(searchLower)
+    );
+  });
 
   const handleNextPage = () => {
-    const currentPageEnd = (page + 1) * size;
-    if (currentPageEnd < totalElements) {
+    if (courses.length === size) {
       setPage((prev) => prev + 1);
     }
   };
@@ -133,9 +130,9 @@ export function CourseTable() {
     }
   };
 
-  const displayStart = totalElements === 0 ? 0 : page * size + 1;
-  const displayEnd = Math.min((page + 1) * size, totalElements);
-  const isLastPage = displayEnd >= totalElements;
+  useEffect(() => {
+    setPage(0);
+  }, [search]);
 
   return (
     <MainLayout title="Course Management">
@@ -184,7 +181,6 @@ export function CourseTable() {
               onClick={fetchCourses}
               className="h-11 w-11 shrink-0"
               title="Refresh List"
-              disabled={loading}
             >
               <RefreshCw
                 className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
@@ -222,29 +218,26 @@ export function CourseTable() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : error ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="h-24 text-center text-destructive"
-                    >
-                      Failed to load data. Please try again.
-                    </TableCell>
-                  </TableRow>
-                ) : courses.length === 0 ? (
+                ) : filteredCourses.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={4}
                       className="h-24 text-center text-muted-foreground"
                     >
-                      {search ? "No matching courses found." : "No courses created yet."}
+                      {error ? (
+                        <span className="text-destructive">
+                          Failed to load data.
+                        </span>
+                      ) : (
+                        "No matching courses found."
+                      )}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  courses.map((course, index) => (
+                  filteredCourses.map((course, index) => (
                     <TableRow
-                      key={course.id}
-                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      key={course.id || index}
+                      className="cursor-pointer hover:bg-muted/50"
                       onClick={() => setLocation(`/courses/${course.id}`)}
                     >
                       <TableCell>{page * size + index + 1}</TableCell>
@@ -273,30 +266,25 @@ export function CourseTable() {
         </Card>
 
         {!loading && courses.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              Showing {displayStart}-{displayEnd} of {totalElements} entries
+              Showing {page * size + 1}-{page * size + courses.length} of{" "}
+              {totalElements} entries
             </div>
-
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handlePrevPage}
-                disabled={page === 0 || loading}
+                disabled={page === 0}
               >
                 Previous
               </Button>
-
-              <div className="flex items-center gap-2 px-3 py-1 text-sm text-muted-foreground">
-                Page {page + 1} of {totalPages || 1}
-              </div>
-
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleNextPage}
-                disabled={isLastPage || loading}
+                disabled={courses.length < size}
               >
                 Next
               </Button>
