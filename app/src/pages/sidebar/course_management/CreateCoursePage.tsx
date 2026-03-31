@@ -38,11 +38,18 @@ export default function CreateCoursePage() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [fetchingPrograms, setFetchingPrograms] = useState(true);
 
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    courseCode: "",
-    creditHour: "3",
-    program: "",
+  const [formData, setFormData] = useState<FormData>(() => {
+    let defaultProgram = "";
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      defaultProgram = params.get("program") || "";
+    }
+    return {
+      name: "",
+      courseCode: "",
+      creditHour: "3",
+      program: defaultProgram,
+    };
   });
 
   useEffect(() => {
@@ -117,7 +124,7 @@ export default function CreateCoursePage() {
 
     setLoading(true);
     try {
-      // ✅ Fixed: Send program as the selected ID (not null)
+
       const payload = {
         name: formData.name.trim(),
         courseCode: formData.courseCode.trim(),

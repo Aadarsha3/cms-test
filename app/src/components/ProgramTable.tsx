@@ -50,11 +50,17 @@ export function ProgramTable() {
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
+  const [localSearch, setLocalSearch] = useState("");
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
 
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(localSearch), 300);
+    return () => clearTimeout(timer);
+  }, [localSearch]);
 
   const fetchPrograms = async () => {
     setLoading(true);
@@ -146,11 +152,10 @@ export function ProgramTable() {
             <Input
               id="program-search-query"
               placeholder="Search by name, code, or duration..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-9 h-11 bg-white dark:bg-zinc-950 border-[#243F76]/10 dark:border-white/10 shadow-sm"
               autoComplete="off"
-              disabled={loading}
             />
           </div>
 

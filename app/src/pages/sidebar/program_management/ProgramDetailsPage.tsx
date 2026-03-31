@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ProgramForm } from "@/components/forms/ProgramForm";
 import { ProgramDetailsView } from "@/components/program/ProgramDetailsView";
 import { extractErrorMessage, logError, validateRequiredFields } from "@/lib/error-handler";
-import { ChevronLeft, Edit2, Save, Trash2, X, Loader2, Building2, BookOpen, ChevronRight } from "lucide-react";
+import { ChevronLeft, Edit2, Save, Trash2, X, Loader2, Building2, BookOpen, ChevronRight, Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -402,11 +402,17 @@ export default function ProgramDetailsPage() {
         </Card>
 
         <Card className="border-[#243F76]/10 dark:border-white/10 shadow-sm overflow-hidden bg-card">
-          <CardHeader className="bg-muted/40 py-3 border-b border-border flex flex-row items-center gap-3">
-            <BookOpen className="h-5 w-5 text-muted-foreground shrink-0 mt-0" />
-            <CardTitle className="text-lg font-medium mt-0">
-              Program's Course List
-            </CardTitle>
+          <CardHeader className="bg-muted/40 py-3 border-b border-border flex flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <BookOpen className="h-5 w-5 text-muted-foreground shrink-0 mt-0" />
+              <CardTitle className="text-lg font-medium mt-0">
+                Program's Course List
+              </CardTitle>
+            </div>
+            <Button size="sm" onClick={() => setLocation(`/courses/create?program=${id}`)} className="gap-2 shrink-0">
+              <Plus className="h-4 w-4" /> 
+              <span className="hidden sm:inline">Add Course</span>
+            </Button>
           </CardHeader>
           <CardContent className="pt-6">
             <div className="space-y-3">

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell, CheckCircle, AlertCircle, Info, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Extended mock data for demonstration
 const extendedActivity = [
@@ -23,6 +23,12 @@ const extendedActivity = [
 
 export function ActivityPage() {
     const [filter, setFilter] = useState("");
+    const [localFilter, setLocalFilter] = useState("");
+
+    useEffect(() => {
+        const timer = setTimeout(() => setFilter(localFilter), 300);
+        return () => clearTimeout(timer);
+    }, [localFilter]);
 
     const filteredActivities = extendedActivity.filter(activity =>
         activity.message.toLowerCase().includes(filter.toLowerCase())
@@ -47,8 +53,8 @@ export function ActivityPage() {
                                 <Input
                                     placeholder="Search activity..."
                                     className="pl-9 bg-muted/20 border-[#243F76]/10"
-                                    value={filter}
-                                    onChange={(e) => setFilter(e.target.value)}
+                                    value={localFilter}
+                                    onChange={(e) => setLocalFilter(e.target.value)}
                                 />
                             </div>
                         </div>
