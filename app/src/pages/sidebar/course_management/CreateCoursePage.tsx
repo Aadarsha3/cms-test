@@ -143,9 +143,9 @@ export default function CreateCoursePage() {
 
       // ✅ Redirect to the new course details page
       if (response.data?.id) {
-        setLocation(`/courses/${response.data.id}`);
+        setLocation(`/courses/${response.data.id}`, { replace: true });
       } else {
-        setLocation("/courses");
+        setLocation("/courses", { replace: true });
       }
     } catch (err: any) {
       console.error("Failed to create course:", err?.response?.data || err);

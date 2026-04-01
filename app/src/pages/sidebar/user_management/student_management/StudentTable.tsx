@@ -14,6 +14,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { RowsSelector } from "@/components/common/RowsSelector";
+import { TablePagination } from "@/components/common/TablePagination";
+import { TableLoadingState } from "@/components/common/TableLoadingState";
+import { TableEmptyState } from "@/components/common/TableEmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -190,29 +193,13 @@ export function StudentTable() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        Loading...
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <TableLoadingState colSpan={5} />
                 ) : filteredStudents.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="h-24 text-center text-muted-foreground"
-                    >
-                      {error ? (
-                        <span className="text-destructive">
-                          Failed to load data.
-                        </span>
-                      ) : (
-                        "No matching students found."
-                      )}
-                    </TableCell>
-                  </TableRow>
+                  <TableEmptyState 
+                    colSpan={5} 
+                    error={error} 
+                    message="No matching students found." 
+                  />
                 ) : (
                   filteredStudents.map((student, index) => (
                     <TableRow
@@ -246,32 +233,15 @@ export function StudentTable() {
           </CardContent>
         </Card>
 
-        {!loading && students.length > 0 && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              Showing {page * size + 1}-{page * size + students.length} of{" "}
-              {totalElements} entries
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrevPage}
-                disabled={page === 0}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextPage}
-                disabled={students.length < size}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+        <TablePagination
+          page={page}
+          size={size}
+          itemsLength={students.length}
+          totalElements={totalElements}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+          loading={loading}
+        />
       </div>
     </MainLayout>
   );

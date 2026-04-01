@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Edit2, Save, Trash2, X, Loader2, BookOpen } from "lucide-react";
+import { PageHeader } from "@/components/common/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -213,24 +214,11 @@ export default function CourseDetailsPage() {
     <MainLayout title="Course Details">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setLocation("/courses")}
-              className="rounded-full shrink-0"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="bg-[#243F76]/10 dark:bg-zinc-800 p-2 rounded-lg">
-                <BookOpen className="h-5 w-5 text-[#243F76] dark:text-blue-400" />
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#243F76] dark:text-white">
-                {course.name}
-              </h1>
-            </div>
-          </div>
+          <PageHeader
+            title={course.name}
+            backUrl="/courses"
+            icon={<BookOpen className="h-5 w-5 text-[#243F76] dark:text-blue-400" />}
+          />
 
           {isAdmin && (
             <div className="flex items-center gap-2 self-end sm:self-auto">

@@ -21,7 +21,6 @@ import { StaffPage } from "@/pages/sidebar/user_management/staff_management/Staf
 import ProgramsPage from "@/pages/sidebar/program_management/ProgramsPage";
 import CreateProgramPage from "@/pages/sidebar/program_management/CreateProgramPage";
 import ProgramDetailsPage from "@/pages/sidebar/program_management/ProgramDetailsPage";
-import CoursesPage from "@/pages/sidebar/course_management/CoursesPage";
 import CreateCoursePage from "@/pages/sidebar/course_management/CreateCoursePage";
 import CourseDetailsPage from "@/pages/sidebar/course_management/CourseDetailsPage";
 import AnnouncementsPage from "@/pages/sidebar/announcement_management/AnnouncementsPage";
@@ -124,9 +123,6 @@ function Router() {
         <ProtectedRoute component={ProgramDetailsPage} permission="users_view" />
       </Route>
 
-      <Route path="/courses">
-        <ProtectedRoute component={CoursesPage} permission="users_view" />
-      </Route>
       <Route path="/courses/create">
         <ProtectedRoute component={CreateCoursePage} permission="users_view" />
       </Route>

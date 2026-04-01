@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RowsSelector } from "@/components/common/RowsSelector";
+import { TablePagination } from "@/components/common/TablePagination";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { extractErrorMessage, logError } from "@/lib/error-handler";
@@ -290,37 +291,15 @@ export function ProgramTable() {
           )}
         </div>
 
-        {!loading && programs.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="text-sm text-muted-foreground">
-              Showing {displayStart}-{displayEnd} of {totalElements} entries
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrevPage}
-                disabled={page === 0 || loading}
-              >
-                Previous
-              </Button>
-
-              <div className="flex items-center gap-2 px-3 py-1 text-sm text-muted-foreground">
-                Page {page + 1} of {totalPages || 1}
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextPage}
-                disabled={isLastPage || loading}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+        <TablePagination
+          page={page}
+          size={size}
+          itemsLength={programs.length}
+          totalElements={totalElements}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+          loading={loading}
+        />
       </div>
     </MainLayout>
   );

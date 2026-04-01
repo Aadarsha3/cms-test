@@ -16,14 +16,20 @@ export function PageHeader({ title, backUrl, icon }: PageHeaderProps) {
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => setLocation(backUrl)}
+        onClick={() => {
+          if (window.history.length > 1) {
+            window.history.back();
+          } else if (backUrl) {
+            setLocation(backUrl);
+          }
+        }}
         className="rounded-full shrink-0"
       >
         <ChevronLeft className="h-5 w-5" />
       </Button>
       <div className="flex items-center gap-3">
         {icon && (
-          <div className="bg-[#243F76]/10 p-2 rounded-lg">
+          <div className="bg-[#243F76]/10 dark:bg-zinc-800 p-2 rounded-lg">
             {icon}
           </div>
         )}

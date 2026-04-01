@@ -12,6 +12,7 @@ import { ProgramDetailsView } from "@/components/program/ProgramDetailsView";
 import { extractErrorMessage, logError, validateRequiredFields } from "@/lib/error-handler";
 import { PROGRAM_TYPES } from "@/lib/constants";
 import { ChevronLeft, Edit2, Save, Trash2, X, Loader2, Building2, BookOpen, ChevronRight, Plus } from "lucide-react";
+import { PageHeader } from "@/components/common/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -286,19 +287,10 @@ export default function ProgramDetailsPage() {
   return (
     <MainLayout title="Program Details">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setLocation("/programs")}
-            className="rounded-full shrink-0"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            Program Details
-          </h1>
-        </div>
+        <PageHeader 
+          title="Program Details"
+          backUrl="/programs"
+        />
 
         {isEditing ? (
           <Card className="border-[#243F76]/10 dark:border-white/10 shadow-sm overflow-hidden bg-card">

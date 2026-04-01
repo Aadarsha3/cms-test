@@ -9,7 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { dashboardApi } from "@/lib/api";
 import { ProgramForm } from "@/components/forms/ProgramForm";
 import { extractErrorMessage, logError, validateRequiredFields } from "@/lib/error-handler";
-import { ChevronLeft, Save, Loader2 } from "lucide-react";
+import { PageHeader } from "@/components/common/PageHeader";
+import { FormFooter } from "@/components/common/FormFooter";
+import { ChevronLeft, Save, Loader2, Building2 } from "lucide-react";
 
 interface FormData {
   name: string;
@@ -94,19 +96,11 @@ export default function CreateProgramPage() {
   return (
     <MainLayout title="Create New Program">
       <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setLocation("/programs")}
-            className="rounded-full"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold tracking-tight text-[#243F76] dark:text-white">
-            Program Details
-          </h1>
-        </div>
+        <PageHeader 
+          title="Program Details"
+          backUrl="/programs"
+          icon={<Building2 className="h-6 w-6 text-[#243F76]" />}
+        />
 
         <Card className="border-[#243F76]/10 dark:border-white/10 shadow-lg">
           <CardHeader>
@@ -120,28 +114,11 @@ export default function CreateProgramPage() {
                 isLoading={loading}
               />
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#243F76]/10 dark:border-white/10">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setLocation("/programs")}
-                  disabled={loading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-[#243F76] hover:bg-[#1a2e56] text-white gap-2"
-                >
-                  {loading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  Create Program
-                </Button>
-              </div>
+              <FormFooter
+                loading={loading}
+                onCancel={() => setLocation("/programs")}
+                submitText="Create Program"
+              />
             </form>
           </CardContent>
         </Card>

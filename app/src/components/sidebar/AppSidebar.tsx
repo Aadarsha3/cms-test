@@ -66,12 +66,6 @@ const navItems: NavItem[] = [
     permissionId: "users_view",
   },
   {
-    title: "Course Management",
-    url: "/courses",
-    icon: BookOpen,
-    permissionId: "users_view",
-  },
-  {
     title: "Announcements",
     url: "/announcements",
     icon: Megaphone,
