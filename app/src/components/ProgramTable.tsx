@@ -25,6 +25,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { extractErrorMessage, logError } from "@/lib/error-handler";
+import { PROGRAM_TYPES } from "@/lib/constants";
+
 
 interface ProgramResponse {
   id: string;
@@ -51,6 +53,7 @@ export function ProgramTable() {
 
   const [search, setSearch] = useState("");
   const [localSearch, setLocalSearch] = useState("");
+  const [filterType, setFilterType] = useState<string>("ALL");
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
 
@@ -67,6 +70,7 @@ export function ProgramTable() {
     setError(null);
     try {
       const params: any = {
+        // Only request matching page and size, but searching/filtering might need careful handling
         page,
         size,
         sort: "id",
@@ -77,25 +81,39 @@ export function ProgramTable() {
         params.search = search.trim();
       }
 
+      // Note: If backend doesn't support 'type' filter, we'll fetch more data or filter client-side
+      // For now, let's try fetching a larger batch if filtering client-side to ensure we have enough data
+      // OR better, we fetch and then filter. 
       const response = await dashboardApi.get<PaginatedResponse>("/programs", {
         params,
       });
 
+      let content: ProgramResponse[] = [];
+      let total = 0;
+      let pages = 0;
+
       if (response.data?.content && Array.isArray(response.data.content)) {
-        setPrograms(response.data.content);
-        setTotalElements(response.data.totalElements || response.data.content.length);
-        setTotalPages(response.data.totalPages || 1);
+        content = response.data.content;
+        total = response.data.totalElements || content.length;
+        pages = response.data.totalPages || 1;
       } else if (Array.isArray(response.data)) {
-        setPrograms(response.data as any);
-        setTotalElements((response.data as any).length);
-        setTotalPages(1);
-      } else {
-        console.warn("Unexpected API response format:", response.data);
-        setPrograms([]);
-        setTotalElements(0);
-        setTotalPages(0);
-        setError("Invalid response format from server");
+        content = response.data;
+        total = content.length;
+        pages = 1;
       }
+
+      // CLIENT-SIDE FILTERING (Fallback if API doesn't filter by type)
+      if (filterType !== "ALL") {
+        const filtered = content.filter(p => p.type === filterType);
+        setPrograms(filtered);
+        setTotalElements(filtered.length);
+        setTotalPages(Math.ceil(filtered.length / size) || 1);
+      } else {
+        setPrograms(content);
+        setTotalElements(total);
+        setTotalPages(pages);
+      }
+
     } catch (err: any) {
       logError("FetchPrograms", err);
       const errorMsg = extractErrorMessage(err, "Could not connect to the server");
@@ -115,11 +133,11 @@ export function ProgramTable() {
 
   useEffect(() => {
     fetchPrograms();
-  }, [page, size, search]);
+  }, [page, size, search, filterType]);
 
   useEffect(() => {
     setPage(0);
-  }, [search]);
+  }, [search, filterType]);
 
   const handleNextPage = () => {
     const currentPageEnd = (page + 1) * size;
@@ -159,7 +177,28 @@ export function ProgramTable() {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground hidden lg:inline">
+                Type:
+              </span>
+              <Select
+                value={filterType}
+                onValueChange={(v) => setFilterType(v)}
+              >
+                <SelectTrigger className="h-11 w-[130px] bg-white dark:bg-zinc-950 border-[#243F76]/10 dark:border-white/10 shadow-sm">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Types</SelectItem>
+                  {PROGRAM_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground hidden lg:inline">
                 Rows:

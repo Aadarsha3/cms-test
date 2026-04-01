@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ProgramForm } from "@/components/forms/ProgramForm";
 import { ProgramDetailsView } from "@/components/program/ProgramDetailsView";
 import { extractErrorMessage, logError, validateRequiredFields } from "@/lib/error-handler";
+import { PROGRAM_TYPES } from "@/lib/constants";
 import { ChevronLeft, Edit2, Save, Trash2, X, Loader2, Building2, BookOpen, ChevronRight, Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -285,121 +286,137 @@ export default function ProgramDetailsPage() {
   return (
     <MainLayout title="Program Details">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setLocation("/programs")}
-              className="rounded-full shrink-0"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="bg-[#243F76]/10 dark:bg-zinc-800 p-2 rounded-lg">
-                <Building2 className="h-5 w-5 text-[#243F76] dark:text-blue-400" />
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#243F76] dark:text-white">
-                {program.name}
-              </h1>
-            </div>
-          </div>
-
-          {isAdmin && (
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              {!isEditing ? (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditing(true)}
-                    className="gap-2"
-                  >
-                    <Edit2 className="h-4 w-4" /> Edit Program
-                  </Button>
-
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" className="gap-2">
-                        <Trash2 className="h-4 w-4" /> Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the program
-                          "{program.name}" ({program.programCode}) and all associated data.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleDelete}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          disabled={isDeleting}
-                        >
-                          {isDeleting ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          ) : (
-                            <Trash2 className="h-4 w-4 mr-2" />
-                          )}
-                          Delete Program
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setEditData({
-                        name: program.name,
-                        code: program.programCode,
-                        type: program.type || "",
-                        duration: program.duration,
-                      });
-                    }}
-                    disabled={isSaving}
-                  >
-                    <X className="h-4 w-4 mr-2" /> Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="bg-[#243F76] hover:bg-[#1a2e56] text-white"
-                  >
-                    {isSaving ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Save className="h-4 w-4 mr-2" />
-                    )}
-                    Save Changes
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation("/programs")}
+            className="rounded-full shrink-0"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+            Program Details
+          </h1>
         </div>
 
-        <Card className="border-[#243F76]/10 dark:border-white/10 shadow-sm overflow-hidden">
-          <CardHeader className="bg-muted/40 pb-4 border-b border-border">
-            <CardTitle className="text-lg font-medium">Basic Information</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {isEditing ? (
+        {isEditing ? (
+          <Card className="border-[#243F76]/10 dark:border-white/10 shadow-sm overflow-hidden bg-card">
+            <CardHeader className="bg-muted/40 pb-4 border-b border-border">
+              <CardTitle className="text-lg font-medium">Edit Program</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
               <ProgramForm
                 data={editData}
                 onChange={handleEditFieldChange}
                 isLoading={isSaving}
               />
-            ) : (
-              <ProgramDetailsView program={program} />
+              <div className="flex items-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditData({
+                      name: program.name,
+                      code: program.programCode,
+                      type: program.type || "",
+                      duration: program.duration,
+                    });
+                  }}
+                  disabled={isSaving}
+                >
+                  <X className="h-4 w-4 mr-2" /> Cancel
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="bg-[#243F76] hover:bg-[#1a2e56] text-white"
+                >
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Save Changes
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg border border-[#243F76]/10 dark:border-white/10 bg-zinc-50 dark:bg-zinc-950 shadow-sm gap-4">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="h-12 w-12 rounded-md bg-[#243F76]/10 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                <Building2 className="h-6 w-6 text-[#243F76] dark:text-blue-400" />
+              </div>
+              <div className="flex flex-col min-w-0 gap-1.5">
+                <h2 className="font-semibold text-lg text-foreground truncate">
+                  {program.name || "-"}
+                </h2>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {program.programCode && (
+                    <>
+                      <span className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-900 rounded font-mono text-xs font-medium text-muted-foreground border dark:border-zinc-800">
+                        {program.programCode}
+                      </span>
+                      <span className="text-muted-foreground/30 hidden sm:inline">•</span>
+                    </>
+                  )}
+                  <span className="text-sm text-muted-foreground">
+                    {PROGRAM_TYPES.find((t) => t.value === program.type)?.label || program.type || "N/A Type"}
+                  </span>
+                  <span className="text-muted-foreground/30 hidden sm:inline">•</span>
+                  <span className="text-sm text-muted-foreground">
+                    {program.duration || "N/A Duration"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {isAdmin && (
+              <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                  className="gap-2 bg-transparent border-border hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                >
+                  <Edit2 className="h-4 w-4" /> Edit
+                </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="gap-2">
+                      <Trash2 className="h-4 w-4" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the program
+                        "{program.name}" ({program.programCode}) and all associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Trash2 className="h-4 w-4 mr-2" />
+                        )}
+                        Delete Program
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        )}
 
         <Card className="border-[#243F76]/10 dark:border-white/10 shadow-sm overflow-hidden bg-card">
           <CardHeader className="bg-muted/40 py-3 border-b border-border flex flex-row items-center justify-between gap-3">
@@ -442,14 +459,17 @@ export default function ProgramDetailsPage() {
                         </h3>
                         <span className="text-muted-foreground/50 hidden sm:inline">•</span>
                         <div className="flex items-center gap-2 shrink-0">
+                          {course.courseCode && (
+                            <>
+                              <span className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-900 rounded text-[10px] font-medium text-muted-foreground border dark:border-zinc-800">
+                                {course.courseCode}
+                              </span>
+                              <span className="text-muted-foreground/50">•</span>
+                            </>
+                          )}
                           <span className="text-sm text-muted-foreground">
                             {course.creditHour || "0"} Credits
                           </span>
-                          {course.courseCode && (
-                            <span className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-900 rounded text-[10px] font-medium text-muted-foreground border dark:border-zinc-800">
-                              {course.courseCode}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
