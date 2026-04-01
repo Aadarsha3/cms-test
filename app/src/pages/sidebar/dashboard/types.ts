@@ -3,10 +3,10 @@
 import { LucideIcon } from "lucide-react";
 
 export interface Announcement {
-    id: number;
+    id: string;
     title: string;
     date: string;
-    content?: string;
+    details?: string;
 }
 
 export interface StatItem {
@@ -31,5 +31,5 @@ export interface RecentActivity {
 
 export interface AnnouncementForm {
     title: string;
-    content: string;
+    details: string;
 }

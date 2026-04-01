@@ -18,7 +18,7 @@ interface AnnouncementsCardProps {
     isSuperAdmin: boolean;
     onViewDetails: (announcement: Announcement) => void;
     onEdit: (announcement: Announcement) => void;
-    onDelete: (id: number) => void;
+    onDelete: (id: string) => void;
     onCreate: () => void;
     className?: string;
 }
@@ -73,17 +73,12 @@ export function AnnouncementsCard({
                                         <h4 className="font-bold text-[#1A2E56] dark:text-white leading-tight">
                                             {announcement.title}
                                         </h4>
-                                        {announcement.isEveryone && (
-                                            <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-tighter h-5">
-                                                Global
-                                            </Badge>
-                                        )}
                                     </div>
                                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                                         <span>{announcement.date}</span>
-                                        {announcement.content && (
+                                        {announcement.details && (
                                             <span className="hidden sm:inline">
-                                                • {announcement.content.substring(0, 60)}{announcement.content.length > 60 ? '...' : ''}
+                                                • {announcement.details.substring(0, 60)}{announcement.details.length > 60 ? '...' : ''}
                                             </span>
                                         )}
                                     </p>

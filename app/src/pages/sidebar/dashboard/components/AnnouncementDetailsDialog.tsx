@@ -32,7 +32,7 @@ export function AnnouncementDetailsDialog({
                         {announcement?.date}
                     </p>
                     <p className="text-sm whitespace-pre-wrap">
-                        {announcement?.content || "No additional details provided."}
+                        {announcement?.details || "No additional details provided."}
                     </p>
                 </div>
                 <DialogFooter>

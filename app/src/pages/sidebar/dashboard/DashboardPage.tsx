@@ -21,17 +21,38 @@ export function DashboardPage() {
   const { toast } = useToast();
 
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>(initialStats);
 
   const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-  const [editingAnnouncementId, setEditingAnnouncementId] = useState<number | null>(null);
+  const [editingAnnouncementId, setEditingAnnouncementId] = useState<string | null>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
 
   const [announcementForm, setAnnouncementForm] = useState<AnnouncementForm>({
     title: "",
-    content: "",
+    details: "",
   });
+
+  const fetchAnnouncements = async () => {
+    setLoadingAnnouncements(true);
+    try {
+      const response = await dashboardApi.get("/announcements");
+      const data = Array.isArray(response.data) ? response.data : (response.data as any)?.content || [];
+      // Format backend response to match UI needs
+      const formattedData = data.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        details: item.details,
+        date: item.createdTimestamp ? new Date(item.createdTimestamp).toLocaleDateString() : "Recently",
+      }));
+      setAnnouncements(formattedData);
+    } catch (err) {
+      console.error("Failed to fetch announcements:", err);
+    } finally {
+      setLoadingAnnouncements(false);
+    }
+  };
 
   useEffect(() => {
     if (user?.role === "super_admin") {
@@ -54,6 +75,7 @@ export function DashboardPage() {
           console.error("Dashboard stats fetch failed:", err);
         });
     }
+    fetchAnnouncements();
   }, [user]);
 
   if (!user) return null;
@@ -74,7 +96,7 @@ export function DashboardPage() {
     setEditingAnnouncementId(null);
     setAnnouncementForm({
       title: "",
-      content: "",
+      details: "",
     });
     setIsAnnouncementDialogOpen(true);
   };
@@ -83,42 +105,48 @@ export function DashboardPage() {
     setEditingAnnouncementId(announcement.id);
     setAnnouncementForm({
       title: announcement.title,
-      content: announcement.content || "",
+      details: announcement.details || "",
     });
     setIsAnnouncementDialogOpen(true);
   };
 
-  const handleSaveAnnouncement = () => {
+  const handleSaveAnnouncement = async () => {
     if (!announcementForm.title.trim()) {
-      toast({ title: "Please enter a title", variant: "destructive" });
+      toast({ title: "Title is required", variant: "destructive" });
       return;
     }
 
-    if (editingAnnouncementId) {
-      setAnnouncements(prev => prev.map(a =>
-        a.id === editingAnnouncementId
-          ? { ...a, ...announcementForm }
-          : a
-      ));
-      toast({ title: "Announcement updated" });
-    } else {
-      const newEntry: Announcement = {
-        id: Date.now(),
-        ...announcementForm,
-        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      };
-      setAnnouncements(prev => [newEntry, ...prev]);
-      toast({ title: "Announcement published" });
+    try {
+      if (editingAnnouncementId) {
+        // According to API specification, we use PATCH for modifications
+        await dashboardApi.patch(`/announcements/${editingAnnouncementId}`, [
+          { op: "replace", path: "/title", value: announcementForm.title },
+          { op: "replace", path: "/details", value: announcementForm.details },
+        ]);
+        toast({ title: "Announcement updated successfully" });
+      } else {
+        await dashboardApi.post("/announcements", announcementForm);
+        toast({ title: "Announcement published successfully" });
+      }
+      fetchAnnouncements();
+      setIsAnnouncementDialogOpen(false);
+    } catch (err) {
+      console.error("Failed to save announcement:", err);
+      toast({ title: "Failed to save announcement", variant: "destructive" });
     }
-
-    setIsAnnouncementDialogOpen(false);
   };
 
   const filteredAnnouncements = announcements;
 
-  const handleDeleteAnnouncement = (id: number) => {
-    setAnnouncements(prev => prev.filter(a => a.id !== id));
-    toast({ title: "Announcement deleted" });
+  const handleDeleteAnnouncement = async (id: string) => {
+    try {
+      await dashboardApi.delete(`/announcements/${id}`);
+      setAnnouncements(prev => prev.filter(a => a.id !== id));
+      toast({ title: "Announcement deleted" });
+    } catch (err) {
+      console.error("Failed to delete announcement:", err);
+      toast({ title: "Failed to delete announcement", variant: "destructive" });
+    }
   };
 
   const handleViewDetails = (announcement: Announcement) => {

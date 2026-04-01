@@ -43,22 +43,22 @@ export function AnnouncementDialog({
 
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label htmlFor="title">Headline</Label>
+                        <Label htmlFor="title">Title</Label>
                         <Input
                             id="title"
-                            placeholder="Brief summary of the announcement"
+                            placeholder="Announcement title"
                             value={form.title}
                             onChange={(e) => setForm({ ...form, title: e.target.value })}
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="content">Full Description</Label>
+                        <Label htmlFor="details">Details</Label>
                         <Textarea
-                            id="content"
-                            placeholder="Provide more context here..."
+                            id="details"
+                            placeholder="Announcement details..."
                             className="min-h-[200px]"
-                            value={form.content}
-                            onChange={(e) => setForm({ ...form, content: e.target.value })}
+                            value={form.details}
+                            onChange={(e) => setForm({ ...form, details: e.target.value })}
                         />
                     </div>
                 </div>
