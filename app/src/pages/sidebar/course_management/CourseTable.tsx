@@ -15,13 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { RowsSelector } from "@/components/common/RowsSelector";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -147,29 +141,13 @@ export function CourseTable() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground hidden lg:inline">
-                Rows:
-              </span>
-              <Select
-                value={String(size)}
-                onValueChange={(v) => {
-                  setSize(Number(v));
-                  setPage(0);
-                }}
-              >
-                <SelectTrigger className="h-11 w-[85px] bg-white dark:bg-zinc-950 border-[#243F76]/10 dark:border-white/10 shadow-sm">
-                  <SelectValue placeholder={String(size)} />
-                </SelectTrigger>
-                <SelectContent>
-                  {[5, 10, 20, 50, 100].map((v) => (
-                    <SelectItem key={v} value={String(v)}>
-                      {v}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <RowsSelector
+              value={size}
+              onValueChange={(v) => {
+                setSize(v);
+                setPage(0);
+              }}
+            />
 
             <Button
               variant="outline"

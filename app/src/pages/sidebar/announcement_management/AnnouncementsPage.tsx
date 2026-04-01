@@ -1,45 +1,61 @@
 // /app/src/pages/sidebar/announcement_management/AnnouncementsPage.tsx
 
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { dashboardApi } from "@/lib/api";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
-import { Plus, Search, Loader2, RefreshCw, Megaphone, Edit, Trash2, Eye, Calendar } from "lucide-react";
+import { Plus, Search, Loader2, RefreshCw, Megaphone, Edit, Trash2, ChevronRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { RowsSelector } from "@/components/common/RowsSelector";
 import { AnnouncementForm, Announcement } from "../dashboard/types";
 import { AnnouncementDialog } from "../dashboard/components/AnnouncementDialog";
-import { AnnouncementDetailsDialog } from "../dashboard/components/AnnouncementDetailsDialog";
 
 export default function AnnouncementsPage() {
     const { hasPermission } = useAuth();
     const { toast } = useToast();
+    const [, setLocation] = useLocation();
     const isAdmin = hasPermission("users_edit");
 
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
-    
+    const [page, setPage] = useState(0);
+    const [size, setSize] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalElements, setTotalElements] = useState(0);
+
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
     const [form, setForm] = useState<AnnouncementForm>({ title: "", details: "" });
 
     const fetchAnnouncements = async () => {
         setLoading(true);
         try {
-            const response = await dashboardApi.get("/announcements");
-            const data = Array.isArray(response.data) ? response.data : (response.data as any)?.content || [];
-            const formatted = data.map((item: any) => ({
+            const response = await dashboardApi.get(`/announcements?page=${page}&size=${size}&sort=createdDate&direction=DSC`);
+            const data = response.data;
+
+            // Handle both array and paginated object responses
+            const content = Array.isArray(data) ? data : data.content || [];
+            const total = Array.isArray(data) ? 1 : data.totalPages || 1;
+            const totalElems = Array.isArray(data) ? data.length : data.totalElements || 0;
+
+            const formatted = content.map((item: any) => ({
                 id: item.id,
                 title: item.title,
                 details: item.details,
-                date: item.createdTimestamp ? new Date(item.createdTimestamp).toLocaleDateString() : "Recently",
+                date: new Date(item.createdTimestamp || item.createdAt || new Date()).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
+                }),
             }));
             setAnnouncements(formatted);
+            setTotalPages(total);
+            setTotalElements(totalElems);
         } catch (err) {
             console.error(err);
             toast({ title: "Failed to load announcements", variant: "destructive" });
@@ -50,53 +66,30 @@ export default function AnnouncementsPage() {
 
     useEffect(() => {
         fetchAnnouncements();
-    }, []);
+    }, [page, size]);
 
     const handleCreate = () => {
         setEditingId(null);
         setForm({ title: "", details: "" });
         setIsDialogOpen(true);
-    };
+    }; const handleSave = async () => {
+        if (!form.title.trim()) {
+            toast({ title: "Title is required", variant: "destructive" });
+            return;
+        }
 
-    const handleEdit = (announcement: Announcement) => {
-        setEditingId(announcement.id);
-        setForm({ title: announcement.title, details: announcement.details || "" });
-        setIsDialogOpen(true);
-    };
-
-    const handleSave = async () => {
-        if (!form.title.trim()) return;
         try {
-            if (editingId) {
-                await dashboardApi.patch(`/announcements/${editingId}`, [
-                    { op: "replace", path: "/title", value: form.title },
-                    { op: "replace", path: "/details", value: form.details },
-                ]);
-                toast({ title: "Updated successfully" });
-            } else {
-                await dashboardApi.post("/announcements", form);
-                toast({ title: "Published successfully" });
-            }
+            await dashboardApi.post("/announcements", form);
+            toast({ title: "Announcement published successfully" });
             fetchAnnouncements();
             setIsDialogOpen(false);
         } catch (err) {
-            toast({ title: "Error saving announcement", variant: "destructive" });
+            console.error("Failed to save announcement:", err);
+            toast({ title: "Failed to save announcement", variant: "destructive" });
         }
     };
-
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this announcement?")) return;
-        try {
-            await dashboardApi.delete(`/announcements/${id}`);
-            setAnnouncements(prev => prev.filter(a => a.id !== id));
-            toast({ title: "Deleted successfully" });
-        } catch (err) {
-            toast({ title: "Error deleting announcement", variant: "destructive" });
-        }
-    };
-
-    const filtered = announcements.filter(a => 
-        a.title.toLowerCase().includes(search.toLowerCase()) || 
+    const filtered = announcements.filter(a =>
+        a.title.toLowerCase().includes(search.toLowerCase()) ||
         (a.details && a.details.toLowerCase().includes(search.toLowerCase()))
     );
 
@@ -114,7 +107,16 @@ export default function AnnouncementsPage() {
                         />
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <Button variant="outline" size="icon" onClick={fetchAnnouncements} disabled={loading}>
+                        <RowsSelector 
+                            value={size} 
+                            onValueChange={(v) => {
+                                setSize(v);
+                                setPage(0);
+                            }} 
+                            className="mr-2"
+                        />
+
+                        <Button variant="outline" size="icon" onClick={fetchAnnouncements} disabled={loading} className="h-11 w-11">
                             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                         </Button>
                         {isAdmin && (
@@ -132,37 +134,59 @@ export default function AnnouncementsPage() {
                         <div className="text-center py-20 opacity-40"><Megaphone className="h-10 w-10 mx-auto mb-2" /><p>No announcements found</p></div>
                     ) : (
                         filtered.map((announcement) => (
-                            <Card key={announcement.id} className="group border-[#243F76]/10 dark:border-white/10 hover:shadow-md transition-all">
+                            <Card
+                                key={announcement.id}
+                                onClick={() => setLocation(`/announcements/${announcement.id}`)}
+                                className="group cursor-pointer border-[#243F76]/10 dark:border-white/10 hover:shadow-md transition-all bg-white dark:bg-zinc-950"
+                            >
                                 <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="space-y-1.5 min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-lg text-[#1A2E56] dark:text-white truncate">{announcement.title}</h3>
+                                            <h3 className="font-bold text-lg text-[#1A2E56] dark:text-white truncate group-hover:text-primary transition-colors">{announcement.title}</h3>
                                         </div>
                                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {announcement.date}</span>
-                                            {announcement.details && <span className="truncate opacity-70 border-l pl-3 hidden md:inline">{announcement.details.substring(0, 100)}...</span>}
+                                            {announcement.details && <span className="truncate opacity-70 border-l pl-3 hidden md:inline">{announcement.details.substring(0, 120)}...</span>}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
-                                        <Button variant="ghost" size="icon" className="rounded-full" onClick={() => { setSelectedAnnouncement(announcement); setIsDetailDialogOpen(true); }}>
-                                            <Eye className="h-4 w-4" />
-                                        </Button>
-                                        {isAdmin && (
-                                            <>
-                                                <Button variant="ghost" size="icon" className="rounded-full text-blue-500 hover:text-blue-600 hover:bg-blue-50" onClick={() => handleEdit(announcement)}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="rounded-full text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(announcement.id)}>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </>
-                                        )}
+                                        <div className="h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                                            <ChevronRight className="h-4 w-4" />
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
-                        )
-                    ))}
+                        ))
+                    )}
                 </div>
+
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between pt-4 border-t border-[#243F76]/10">
+                        <div className="text-sm text-muted-foreground">
+                            Showing {page * size + 1}-{Math.min((page + 1) * size, totalElements)} of {totalElements} entries
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPage(p => Math.max(0, p - 1))}
+                                disabled={page === 0}
+                                className="border-[#243F76]/10"
+                            >
+                                Previous
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                                disabled={page >= totalPages - 1}
+                                className="border-[#243F76]/10"
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <AnnouncementDialog
@@ -171,13 +195,7 @@ export default function AnnouncementsPage() {
                 onSave={handleSave}
                 form={form}
                 setForm={setForm}
-                isEditing={!!editingId}
-            />
-
-            <AnnouncementDetailsDialog
-                isOpen={isDetailDialogOpen}
-                onClose={() => setIsDetailDialogOpen(false)}
-                announcement={selectedAnnouncement}
+                isEditing={false}
             />
         </MainLayout>
     );

@@ -1,0 +1,113 @@
+# DRY Analysis & Proposed Refactors
+
+This report identifies repeated code patterns across the CMS codebase that should be extracted into reusable components or hooks.
+
+## 1. Page Header & Action Bar Logic
+Repeated in:
+- `AnnouncementsPage.tsx`
+- `CourseTable.tsx`
+- `StudentTable.tsx`
+- `ProgramTable.tsx`
+
+**Repeated Pattern:**
+```tsx
+<div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+    <div className="relative flex-1 w-full max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input placeholder="Search..." ... />
+    </div>
+    <div className="flex items-center gap-2 w-full sm:w-auto">
+        <RowsSelector ... />
+        <Button variant="outline" size="icon" onClick={fetchData}>
+            <RefreshCw ... />
+        </Button>
+        <Button onClick={handleCreate}>
+            <Plus ... /> {ButtonLabel}
+        </Button>
+    </div>
+</div>
+```
+
+**Proposed Component:** `TableActionBar.tsx`
+This should accept `search`, `onSearchChange`, `onRefresh`, and an optional `createButton` config.
+
+---
+
+## 2. Table Pagination Footer
+Repeated in:
+- `AnnouncementsPage.tsx`
+- `CourseTable.tsx`
+- `StudentTable.tsx`
+- `ProgramTable.tsx`
+
+**Repeated Pattern:**
+```tsx
+<div className="flex items-center justify-between pt-4 border-t border-[#243F76]/10">
+    <div className="text-sm text-muted-foreground">
+        Showing {page * size + 1}-{Math.min((page + 1) * size, totalElements)} of {totalElements} entries
+    </div>
+    <div className="flex items-center gap-2">
+        <Button onClick={prevPage} disabled={page === 0}>Previous</Button>
+        <Button onClick={nextPage} disabled={isLastPage}>Next</Button>
+    </div>
+</div>
+```
+
+**Proposed Component:** `PaginationFooter.tsx`
+
+---
+
+## 3. Data Fetching & Local Searching Logic
+Repeated state/effects in:
+- `CourseTable.tsx`
+- `StudentTable.tsx`
+- `ProgramTable.tsx`
+
+**Repeated Pattern:**
+```ts
+const [search, setSearch] = useState("");
+const [localSearch, setLocalSearch] = useState("");
+const [page, setPage] = useState(0);
+const [size, setSize] = useState(10);
+
+useEffect(() => {
+    const timer = setTimeout(() => setSearch(localSearch), 300);
+    return () => clearTimeout(timer);
+}, [localSearch]);
+```
+
+**Proposed Hook:** `useTableData.ts`
+A custom hook to manage pagination, debounced searching, and loading states for API-backed tables.
+
+---
+
+## 4. Loader & Empty State Displays
+Repeated in almost every list-based page.
+
+**Repeated Pattern:**
+```tsx
+{loading ? (
+    <div className="flex items-center justify-center h-40 opacity-50"><Loader2 className="animate-spin" /></div>
+) : data.length === 0 ? (
+    <div className="text-center py-20 opacity-40"><Icon ... /><p>No items found</p></div>
+) : ( ... )}
+```
+
+**Proposed Component:** `DataListWrapper.tsx`
+A wrapper component that handles the conditional rendering of loading spinners, empty states, and errors.
+
+---
+
+## 5. Fetch Error Handling
+Standardized `toast` error handling for API calls.
+
+**Repeated Pattern:**
+```ts
+catch (err) {
+    console.error(err);
+    toast({ title: "Failed to load data", variant: "destructive" });
+}
+```
+
+**Proposed Hook:** `useApiHandler.ts`
+To centralize error logging and toast notifications for all dashboard API calls.

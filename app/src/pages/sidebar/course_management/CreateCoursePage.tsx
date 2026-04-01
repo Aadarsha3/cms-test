@@ -16,7 +16,9 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { dashboardApi } from "@/lib/api";
-import { ChevronLeft, Save, Loader2, BookOpen } from "lucide-react";
+import { PageHeader } from "@/components/common/PageHeader";
+import { FormFooter } from "@/components/common/FormFooter";
+import { BookOpen } from "lucide-react";
 
 interface Program {
   id: string;
@@ -166,24 +168,11 @@ export default function CreateCoursePage() {
   return (
     <MainLayout title="Create New Course">
       <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setLocation("/courses")}
-            className="rounded-full"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="bg-[#243F76]/10 p-2 rounded-lg">
-              <BookOpen className="h-6 w-6 text-[#243F76]" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#243F76] dark:text-white">
-              Course Details
-            </h1>
-          </div>
-        </div>
+        <PageHeader 
+          title="Course Details"
+          backUrl="/courses"
+          icon={<BookOpen className="h-6 w-6 text-[#243F76]" />}
+        />
 
         <Card className="border-[#243F76]/10 dark:border-white/10 shadow-lg">
           <CardHeader>
@@ -286,28 +275,11 @@ export default function CreateCoursePage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#243F76]/10 dark:border-white/10">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setLocation("/courses")}
-                  disabled={loading}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading || fetchingPrograms}
-                  className="bg-[#243F76] hover:bg-[#1a2e56] text-white gap-2"
-                >
-                  {loading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  Create Course
-                </Button>
-              </div>
+              <FormFooter
+                loading={loading || fetchingPrograms}
+                onCancel={() => setLocation("/courses")}
+                submitText="Create Course"
+              />
             </form>
           </CardContent>
         </Card>

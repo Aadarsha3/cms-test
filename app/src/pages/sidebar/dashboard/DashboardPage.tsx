@@ -36,14 +36,18 @@ export function DashboardPage() {
   const fetchAnnouncements = async () => {
     setLoadingAnnouncements(true);
     try {
-      const response = await dashboardApi.get("/announcements");
+      const response = await dashboardApi.get("/announcements?&size=3&sort=createdDate&direction=DSC");
       const data = Array.isArray(response.data) ? response.data : (response.data as any)?.content || [];
       // Format backend response to match UI needs
       const formattedData = data.map((item: any) => ({
         id: item.id,
         title: item.title,
         details: item.details,
-        date: item.createdTimestamp ? new Date(item.createdTimestamp).toLocaleDateString() : "Recently",
+        date: new Date(item.createdTimestamp || item.createdAt || new Date()).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        }),
       }));
       setAnnouncements(formattedData);
     } catch (err) {
@@ -73,7 +77,7 @@ export function DashboardPage() {
       .catch((err) => {
         console.error("Dashboard stats fetch failed:", err);
       });
-      
+
     fetchAnnouncements();
   }, [user]);
 
@@ -171,8 +175,6 @@ export function DashboardPage() {
             announcements={filteredAnnouncements}
             isSuperAdmin={isAdmin}
             onViewDetails={handleViewDetails}
-            onEdit={handleOpenEditDialog}
-            onDelete={handleDeleteAnnouncement}
             onCreate={handleOpenCreateDialog}
           />
         </div>

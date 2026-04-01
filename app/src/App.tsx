@@ -25,6 +25,7 @@ import CoursesPage from "@/pages/sidebar/course_management/CoursesPage";
 import CreateCoursePage from "@/pages/sidebar/course_management/CreateCoursePage";
 import CourseDetailsPage from "@/pages/sidebar/course_management/CourseDetailsPage";
 import AnnouncementsPage from "@/pages/sidebar/announcement_management/AnnouncementsPage";
+import AnnouncementDetailsPage from "@/pages/sidebar/announcement_management/details/AnnouncementDetailsPage";
 import NotFound from "@/pages/common/not-found";
 
 function ProtectedRoute({
@@ -135,6 +136,9 @@ function Router() {
 
       <Route path="/announcements">
         <ProtectedRoute component={AnnouncementsPage} permission="dashboard_view" />
+      </Route>
+      <Route path="/announcements/:id">
+        <ProtectedRoute component={AnnouncementDetailsPage} permission="dashboard_view" />
       </Route>
 
       <Route component={NotFound} />

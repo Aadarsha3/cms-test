@@ -8,17 +8,15 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, Edit, Trash2, Megaphone } from "lucide-react";
+import { Megaphone, ChevronRight, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Announcement } from "../types";
+import { useLocation } from "wouter";
 
 interface AnnouncementsCardProps {
     announcements: Announcement[];
     isSuperAdmin: boolean;
     onViewDetails: (announcement: Announcement) => void;
-    onEdit: (announcement: Announcement) => void;
-    onDelete: (id: string) => void;
     onCreate: () => void;
     className?: string;
 }
@@ -27,18 +25,17 @@ export function AnnouncementsCard({
     announcements,
     isSuperAdmin,
     onViewDetails,
-    onEdit,
-    onDelete,
     onCreate,
     className,
 }: AnnouncementsCardProps) {
+    const [, setLocation] = useLocation();
     return (
         <Card className={cn("overflow-hidden border-none shadow-premium bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm", className)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <div className="space-y-1">
                     <CardTitle className="text-xl font-bold flex items-center gap-2">
                         <Megaphone className="h-5 w-5 text-primary" />
-                        Common Announcements
+                        Announcements
                     </CardTitle>
                     <CardDescription>Stay updated with the latest campus news</CardDescription>
                 </div>
@@ -66,14 +63,13 @@ export function AnnouncementsCard({
                         announcements.map((announcement) => (
                             <div
                                 key={announcement.id}
-                                className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl border border-border/40 bg-white/40 dark:bg-black/20 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5"
+                                onClick={() => setLocation(`/announcements/${announcement.id}`)}
+                                className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-xl border border-border/40 bg-white/40 dark:bg-black/20 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 cursor-pointer"
                             >
-                                <div className="space-y-1.5">
-                                    <div className="flex items-center gap-2">
-                                        <h4 className="font-bold text-[#1A2E56] dark:text-white leading-tight">
-                                            {announcement.title}
-                                        </h4>
-                                    </div>
+                                <div className="space-y-1.5 min-w-0">
+                                    <h4 className="font-bold text-[#1A2E56] dark:text-white leading-tight group-hover:text-primary transition-colors">
+                                        {announcement.title}
+                                    </h4>
                                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                                         <span>{announcement.date}</span>
                                         {announcement.details && (
@@ -84,39 +80,10 @@ export function AnnouncementsCard({
                                     </p>
                                 </div>
 
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
-                                        onClick={() => onViewDetails(announcement)}
-                                        title="View details"
-                                    >
-                                        <Eye className="h-4 w-4" />
-                                    </Button>
-
-                                    {isSuperAdmin && (
-                                        <>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-9 w-9 rounded-full hover:bg-blue-500/10 hover:text-blue-500"
-                                                onClick={() => onEdit(announcement)}
-                                                title="Edit announcement"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-9 w-9 rounded-full hover:bg-red-500/10 hover:text-red-500"
-                                                onClick={() => onDelete(announcement.id)}
-                                                title="Delete announcement"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </>
-                                    )}
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <div className="h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                                        <ChevronRight className="h-4 w-4" />
+                                    </div>
                                 </div>
                             </div>
                         ))
