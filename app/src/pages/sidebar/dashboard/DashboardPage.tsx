@@ -12,7 +12,6 @@ import { initialStats } from "./constants";
 
 import { WelcomeBanner } from "./components/WelcomeBanner";
 import { AnnouncementsCard } from "./components/AnnouncementsCard";
-import { QuickActions } from "./components/QuickActions";
 import { AnnouncementDialog } from "./components/AnnouncementDialog";
 import { AnnouncementDetailsDialog } from "./components/AnnouncementDetailsDialog";
 
@@ -55,42 +54,35 @@ export function DashboardPage() {
   };
 
   useEffect(() => {
-    if (user?.role === "super_admin") {
-      dashboardApi
-        .get("/dashboard")
-        .then((response) => {
-          const { studentCount, courseCount, programCount } = response.data;
+    // Fetch common stats for everyone
+    dashboardApi
+      .get("/dashboard")
+      .then((response) => {
+        const { studentCount, courseCount, programCount } = response.data;
 
-          setDashboardStats((prev) => ({
-            ...prev,
-            super_admin: prev.super_admin.map((stat) => {
-              if (stat.title === "Total Students") return { ...stat, value: String(studentCount) };
-              if (stat.title === "Courses") return { ...stat, value: String(courseCount) };
-              if (stat.title === "Active Programs") return { ...stat, value: String(programCount) };
-              return stat;
-            }),
-          }));
-        })
-        .catch((err) => {
-          console.error("Dashboard stats fetch failed:", err);
-        });
-    }
+        setDashboardStats((prev) => ({
+          ...prev,
+          admin: prev.admin.map((stat) => {
+            if (stat.title === "Total Students") return { ...stat, value: String(studentCount) };
+            if (stat.title === "Courses") return { ...stat, value: String(courseCount) };
+            if (stat.title === "Active Programs") return { ...stat, value: String(programCount) };
+            return stat;
+          }),
+        }));
+      })
+      .catch((err) => {
+        console.error("Dashboard stats fetch failed:", err);
+      });
+      
     fetchAnnouncements();
   }, [user]);
 
   if (!user) return null;
 
-  const userRole = user.role as keyof DashboardStats;
-  const stats = dashboardStats[userRole] || dashboardStats.admin;
+  const stats = dashboardStats.admin;
 
   const isSuperAdmin = user.role === "super_admin";
   const isAdmin = user.role === "admin" || isSuperAdmin;
-  const isStaff = user.role === "staff" || user.role === "teacher";
-
-  const cleanName = user.name.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.|Mrs\.)\s+/i, '').split(" ")[0];
-
-  const ctaLabel = user.role === 'student' ? 'Check Attendance' : (isStaff ? 'Mark Attendance' : 'Student Management');
-  const ctaLink = user.role === 'student' ? '/attendance' : (isStaff ? '/attendance' : '/students');
 
   const handleOpenCreateDialog = () => {
     setEditingAnnouncementId(null);
@@ -158,9 +150,7 @@ export function DashboardPage() {
     <MainLayout title="Dashboard">
       <div className="space-y-6">
         <WelcomeBanner
-          name={cleanName}
-          ctaLabel={ctaLabel}
-          ctaLink={ctaLink}
+          name={user.name}
         />
 
         <div
@@ -179,19 +169,13 @@ export function DashboardPage() {
         <div className="grid gap-6">
           <AnnouncementsCard
             announcements={filteredAnnouncements}
-            isSuperAdmin={isSuperAdmin}
+            isSuperAdmin={isAdmin}
             onViewDetails={handleViewDetails}
             onEdit={handleOpenEditDialog}
             onDelete={handleDeleteAnnouncement}
             onCreate={handleOpenCreateDialog}
           />
         </div>
-
-        <QuickActions
-          role={user.role}
-          isAdmin={isAdmin}
-          isStaff={isStaff}
-        />
       </div>
 
       <AnnouncementDialog

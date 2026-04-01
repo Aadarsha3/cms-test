@@ -16,6 +16,7 @@ import {
   Award,
   Clock,
   BarChart3,
+  Megaphone,
 } from "lucide-react";
 import {
   Sidebar,
@@ -69,6 +70,12 @@ const navItems: NavItem[] = [
     url: "/courses",
     icon: BookOpen,
     permissionId: "users_view",
+  },
+  {
+    title: "Announcements",
+    url: "/announcements",
+    icon: Megaphone,
+    permissionId: "dashboard_view",
   },
 ];
 
