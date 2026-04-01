@@ -31,10 +31,6 @@ export function DashboardPage() {
   const [announcementForm, setAnnouncementForm] = useState<AnnouncementForm>({
     title: "",
     content: "",
-    isEveryone: true,
-    targetRoles: ["all"],
-    targetPrograms: ["all"],
-    targetGroups: ["all"],
   });
 
   useEffect(() => {
@@ -79,26 +75,15 @@ export function DashboardPage() {
     setAnnouncementForm({
       title: "",
       content: "",
-      isEveryone: true,
-      targetRoles: ["all"],
-      targetPrograms: ["all"],
-      targetGroups: ["all"]
     });
     setIsAnnouncementDialogOpen(true);
   };
 
   const handleOpenEditDialog = (announcement: Announcement) => {
-    const isEveryone = announcement.targetRoles.includes("all") &&
-      announcement.targetGroups.includes("all");
-
     setEditingAnnouncementId(announcement.id);
     setAnnouncementForm({
       title: announcement.title,
       content: announcement.content || "",
-      isEveryone,
-      targetRoles: announcement.targetRoles || ["all"],
-      targetPrograms: announcement.targetPrograms || ["all"],
-      targetGroups: announcement.targetGroups || ["all"],
     });
     setIsAnnouncementDialogOpen(true);
   };
@@ -129,15 +114,7 @@ export function DashboardPage() {
     setIsAnnouncementDialogOpen(false);
   };
 
-  const filteredAnnouncements = announcements.filter(a => {
-    if (isSuperAdmin) return true;
-
-    const roleMatch = a.targetRoles.includes("all") || a.targetRoles.includes(user.role);
-    const programMatch = a.targetPrograms?.includes("all") || (user.program && a.targetPrograms?.includes(user.program));
-    const groupMatch = a.targetGroups?.includes("all") || (user.group && a.targetGroups?.includes(user.group));
-
-    return roleMatch && programMatch && groupMatch;
-  });
+  const filteredAnnouncements = announcements;
 
   const handleDeleteAnnouncement = (id: number) => {
     setAnnouncements(prev => prev.filter(a => a.id !== id));

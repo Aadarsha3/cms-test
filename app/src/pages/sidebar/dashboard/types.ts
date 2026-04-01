@@ -7,10 +7,6 @@ export interface Announcement {
     title: string;
     date: string;
     content?: string;
-    isEveryone?: boolean;
-    targetRoles: string[];
-    targetPrograms: string[];
-    targetGroups: string[];
 }
 
 export interface StatItem {
@@ -36,8 +32,4 @@ export interface RecentActivity {
 export interface AnnouncementForm {
     title: string;
     content: string;
-    isEveryone: boolean;
-    targetRoles: string[];
-    targetPrograms: string[];
-    targetGroups: string[];
 }
