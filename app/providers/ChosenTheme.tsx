@@ -5,7 +5,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
-import { useThemeStorage, type ThemeName } from "~/hooks/localstorage-hooks";
+import { useThemeStorage, type ThemeName } from "@/hooks/localstorage-hooks";
 
 export const ChosenTheme = createContext<IChosenTheme>({} as IChosenTheme);
 

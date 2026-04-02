@@ -6,5 +6,5 @@ export function meta() {
 }
 
 export default function Splat() {
-    return null; // The actual content is rendered by root.tsx's App component
+    return null;
 }

@@ -1,31 +1,57 @@
-import { type IDToken } from "oauth4webapi";
-import { authCodeFlow, tokenExchange } from "~/lib/auth-client";
-import { useAuthState, useCodeVerifier } from "./localstorage-hooks";
+import { useState, useCallback } from "react";
+import { authCodeFlow, tokenExchange, userInfo } from "@/lib/auth-client";
+import { useLocation } from "wouter";
+import { jwtDecode } from "jwt-decode";
 
 export function useAuthCodeFlow() {
-  const [, setState] = useAuthState();
-  const [, setCodeVerifier] = useCodeVerifier();
+  const [loading, setLoading] = useState(false);
 
-  return async () => {
-    await authCodeFlow(setState, setCodeVerifier);
-  };
+  const login = useCallback(async () => {
+    setLoading(true);
+    try {
+      const setState = (state: string) => localStorage.setItem("oauth_state", state);
+      const setCodeVerifier = (cv: string) => localStorage.setItem("oauth_code_verifier", cv);
+      await authCodeFlow(setState, setCodeVerifier);
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+    }
+  }, []);
+
+  return login;
 }
 
 export function useTokenExchange() {
-  const [code_verifier] = useCodeVerifier();
-  const [state] = useAuthState();
+  const [loading, setLoading] = useState(false);
+  const [, setLocation] = useLocation();
 
-  return async () => {
-    const tokens = await tokenExchange(
-      () => new URL(window.location.href),
-      state,
-      code_verifier
-    );
+  const exchange = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const stateFromUrl = params.get("state") || "";
+      const state = localStorage.getItem("oauth_state") || stateFromUrl;
+      const cv = localStorage.getItem("oauth_code_verifier") || "";
+      
+      const tokens = await tokenExchange(() => new URL(window.location.href), state, cv);
+      localStorage.removeItem("oauth_state");
+      localStorage.removeItem("oauth_code_verifier");
 
-    const claims: IDToken = (tokens.claims as any)?.();
-    const userinfo = claims;
-    // const userinfo = await userInfo(tokens.access_token, claims?.sub);
+      // Fetch UserInfo after exchange
+      let userinfo: any = {};
+      if (tokens.access_token) {
+          const decoded: any = jwtDecode(tokens.access_token);
+          userinfo = await userInfo(tokens.access_token, decoded.sub);
+      }
 
-    return { tokens, userinfo };
-  };
+      return { tokens, userinfo };
+    } catch (e) {
+      console.error(e);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return exchange;
 }
