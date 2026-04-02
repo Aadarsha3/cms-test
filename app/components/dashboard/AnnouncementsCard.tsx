@@ -1,5 +1,3 @@
-// /app/src/pages/sidebar/dashboard/components/AnnouncementsCard.tsx
-
 import {
     Card,
     CardContent,
@@ -15,7 +13,7 @@ import { useLocation } from "wouter";
 
 interface AnnouncementsCardProps {
     announcements: Announcement[];
-    isSuperAdmin: boolean;
+    isAdmin: boolean;
     onViewDetails: (announcement: Announcement) => void;
     onCreate: () => void;
     className?: string;
@@ -23,7 +21,7 @@ interface AnnouncementsCardProps {
 
 export function AnnouncementsCard({
     announcements,
-    isSuperAdmin,
+    isAdmin,
     onViewDetails,
     onCreate,
     className,
@@ -40,7 +38,7 @@ export function AnnouncementsCard({
                     <CardDescription>Stay updated with the latest campus news</CardDescription>
                 </div>
 
-                {isSuperAdmin && (
+                {isAdmin && (
                     <Button
                         size="sm"
                         onClick={onCreate}

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/core/layout/MainLayout";
+import { InfoField } from "@/components/common/InfoField";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,72 +38,6 @@ import { useLocation, useRoute } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 import { StudentDetail } from "@/pages/sidebar/user/user.types";
-
-interface InfoFieldProps {
-  label: string;
-  value: any;
-  icon?: any;
-  isEditable?: boolean;
-  isEditing?: boolean;
-  fieldKey?: string;
-  editFormData?: Partial<StudentDetail>;
-  setEditFormData?: (data: any) => void;
-  options?: { label: string; value: string }[];
-  inputType?: string;
-  numericOnly?: boolean;
-}
-
-const InfoField = ({
-  label,
-  value,
-  icon: Icon,
-  isEditable = false,
-  isEditing = false,
-  fieldKey = "",
-  editFormData = {},
-  setEditFormData,
-  options,
-  inputType = "text",
-  numericOnly = false,
-}: InfoFieldProps) => (
-  <div className="space-y-2">
-    <Label className="flex items-center gap-2">
-      {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-      {label}
-    </Label>
-    {isEditable && isEditing && setEditFormData ? (
-      options ? (
-        <Select
-          value={(editFormData[fieldKey as keyof StudentDetail] as string) || ""}
-          onValueChange={(val) => setEditFormData({ ...editFormData, [fieldKey]: val })}
-        >
-          <SelectTrigger className="h-9">
-            <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ) : (
-        <Input
-          type={inputType}
-          className="h-9"
-          value={(editFormData[fieldKey as keyof StudentDetail] as string) || ""}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            const val = numericOnly ? e.target.value.replace(/\D/g, "") : e.target.value;
-            setEditFormData({ ...editFormData, [fieldKey]: val });
-          }}
-        />
-      )
-    ) : (
-      <p className="text-sm font-medium py-2 break-all">{value || "N/A"}</p>
-    )}
-  </div>
-);
 
 export function StudentDetailsPage() {
   const { theme } = useTheme();

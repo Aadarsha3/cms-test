@@ -1,5 +1,3 @@
-// /app/src/pages/sidebar/dashboard/components/AnnouncementDetailsDialog.tsx
-
 import {
     Dialog,
     DialogContent,

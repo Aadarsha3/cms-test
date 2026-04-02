@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import {
@@ -42,9 +42,11 @@ export function useEnrollmentForm() {
     const searchParams = new URLSearchParams(window.location.search);
     const context = searchParams.get("context");
 
-    let allowedRoles = ["student", "teacher", "staff", "admin", "super_admin"];
-    if (context === "student") allowedRoles = ["student"];
-    else if (context === "staff") allowedRoles = ["staff", "admin", "super_admin", "teacher"];
+    const allowedRoles = useMemo(() => {
+        if (context === "student") return ["student"];
+        if (context === "staff") return ["staff", "admin", "teacher"];
+        return ["student", "teacher", "staff", "admin"];
+    }, [context]);
 
     const [currentStep, setCurrentStep] = useState(1);
     const [createdUserId, setCreatedUserId] = useState<string | null>(null);
@@ -296,7 +298,7 @@ export function useEnrollmentForm() {
                 await api.put(`/users/${targetUserId}`, payload);
                 toast({ title: "User profile updated successfully" });
 
-                if (context === "staff" || ["staff", "admin", "super_admin", "teacher"].includes(profileData.role)) {
+                if (context === "staff" || ["staff", "admin", "teacher"].includes(profileData.role)) {
                     setLocation("/staff");
                 } else {
                     setLocation("/dashboard");

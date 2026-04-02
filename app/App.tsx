@@ -9,7 +9,6 @@ import { UserProvider } from "@/lib/user-context";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { CallbackPage } from "@/pages/auth/CallbackPage";
 import { DashboardPage } from "@/pages/sidebar/dashboard/DashboardPage";
-import { ActivityPage } from "@/pages/sidebar/dashboard/ActivityPage";
 import { ProfilePage } from "./pages/sidebar/profile/ProfilePage";
 import { ChangePasswordPage } from "./pages/sidebar/profile/ChangePasswordPage";
 import { EnrollUserPage } from "@/pages/sidebar/user/EnrollUserPage";
@@ -76,10 +75,6 @@ function Router() {
       </Route>
       <Route path="/dashboard">
         <ProtectedRoute component={DashboardPage} permission="dashboard_view" />
-      </Route>
-
-      <Route path="/activity">
-        <ProtectedRoute component={ActivityPage} permission="dashboard_view" />
       </Route>
 
       <Route path="/profile">

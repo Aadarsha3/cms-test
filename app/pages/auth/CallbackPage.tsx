@@ -57,8 +57,8 @@ export function CallbackPage() {
                         }
 
                         // Map found roles to system roles
-                        // Priority: Super Admin > Admin > Staff > Teacher > Student
-                        const validRoles: UserRole[] = ["super_admin", "admin", "staff", "teacher", "student"];
+                        // Priority: Admin > Staff > Teacher > Student
+                        const validRoles: UserRole[] = ["admin", "staff", "teacher", "student"];
 
                         // Normalize found roles to lowercase for comparison
                         const normalizedFoundRoles = foundRoles.map(r => r.toLowerCase());

@@ -35,7 +35,7 @@ const mockUsers: UserRecord[] = [
         id: "1",
         name: "Dr. Sarah Johnson",
         email: "sarah.johnson@college.edu",
-        role: "super_admin",
+        role: "admin",
         status: "active",
         phone: "+1 555-0101",
         User_Id: "SA2024001",

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/core/layout/MainLayout";
+import { InfoField } from "@/components/common/InfoField";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,62 +37,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserDocuments } from "@/components/features/user/UserDocuments";
 import { UserDetail, roleLabels, roleColors } from "./user.types";
 
-interface InfoFieldProps {
-  label: string;
-  value: any;
-  icon?: any;
-  isEditable?: boolean;
-  isEditing?: boolean;
-  fieldKey?: string;
-  editFormData?: Partial<UserDetail>;
-  setEditFormData?: (data: any) => void;
-}
 
-const InfoField = ({
-  label,
-  value,
-  icon: Icon,
-  isEditable = false,
-  isEditing = false,
-  fieldKey = "",
-  editFormData = {},
-  setEditFormData,
-}: InfoFieldProps) => (
-  <div className="space-y-2">
-    <Label className="flex items-center gap-2">
-      {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-      {label}
-    </Label>
-    {isEditable && isEditing && setEditFormData ? (
-      fieldKey === "status" ? (
-        <Select
-          value={(editFormData[fieldKey as keyof UserDetail] as string) || "active"}
-          onValueChange={(v) =>
-            setEditFormData({ ...editFormData, [fieldKey]: v })
-          }
-        >
-          <SelectTrigger className="h-9">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-          </SelectContent>
-        </Select>
-      ) : (
-        <Input
-          className="h-9"
-          value={(editFormData[fieldKey as keyof UserDetail] as string) || ""}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setEditFormData({ ...editFormData, [fieldKey]: e.target.value })
-          }
-        />
-      )
-    ) : (
-      <p className="text-sm font-medium py-2 break-all">{value || "N/A"}</p>
-    )}
-  </div>
-);
 
 export function UserDetailsPage() {
   const { user: currentUser } = useAuth();
@@ -108,8 +54,7 @@ export function UserDetailsPage() {
 
   const userId = params?.id;
   const isSelf = currentUser?.id === userId;
-  const canEdit =
-    currentUser?.role === "super_admin" || currentUser?.role === "admin";
+  const canEdit = currentUser?.role === "admin";
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -151,7 +96,7 @@ export function UserDetailsPage() {
     const role = user.role?.toLowerCase();
     if (role === "student") setLocation("/students");
     else if (role === "teacher") setLocation("/teachers");
-    else if (role && ["staff", "admin", "super_admin"].includes(role))
+    else if (role && ["staff", "admin"].includes(role))
       setLocation("/staff");
     else setLocation("/dashboard");
   };
@@ -169,7 +114,7 @@ export function UserDetailsPage() {
     const role = user.role?.toLowerCase();
     if (role === "student") return "Student Management";
     if (role === "teacher") return "Teacher Management";
-    if (role && ["staff", "admin", "super_admin"].includes(role))
+    if (role && ["staff", "admin"].includes(role))
       return "Staff Management";
 
     return "Users";
@@ -482,6 +427,10 @@ export function UserDetailsPage() {
                 fieldKey="status"
                 editFormData={editFormData}
                 setEditFormData={setEditFormData}
+                options={[
+                  { label: "Active", value: "active" },
+                  { label: "Inactive", value: "inactive" },
+                ]}
               />
             </div>
           </CardContent>

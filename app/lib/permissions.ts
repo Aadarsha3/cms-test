@@ -142,7 +142,6 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
 export type RolePermissions = Record<string, string[]>; // role -> permission_ids[]
 
 export const DEFAULT_ROLE_PERMISSIONS: RolePermissions = {
-    super_admin: PERMISSION_GROUPS.flatMap(g => g.permissions.map(p => p.id)),
     admin: [
         "dashboard_view", "dashboard_stats", "announcement_create",
         "programs_view", "programs_create", "programs_edit",

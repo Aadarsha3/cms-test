@@ -19,7 +19,6 @@ import { useEnrollmentForm } from "@/hooks/useEnrollmentForm";
 export function EnrollUserPage() {
   const { user } = useAuth();
 
-  const isSuperAdmin = user?.role === "super_admin";
   const isAdmin = user?.role === "admin";
 
   const {
@@ -146,7 +145,6 @@ export function EnrollUserPage() {
                 <StepTwoGroupSelection
                   profileData={profileData}
                   setProfileData={setProfileData}
-                  isSuperAdmin={isSuperAdmin}
                   allowedRoles={allowedRoles}
                 />
               </CardContent>

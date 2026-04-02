@@ -15,7 +15,6 @@ export interface StatItem {
 
 export interface DashboardStats {
     admin: StatItem[];
-    super_admin: StatItem[];
     staff: StatItem[];
     student: StatItem[];
     teacher: StatItem[];

@@ -1,7 +1,6 @@
 import { type UserRole } from "@/lib/auth-context";
 
 export const roleLabels: Record<UserRole, string> = {
-  super_admin: "Super Admin",
   admin: "Admin",
   staff: "Staff Member",
   student: "Student",
@@ -9,7 +8,6 @@ export const roleLabels: Record<UserRole, string> = {
 };
 
 export const roleColors: Record<UserRole, string> = {
-  super_admin: "bg-destructive text-destructive-foreground",
   admin: "bg-primary text-primary-foreground",
   staff: "bg-primary text-primary-foreground",
   student: "bg-primary text-primary-foreground",

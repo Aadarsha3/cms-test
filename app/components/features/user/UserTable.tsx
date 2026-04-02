@@ -1,5 +1,3 @@
-// /app/src/pages/sidebar/user_management/components/UserTable.tsx
-
 import { useState, useEffect } from "react";
 import { userApi } from "@/lib/api";
 import { UserPlus, Search, Loader2, RefreshCw } from "lucide-react";

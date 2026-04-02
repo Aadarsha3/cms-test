@@ -4,11 +4,8 @@ import { cn } from "@/lib/utils";
 import { AppSidebar } from "@/components/core/layout/AppSidebar";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, KeyRound, GraduationCap } from "lucide-react";
+import { LogOut, User, KeyRound, GraduationCap, Settings } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { roleLabels, roleColors } from "@/lib/constants";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,15 +36,6 @@ function MainLayoutContent({ children, title, className }: MainLayoutProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   return (
     <div className="flex flex-col h-screen w-full">
@@ -85,22 +73,12 @@ function MainLayoutContent({ children, title, className }: MainLayoutProps) {
               <div className="flex items-center gap-3">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div className="flex items-center gap-3 cursor-pointer group/profile">
-                      <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0 border-2 border-primary/10 group-hover/profile:border-primary/20 transition-all" data-testid="button-profile-menu">
-                        <Avatar className="h-full w-full">
-                          <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">{getInitials(user.name)}</AvatarFallback>
-                        </Avatar>
-                      </Button>
+                    <div className="flex items-center gap-3 cursor-pointer group/profile" data-testid="button-profile-menu">
+                      <Settings className="h-5 w-5 text-muted-foreground group-hover/profile:text-primary transition-colors" />
                       <div className="hidden md:flex flex-col items-start gap-0.5">
                         <span className="text-sm font-bold text-foreground/90 leading-tight group-hover/profile:text-primary transition-colors" data-testid="text-user-name">
                           {user.name}
                         </span>
-                        <Badge
-                          className={cn("text-[9px] h-4 px-1.5 py-0 font-bold border-none pointer-events-none", roleColors[user.role])}
-                          data-testid="badge-user-role"
-                        >
-                          {roleLabels[user.role]}
-                        </Badge>
                       </div>
                     </div>
                   </DropdownMenuTrigger>

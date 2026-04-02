@@ -18,7 +18,6 @@ interface Group {
 interface StepTwoGroupSelectionProps {
     profileData: ProfileFormData;
     setProfileData: (data: ProfileFormData) => void;
-    isSuperAdmin: boolean;
     allowedRoles: string[]; // Still passing this to filter groups locally if needed
 }
 

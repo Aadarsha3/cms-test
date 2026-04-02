@@ -65,7 +65,6 @@ export interface ProfileFormData {
 }
 
 export const roleLabels: Record<string, string> = {
-    super_admin: "Super Admin",
     admin: "Admin",
     staff: "Staff",
     student: "Student",
@@ -73,7 +72,6 @@ export const roleLabels: Record<string, string> = {
 };
 
 export const roleColors: Record<string, string> = {
-    super_admin: "bg-destructive text-destructive-foreground",
     admin: "bg-primary text-primary-foreground",
     staff: "bg-secondary text-secondary-foreground",
     student: "bg-muted text-muted-foreground",

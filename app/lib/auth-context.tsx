@@ -2,7 +2,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import { DEFAULT_ROLE_PERMISSIONS, type RolePermissions } from "./permissions";
 import { signOutRedirect } from "./auth-client";
 
-export type UserRole = "super_admin" | "admin" | "staff" | "student" | "teacher";
+export type UserRole = "admin" | "staff" | "student" | "teacher";
 
 export interface AuthUser {
   id: string;
@@ -49,7 +49,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const stored = localStorage.getItem("authUser");
       const token = localStorage.getItem("access_token");
-      return (stored && token) ? JSON.parse(stored) : null;
+      let parsed = (stored && token) ? JSON.parse(stored) : null;
+      if (parsed && parsed.role === "super_admin") {
+          parsed.role = "admin";
+      }
+      return parsed;
     } catch (e) {
       console.error("Failed to restore user session:", e);
       localStorage.removeItem("authUser");
@@ -73,7 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasPermission = (permissionId: string) => {
     if (!user) return false;
-    if (user.role === "super_admin") return true;
 
     // Check main role permissions
     const rolePerms = permissions[user.role] || [];

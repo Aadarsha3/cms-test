@@ -1,5 +1,3 @@
-// /app/src/pages/sidebar/dashboard/components/WelcomeBanner.tsx
-
 import { Calendar } from "lucide-react";
 
 interface WelcomeBannerProps {

@@ -7,11 +7,6 @@ export const initialStats: DashboardStats = {
         { title: "Active Programs", value: "0", icon: GraduationCap },
         { title: "Courses", value: "0", icon: BookOpen },
     ],
-    super_admin: [
-        { title: "Total Students", value: "0", icon: Users },
-        { title: "Active Programs", value: "0", icon: GraduationCap },
-        { title: "Courses", value: "0", icon: BookOpen },
-    ],
     staff: [
         { title: "My Students", value: "0", icon: Users },
         { title: "Courses Teaching", value: "0", icon: BookOpen },

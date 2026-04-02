@@ -1,5 +1,3 @@
-// /app/src/pages/sidebar/dashboard/components/AnnouncementDialog.tsx
-
 import { Button } from "@/components/ui/button";
 import {
     Dialog,

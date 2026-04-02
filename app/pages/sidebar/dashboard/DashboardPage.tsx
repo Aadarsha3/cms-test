@@ -93,8 +93,7 @@ export function DashboardPage() {
 
   const stats = dashboardStats.admin;
 
-  const isSuperAdmin = user.role === "super_admin";
-  const isAdmin = user.role === "admin" || isSuperAdmin;
+  const isAdmin = user.role === "admin";
 
   const handleOpenCreateDialog = () => {
     setEditingAnnouncementId(null);
@@ -181,7 +180,7 @@ export function DashboardPage() {
         <div className="grid gap-6">
           <AnnouncementsCard
             announcements={filteredAnnouncements}
-            isSuperAdmin={isAdmin}
+            isAdmin={isAdmin}
             onViewDetails={handleViewDetails}
             onCreate={handleOpenCreateDialog}
           />
