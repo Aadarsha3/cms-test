@@ -64,7 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [permissions, setPermissions] = useState<RolePermissions>(() => {
     try {
       const stored = localStorage.getItem("rolePermissions");
-      return stored ? JSON.parse(stored) : DEFAULT_ROLE_PERMISSIONS;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Merge with defaults to ensure any missing roles (like when renaming super_admin to admin) get permissions
+        return { ...DEFAULT_ROLE_PERMISSIONS, ...parsed };
+      }
+      return DEFAULT_ROLE_PERMISSIONS;
     } catch (e) {
       return DEFAULT_ROLE_PERMISSIONS;
     }

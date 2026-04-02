@@ -42,11 +42,15 @@ function ProtectedRoute({
 
   // Check permission if provided
   if (permission && !hasPermission(permission)) {
-    return (
-      <Redirect
-        to={permission === "dashboard_view" ? "/login" : "/dashboard"}
-      />
-    );
+    if (permission === "dashboard_view") {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <h1 className="text-2xl font-bold">Unauthorized</h1>
+          <p className="mt-2 text-muted-foreground">You do not have permission to view the dashboard.</p>
+        </div>
+      );
+    }
+    return <Redirect to="/dashboard" />;
   }
 
   // Check roles if provided (and no permission was checked or already passed)
@@ -76,6 +80,7 @@ function Router() {
       <Route path="/dashboard">
         <ProtectedRoute component={DashboardPage} permission="dashboard_view" />
       </Route>
+
 
       <Route path="/profile">
         <ProtectedRoute component={ProfilePage} permission="profile_view" />
