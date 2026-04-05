@@ -1,7 +1,7 @@
 import * as client from "openid-client";
 
-const server = new URL("http://localhost:8001"); // Authorization Server's Issuer Identifier
-const clientId = "react-client"; // Client identifier at the Authorization Server
+const server = new URL(import.meta.env.VITE_AUTH_SERVER_URL); // Authorization Server's Issuer Identifier
+const clientId = import.meta.env.VITE_OIDC_CLIENT_ID; // Client identifier at the Authorization Server
 // const clientSecret = 'secret'; // Client Secret
 
 let config: client.Configuration | undefined = undefined;
@@ -34,8 +34,7 @@ export async function authCodeFlow(
      * Value used in the authorization request as the redirect_uri parameter, this
      * is typically pre-registered at the Authorization Server.
      */
-    // TODO: Make this dynamic based on environment or window.location
-    const redirect_uri = "http://localhost:5173/login/oauth2/code/react-client";
+    const redirect_uri = import.meta.env.VITE_OIDC_REDIRECT_URI;
     const scope = "openid email profile"; // Scope of the access request
     /**
      * PKCE: The following MUST be generated for every redirect to the
@@ -103,9 +102,12 @@ export async function signOutRedirect(id_token?: string) {
     if (id_token) {
         url.searchParams.set("id_token_hint", id_token);
     }
+    
+    // Add client_id requirement for modern Keycloak/Spring AS logout compliance
+    url.searchParams.set("client_id", clientId);
 
-    // Optional: post_logout_redirect_uri
-    // We can redirect back to main page or specific logout page
+    // Redirect back to the React app after successful backend logout.
+    // This MUST match exactly the registered URL in the backend client config.
     url.searchParams.set("post_logout_redirect_uri", window.location.origin);
 
     console.log("Redirecting to logout:", url.href);

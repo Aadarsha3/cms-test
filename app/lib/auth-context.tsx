@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = localStorage.getItem("access_token");
       let parsed = (stored && token) ? JSON.parse(stored) : null;
       if (parsed && parsed.role === "super_admin") {
-          parsed.role = "admin";
+        parsed.role = "admin";
       }
       return parsed;
     } catch (e) {
@@ -109,10 +109,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("rolePermissions");
     localStorage.removeItem("refresh_token");
 
-    // Update state
-    setUser(null);
+    // We do NOT call setUser(null) here because we are immediately navigating
+    // away from the SPA via window.location.href. Calling it would teardown
+    // the React tree while navigating, causing 'useAuth must be inside AuthProvider' errors.
 
-    // Redirect to OIDC provider to end session
+    // Redirect to backend to end session
+
     try {
       await signOutRedirect(idToken || undefined);
     } catch (error) {
@@ -143,3 +145,11 @@ export function useAuth() {
   }
   return context;
 }
+
+
+
+
+
+
+
+

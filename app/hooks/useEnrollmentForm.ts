@@ -5,7 +5,8 @@ import {
     AccountFormData,
     ProfileFormData,
     StudentFormData,
-} from "@/pages/sidebar/user/user.types";
+    roleLabels,
+} from "@/pages/users/user.types";
 
 const initialAccountData: AccountFormData = {
     firstName: "",
@@ -13,6 +14,7 @@ const initialAccountData: AccountFormData = {
     userId: "",
     email: "",
     password: "",
+    joinDate: new Date().toISOString().split('T')[0],
 };
 
 const initialProfileData: ProfileFormData = {
@@ -106,6 +108,9 @@ export function useEnrollmentForm() {
                             userId: userToEdit.username || "",
                             email: userToEdit.primaryEmail || "",
                             password: "",
+                            joinDate: (typeof userToEdit.createdAt === 'string' ? userToEdit.createdAt.split('T')[0] : 
+                                      Array.isArray(userToEdit.createdDate) ? `${userToEdit.createdDate[0]}-${String(userToEdit.createdDate[1]).padStart(2, '0')}-${String(userToEdit.createdDate[2]).padStart(2, '0')}` :
+                                      new Date().toISOString().split('T')[0]),
                         });
 
                         setProfileData({
@@ -279,6 +284,25 @@ export function useEnrollmentForm() {
 
                 toast({ title: "Student enrolled successfully" });
                 setLocation(`/student/${targetUserId}`);
+            } else if ((context === "staff" || ["staff", "admin", "teacher"].includes(profileData.role)) && !editingUserId) {
+                // Use POST /api/v1/staffs to create the staff and finish enrollment
+                const staffPayload = {
+                    user: targetUserId,
+                    fullName: fullName,
+                    email: accountData.email.trim(),
+                    dateOfBirth: studentData.dateOfBirth,
+                    gender: studentData.gender,
+                    address: studentData.presentAddress,
+                    phoneNumber: profileData.phone,
+                    designation: profileData.group?.name || (roleLabels[profileData.role] || profileData.role),
+                    joinDate: accountData.joinDate,
+                };
+
+                console.log("[DEBUG] POST /staffs payload:", staffPayload);
+                await dashboardApi.post("/staffs", staffPayload);
+
+                toast({ title: "Staff enrolled successfully" });
+                setLocation(`/users/${targetUserId}`);
             } else {
                 // Staff / edit flow
                 const payload = {
@@ -287,10 +311,10 @@ export function useEnrollmentForm() {
                     phone: profileData.phone,
                     status: profileData.status,
                     subRoles: profileData.subRoles,
-                    // Include basic info but skip guardian fields for staff
                     dateOfBirth: studentData.dateOfBirth,
                     gender: studentData.gender,
                     presentAddress: studentData.presentAddress,
+                    joinedAt: accountData.joinDate,
                 };
 
                 if (!accountData.password) delete (payload as any).password;

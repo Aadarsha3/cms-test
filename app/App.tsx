@@ -5,24 +5,24 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-context";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
-import { UserProvider } from "@/lib/user-context";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { CallbackPage } from "@/pages/auth/CallbackPage";
-import { DashboardPage } from "@/pages/sidebar/dashboard/DashboardPage";
-import { ProfilePage } from "./pages/sidebar/profile/ProfilePage";
-import { ChangePasswordPage } from "./pages/sidebar/profile/ChangePasswordPage";
-import { EnrollUserPage } from "@/pages/sidebar/user/EnrollUserPage";
-import { UserDetailsPage } from "@/pages/sidebar/user/UserDetailsPage";
-import { StudentsPage } from "@/pages/sidebar/user/student/StudentsPage";
-import { StudentDetailsPage } from "@/pages/sidebar/user/student/StudentDetailsPage";
-import { StaffPage } from "@/pages/sidebar/user/staff/StaffPage";
-import ProgramsPage from "./pages/sidebar/programs/ProgramsPage";
-import CreateProgramPage from "./pages/sidebar/programs/CreateProgramPage";
-import ProgramDetailsPage from "./pages/sidebar/programs/ProgramDetailsPage";
-import CreateCoursePage from "./pages/sidebar/programs/courses/CreateCoursePage";
-import CourseDetailsPage from "./pages/sidebar/programs/courses/CourseDetailsPage";
-import AnnouncementsPage from "./pages/sidebar/announcements/AnnouncementsPage";
-import AnnouncementDetailsPage from "./pages/sidebar/announcements/AnnouncementDetailsPage";
+import { DashboardPage } from "@/pages/dashboard/DashboardPage";
+import { ProfilePage } from "./pages/profile/ProfilePage";
+import { ChangePasswordPage } from "./pages/profile/ChangePasswordPage";
+import { EnrollUserPage } from "@/pages/users/EnrollUserPage";
+import { UserDetailsPage } from "@/pages/users/UserDetailsPage";
+import { StudentsPage } from "@/pages/users/student/StudentsPage";
+import { StudentDetailsPage } from "@/pages/users/student/StudentDetailsPage";
+import { StaffPage } from "@/pages/users/staff/StaffPage";
+import { StaffDetailsPage } from "@/pages/users/staff/StaffDetailsPage";
+import ProgramsPage from "./pages/programs/ProgramsPage";
+import CreateProgramPage from "./pages/programs/CreateProgramPage";
+import ProgramDetailsPage from "./pages/programs/ProgramDetailsPage";
+import CreateCoursePage from "./pages/programs/courses/CreateCoursePage";
+import CourseDetailsPage from "./pages/programs/courses/CourseDetailsPage";
+import AnnouncementsPage from "./pages/announcements/AnnouncementsPage";
+import AnnouncementDetailsPage from "./pages/announcements/AnnouncementDetailsPage";
 import NotFound from "@/pages/common/not-found";
 
 function ProtectedRoute({
@@ -112,6 +112,9 @@ function Router() {
       <Route path="/staff">
         <ProtectedRoute component={StaffPage} permission="users_view" />
       </Route>
+      <Route path="/staff/:id">
+        <ProtectedRoute component={StaffDetailsPage} permission="users_view" />
+      </Route>
       <Route path="/programs">
         <ProtectedRoute component={ProgramsPage} permission="users_view" />
       </Route>
@@ -146,12 +149,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <UserProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-            </TooltipProvider>
-          </UserProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
@@ -159,3 +160,31 @@ function App() {
 }
 
 export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

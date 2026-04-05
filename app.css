@@ -288,3 +288,32 @@
     inset: -1px;
   }
 }
+
+/* 
+ * ---------------------------------------------------------------------------
+ * GLOBAL THEME STABILIZATION (Autofill, Selection, Color Scheme)
+ * ---------------------------------------------------------------------------
+ */
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+::selection {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill,
+*:-webkit-autofill {
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  -webkit-box-shadow: 0 0 0px 1000px hsl(var(--background)) inset !important;
+  box-shadow: 0 0 0px 1000px hsl(var(--background)) inset !important;
+  transition: background-color 5000000s ease-in-out 0s !important;
+}

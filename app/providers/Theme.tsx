@@ -1,12 +1,20 @@
-import { useContext, useMemo, type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles'
-
-import { ChosenTheme } from './ChosenTheme'
+import { useMediaQuery } from '@mui/material'
+import { useTheme } from './ChosenTheme'
 import { CssBaseline } from '@mui/material'
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-    const { theme } = useContext(ChosenTheme)
-    const muiTheme = useMemo(() => createThemeHelper(theme), [theme])
+    const { theme } = useTheme()
+
+    // Resolve "system" preference to actual mode
+    const systemPrefersDark = useMediaQuery('(prefers-color-scheme: dark)')
+    const resolvedMode = useMemo(() => {
+        if (theme === 'system') return systemPrefersDark ? 'dark' : 'light'
+        return theme
+    }, [theme, systemPrefersDark])
+
+    const muiTheme = useMemo(() => createThemeHelper(resolvedMode), [resolvedMode])
 
     return (
         <MuiThemeProvider theme={muiTheme}>
@@ -17,12 +25,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 }
 
 const brandColorLight = '#243F76'
-const brandColorDark = '#056bb5'
-export const createThemeHelper = (theme: 'dark' | 'light') => {
-    const isDark = theme === 'dark'
+const brandColorDark = '#4897D8' // Improved dark mode primary blue
+
+export const createThemeHelper = (mode: 'dark' | 'light') => {
+    const isDark = mode === 'dark'
     return createTheme({
         palette: {
-            mode: theme,
+            mode,
             background: {
                 default: isDark ? '#191919' : '#f2f4f7',
                 paper: isDark ? '#242424' : '#ffffff',

@@ -2,7 +2,7 @@ import { Bell } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { RecentActivity } from "@/pages/sidebar/dashboard/types";
+import { RecentActivity } from "@/pages/dashboard/types";
 
 interface RecentActivityCardProps {
     activities: RecentActivity[];

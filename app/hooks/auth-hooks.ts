@@ -1,57 +1,52 @@
-import { useState, useCallback } from "react";
-import { authCodeFlow, tokenExchange, userInfo } from "@/lib/auth-client";
-import { useLocation } from "wouter";
-import { jwtDecode } from "jwt-decode";
+import { useCallback } from 'react';
+import { authCodeFlow, tokenExchange, userInfo } from '@/lib/auth-client';
+import { jwtDecode } from 'jwt-decode';
 
+/**
+ * Returns a stable function that initiates the PKCE authorization code flow.
+ * Calling it redirects the browser to the OIDC provider.
+ */
 export function useAuthCodeFlow() {
-  const [loading, setLoading] = useState(false);
-
-  const login = useCallback(async () => {
-    setLoading(true);
-    try {
-      const setState = (state: string) => localStorage.setItem("oauth_state", state);
-      const setCodeVerifier = (cv: string) => localStorage.setItem("oauth_code_verifier", cv);
-      await authCodeFlow(setState, setCodeVerifier);
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-    }
+  return useCallback(async () => {
+    const setState = (state: string) => localStorage.setItem('oauth_state', state);
+    const setCodeVerifier = (cv: string) => localStorage.setItem('oauth_code_verifier', cv);
+    await authCodeFlow(setState, setCodeVerifier);
   }, []);
-
-  return login;
 }
 
+/**
+ * Returns a stable function that completes the authorization code exchange
+ * and fetches the OIDC UserInfo. Call this once on the callback page.
+ */
 export function useTokenExchange() {
-  const [loading, setLoading] = useState(false);
-  const [, setLocation] = useLocation();
+  return useCallback(async () => {
+    const params = new URLSearchParams(window.location.search);
 
-  const exchange = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const stateFromUrl = params.get("state") || "";
-      const state = localStorage.getItem("oauth_state") || stateFromUrl;
-      const cv = localStorage.getItem("oauth_code_verifier") || "";
-      
-      const tokens = await tokenExchange(() => new URL(window.location.href), state, cv);
-      localStorage.removeItem("oauth_state");
-      localStorage.removeItem("oauth_code_verifier");
+    // Prefer the state/verifier saved during the auth flow; fall back to URL
+    const state =
+      localStorage.getItem('oauth_state') ?? params.get('state') ?? '';
+    const codeVerifier = localStorage.getItem('oauth_code_verifier') ?? '';
 
-      // Fetch UserInfo after exchange
-      let userinfo: any = {};
-      if (tokens.access_token) {
-          const decoded: any = jwtDecode(tokens.access_token);
-          userinfo = await userInfo(tokens.access_token, decoded.sub);
+    const tokens = await tokenExchange(
+      () => new URL(window.location.href),
+      state,
+      codeVerifier
+    );
+
+    // Clean up PKCE storage immediately after successful exchange
+    localStorage.removeItem('oauth_state');
+    localStorage.removeItem('oauth_code_verifier');
+
+    let userinfo: Record<string, unknown> = {};
+    if (tokens.access_token) {
+      try {
+        const decoded: any = jwtDecode(tokens.access_token);
+        userinfo = await userInfo(tokens.access_token, decoded.sub);
+      } catch (e) {
+        console.error('[useTokenExchange] Failed to fetch userInfo:', e);
       }
-
-      return { tokens, userinfo };
-    } catch (e) {
-      console.error(e);
-      throw e;
-    } finally {
-      setLoading(false);
     }
-  }, []);
 
-  return exchange;
+    return { tokens, userinfo };
+  }, []);
 }

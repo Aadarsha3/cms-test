@@ -1,31 +1,54 @@
 import { useIsClient } from "@uidotdev/usehooks";
 import {
   createContext,
+  useContext,
+  useMemo,
   type Dispatch,
   type ReactNode,
   type SetStateAction,
 } from "react";
 import { useThemeStorage, type ThemeName } from "@/hooks/localstorage-hooks";
 
-export const ChosenTheme = createContext<IChosenTheme>({} as IChosenTheme);
+export interface ChosenThemeContextType {
+  theme: ThemeName;
+  setTheme: Dispatch<SetStateAction<ThemeName>>;
+}
 
-const WithThemeProvider = ({ children }: { children: ReactNode }) => {
+export const ChosenTheme = createContext<ChosenThemeContextType | null>(null);
+
+/**
+ * Hook to safely use the ChosenTheme context
+ */
+export function useTheme(): ChosenThemeContextType {
+  const context = useContext(ChosenTheme);
+  if (!context) {
+    throw new Error("useTheme must be used within a ChosenThemeProvider");
+  }
+  return context;
+}
+
+const WithThemeProvider = ({ children }: { children: ReactNode }): React.JSX.Element => {
   const [theme, setTheme] = useThemeStorage();
 
+  const value = useMemo(
+    () => ({ theme, setTheme }),
+    [theme, setTheme]
+  );
+
   return (
-    <ChosenTheme.Provider value={{ theme, setTheme }}>
+    <ChosenTheme.Provider value={value}>
       {children}
     </ChosenTheme.Provider>
   );
 };
 
-export const ChosenThemeProvider = ({ children }: { children: ReactNode }) => {
+export const ChosenThemeProvider = ({ children }: { children: ReactNode }): React.JSX.Element => {
   const isClient = useIsClient();
+
   if (!isClient) {
-    console.log("Not client");
-    // Prevents hydration error
+    // Prevents hydration error by providing a stable default for the first render
     return (
-      <ChosenTheme.Provider value={{ theme: "light", setTheme: () => {} }}>
+      <ChosenTheme.Provider value={{ theme: "light", setTheme: () => { } }}>
         {children}
       </ChosenTheme.Provider>
     );
@@ -34,7 +57,3 @@ export const ChosenThemeProvider = ({ children }: { children: ReactNode }) => {
   return <WithThemeProvider>{children}</WithThemeProvider>;
 };
 
-interface IChosenTheme {
-  theme: ThemeName;
-  setTheme: Dispatch<SetStateAction<ThemeName>>;
-}
