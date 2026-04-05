@@ -5,9 +5,6 @@ export interface ApiErrorResponse {
   details?: Record<string, any>;
 }
 
-/**
- * Extracts a readable error message from various error formats.
- */
 export function extractErrorMessage(
   err: any,
   defaultMsg: string = "An error occurred"
@@ -30,9 +27,7 @@ export function extractErrorMessage(
   return defaultMsg;
 }
 
-/**
- * Logs structured error details for debugging.
- */
+// Logs structured error details for debugging.
 export function logError(context: string, err: any) {
   console.error(`[${context}]`, {
     message: err?.message,
@@ -42,9 +37,7 @@ export function logError(context: string, err: any) {
   });
 }
 
-/**
- * Validates required fields and returns an error message if any are empty.
- */
+// Validates required fields and returns an error message if any are empty.
 export function validateRequiredFields(fields: Record<string, any>): string | null {
   const emptyFields = Object.entries(fields)
     .filter(([, value]) => !value || (typeof value === "string" && value.trim() === ""))

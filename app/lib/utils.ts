@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-/** Converts Spring Boot LocalDate arrays like [2026, 4, 4] to "2026-04-04" */
+// Converts Spring Boot LocalDate arrays like [2026, 4, 4] to "2026-04-04"
 export function fixDateArray(value: any): string | null {
   if (Array.isArray(value)) {
     const [y, m, d] = value;
@@ -14,7 +14,7 @@ export function fixDateArray(value: any): string | null {
   return typeof value === "string" ? value : null;
 }
 
-/** Fix all known date fields on a data object in-place */
+// Fix all known date fields on a data object in-place
 export function fixDates(data: any, fields: string[]) {
   if (!data) return;
   for (const f of fields) {

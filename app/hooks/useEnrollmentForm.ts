@@ -64,7 +64,6 @@ export function useEnrollmentForm() {
             initialRole = "student";
             // Group will be auto-assigned after fetching from API
         } else if (context === "staff") {
-            // For staff, we want the placeholder "Choose group", so leave role/group empty
             initialRole = "";
             initialGroup = undefined;
         }
@@ -109,9 +108,9 @@ export function useEnrollmentForm() {
                             userId: userToEdit.username || "",
                             email: userToEdit.primaryEmail || "",
                             password: "",
-                            joinDate: (typeof userToEdit.createdAt === 'string' ? userToEdit.createdAt.split('T')[0] : 
-                                      Array.isArray(userToEdit.createdDate) ? `${userToEdit.createdDate[0]}-${String(userToEdit.createdDate[1]).padStart(2, '0')}-${String(userToEdit.createdDate[2]).padStart(2, '0')}` :
-                                      new Date().toISOString().split('T')[0]),
+                            joinDate: (typeof userToEdit.createdAt === 'string' ? userToEdit.createdAt.split('T')[0] :
+                                Array.isArray(userToEdit.createdDate) ? `${userToEdit.createdDate[0]}-${String(userToEdit.createdDate[1]).padStart(2, '0')}-${String(userToEdit.createdDate[2]).padStart(2, '0')}` :
+                                    new Date().toISOString().split('T')[0]),
                         });
 
                         setProfileData({

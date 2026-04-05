@@ -10,7 +10,7 @@ interface UseManagementDetailsOptions<T> {
   onSuccessPath: string;
   editableFields: (keyof T)[];
   dateFields?: (keyof T)[];
-  roleLabel?: string; // For console logging or customized toasts
+  roleLabel?: string;
 }
 
 /**
@@ -58,8 +58,8 @@ export function useManagementDetails<T extends { id: string; userId?: string; us
         const allUsersRes = await userApi.get("/users", { params: { size: 500 } });
         const allUsers = Array.isArray(allUsersRes.data) ? allUsersRes.data : (allUsersRes.data as any)?.content || [];
 
-        const matchedUser = allUsers.find((u: any) => 
-          u.id === lookupId || 
+        const matchedUser = allUsers.find((u: any) =>
+          u.id === lookupId ||
           (u.primaryEmail && lookupEmail && u.primaryEmail.toLowerCase() === lookupEmail.toLowerCase())
         );
 
@@ -127,7 +127,7 @@ export function useManagementDetails<T extends { id: string; userId?: string; us
           updated[field] = fixDateArray(updated[field]) as any;
         }
       }
-      
+
       // Preserve local metadata not returned by dashboard
       if (!updated.username) updated.username = data.username;
       if (!updated.accountCreatedDate) updated.accountCreatedDate = data.accountCreatedDate;

@@ -10,10 +10,6 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   avatarUrl?: string;
-  // Staff-specific fields
-  assignedCourses?: string[]; // Course codes that staff teaches
-  User_Id?: string;
-  // Student-specific fields
   phone?: string;
   universityId?: string;
   dateOfBirth?: string;
@@ -26,7 +22,7 @@ export interface AuthUser {
   enrollmentDate?: string;
   program?: string;
   group?: string;
-  enrolledCourses?: string[]; // Course codes student is enrolled in
+
 }
 
 interface AuthContextType {
@@ -66,7 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem("rolePermissions");
       if (stored) {
         const parsed = JSON.parse(stored);
-        // Merge with defaults to ensure any missing roles (like when renaming super_admin to admin) get permissions
         return { ...DEFAULT_ROLE_PERMISSIONS, ...parsed };
       }
       return DEFAULT_ROLE_PERMISSIONS;
@@ -108,10 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("id_token");
     localStorage.removeItem("rolePermissions");
     localStorage.removeItem("refresh_token");
-
-    // We do NOT call setUser(null) here because we are immediately navigating
-    // away from the SPA via window.location.href. Calling it would teardown
-    // the React tree while navigating, causing 'useAuth must be inside AuthProvider' errors.
 
     // Redirect to backend to end session
 

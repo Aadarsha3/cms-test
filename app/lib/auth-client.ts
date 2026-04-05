@@ -1,16 +1,21 @@
 import * as client from "openid-client";
 
-const server = new URL(import.meta.env.VITE_AUTH_SERVER_URL); // Authorization Server's Issuer Identifier
-const clientId = import.meta.env.VITE_OIDC_CLIENT_ID; // Client identifier at the Authorization Server
-// const clientSecret = 'secret'; // Client Secret
+// Core OIDC configurations from environment variables
+const issuer = new URL(import.meta.env.VITE_AUTH_SERVER_URL || "http://localhost:8001");
+const clientId = import.meta.env.VITE_OIDC_CLIENT_ID || "react-client";
+const redirectUri = import.meta.env.VITE_OIDC_REDIRECT_URI;
 
-let config: client.Configuration | undefined = undefined;
+let configCache: client.Configuration | undefined = undefined;
 
-export async function getAuthConfig() {
-    if (config) return config;
+/**
+ * Discovers OIDC server metadata and builds the client configuration.
+ * Results are cached to avoid redundant network calls.
+ */
+export async function getAuthConfig(): Promise<client.Configuration> {
+    if (configCache) return configCache;
 
-    return (config = await client.discovery(
-        server,
+    configCache = await client.discovery(
+        issuer,
         clientId,
         {
             authorization_signed_response_alg: "ES256",
@@ -21,95 +26,87 @@ export async function getAuthConfig() {
             execute: [client.allowInsecureRequests],
             algorithm: "oidc",
         }
-    ));
+    );
+
+    return configCache;
 }
 
+/**
+ * Initiates the PKCE Authorization Code flow.
+ * Persists PKCE state using provided setters before redirecting to the issuer.
+ */
 export async function authCodeFlow(
-    setState: (state: string) => void,
-    setCodeVerifier: (codeVerifier: string) => void
+    onSetState: (state: string) => void,
+    onSetCodeVerifier: (codeVerifier: string) => void
 ) {
     const config = await getAuthConfig();
-
-    /**
-     * Value used in the authorization request as the redirect_uri parameter, this
-     * is typically pre-registered at the Authorization Server.
-     */
-    const redirect_uri = import.meta.env.VITE_OIDC_REDIRECT_URI;
-    const scope = "openid email profile"; // Scope of the access request
-    /**
-     * PKCE: The following MUST be generated for every redirect to the
-     * authorization_endpoint. You must store the code_verifier and state in the
-     * end-user session such that it can be recovered as the user gets redirected
-     * from the authorization server back to your application.
-     */
+    const scope = "openid email profile";
+    
+    // Generate PKCE code verifier and challenge
     const code_verifier = client.randomPKCECodeVerifier();
-    setCodeVerifier(code_verifier);
-    let code_challenge: string =
-        await client.calculatePKCECodeChallenge(code_verifier);
+    onSetCodeVerifier(code_verifier);
+    
+    const code_challenge = await client.calculatePKCECodeChallenge(code_verifier);
+    const state = client.randomState();
+    onSetState(state);
 
-    let parameters: Record<string, string> = {
-        redirect_uri,
+    const parameters: Record<string, string> = {
+        redirect_uri: redirectUri,
         scope,
         code_challenge,
         code_challenge_method: "S256",
+        state,
     };
 
-    const state = client.randomState();
-    setState(state);
-    parameters.state = state;
-
-    let redirectTo: URL = client.buildAuthorizationUrl(config, parameters);
-
-    // now redirect the user to redirectTo.href
-    console.log("redirecting to", redirectTo.href);
-    window.location.href = redirectTo.href;
+    const authorizationUrl = client.buildAuthorizationUrl(config, parameters);
+    window.location.href = authorizationUrl.href;
 }
 
+/**
+ * Exchanges an authorization code for OIDC tokens.
+ * Validates state and PKCE verifier during the grant.
+ */
 export async function tokenExchange(
-    getCurrentUrl: (...args: any) => URL,
-    state: string,
-    code_verifier: string
-) {
+    captureUrl: () => URL,
+    expectedState: string,
+    codeVerifier: string
+): Promise<client.TokenEndpointResponse> {
     const config = await getAuthConfig();
 
-    let tokens: client.TokenEndpointResponse =
-        await client.authorizationCodeGrant(config, getCurrentUrl(), {
-            pkceCodeVerifier: code_verifier,
-            expectedState: state,
-        });
-
-    console.log("Token Endpoint Response", tokens);
-    return tokens;
+    return await client.authorizationCodeGrant(config, captureUrl(), {
+        pkceCodeVerifier: codeVerifier,
+        expectedState: expectedState,
+    });
 }
 
-export async function userInfo(access_token: string, sub: string) {
+/**
+ * Fetches user profile information from the OIDC UserInfo endpoint.
+ */
+export async function fetchProfile(accessToken: string, subject: string) {
     const config = await getAuthConfig();
-    let userInfo = await client.fetchUserInfo(config, access_token, sub);
-    console.log("UserInfo Response", userInfo);
-    return userInfo;
+    return await client.fetchUserInfo(config, accessToken, subject);
 }
 
-export async function signOutRedirect(id_token?: string) {
+/**
+ * Terminates the user session by redirecting to the server's end_session_endpoint.
+ */
+export async function signOutRedirect(idTokenHint?: string) {
     const config = await getAuthConfig();
     const endSessionEndpoint = config.serverMetadata().end_session_endpoint;
 
     if (!endSessionEndpoint) {
-        console.warn("No end_session_endpoint found in discovery document");
+        console.warn("[Auth] End session endpoint not found. Clearing local session only.");
+        window.location.href = window.location.origin;
         return;
     }
 
-    let url = new URL(endSessionEndpoint);
-    if (id_token) {
-        url.searchParams.set("id_token_hint", id_token);
+    const logoutUrl = new URL(endSessionEndpoint);
+    if (idTokenHint) {
+        logoutUrl.searchParams.set("id_token_hint", idTokenHint);
     }
     
-    // Add client_id requirement for modern Keycloak/Spring AS logout compliance
-    url.searchParams.set("client_id", clientId);
+    logoutUrl.searchParams.set("client_id", clientId);
+    logoutUrl.searchParams.set("post_logout_redirect_uri", window.location.origin);
 
-    // Redirect back to the React app after successful backend logout.
-    // This MUST match exactly the registered URL in the backend client config.
-    url.searchParams.set("post_logout_redirect_uri", window.location.origin);
-
-    console.log("Redirecting to logout:", url.href);
-    window.location.href = url.href;
+    window.location.href = logoutUrl.href;
 }
