@@ -115,12 +115,14 @@ export function StaffDetailsView({
                 inputType="email"
               />
               <PhoneInputField
+                id="staff-phone"
                 label="Phone Number"
                 value={(isEditing ? editFormData.phoneNumber : staff.phoneNumber) || ""}
                 onChange={(v) => setEditFormData({ ...editFormData, phoneNumber: v })}
                 disabled={!isEditing}
               />
               <DatePickerField
+                id="staff-dob"
                 label="Date of Birth"
                 value={(isEditing ? editFormData.dateOfBirth : staff.dateOfBirth) || ""}
                 onChange={(date) => setEditFormData({ ...editFormData, dateOfBirth: date })}
@@ -136,9 +138,9 @@ export function StaffDetailsView({
                 editFormData={editFormData}
                 setEditFormData={setEditFormData}
                 options={[
-                  { label: "Male", value: "Male" },
-                  { label: "Female", value: "Female" },
-                  { label: "Other", value: "Other" },
+                  { label: "Male", value: "male" },
+                  { label: "Female", value: "female" },
+                  { label: "Other", value: "other" },
                 ]}
               />
               <InfoField
@@ -163,12 +165,14 @@ export function StaffDetailsView({
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <DatePickerField
+                id="staff-join-date"
                 label="Join Date"
                 value={(isEditing ? editFormData.joinDate : staff.joinDate) || ""}
                 onChange={(date) => setEditFormData({ ...editFormData, joinDate: date })}
                 disabled={!isEditing}
               />
               <DatePickerField
+                id="staff-termination-date"
                 label="Termination Date"
                 value={(isEditing ? editFormData.terminationDate : staff.terminationDate) || ""}
                 onChange={(date) => setEditFormData({ ...editFormData, terminationDate: date })}

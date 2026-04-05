@@ -11,14 +11,14 @@ function extractRoleFromToken(accessToken: string): UserRole {
     try {
         const decoded: any = jwtDecode(accessToken);
 
-        // Collect roles from all common Keycloak/OIDC locations
+
         const candidates: string[] =
             decoded.realm_access?.roles ??
             (Array.isArray(decoded.roles) ? decoded.roles : []) ??
             decoded.resource_access?.['react-client']?.roles ??
             [];
 
-        // Normalise and pick highest-priority match
+
         const normalised = candidates.map((r: string) => r.toLowerCase());
         return VALID_ROLES.find((r) => normalised.includes(r)) ?? 'student';
     } catch (e) {
@@ -34,7 +34,7 @@ export function CallbackPage() {
     const processedRef = useRef(false);
 
     useEffect(() => {
-        // Guard against React Strict Mode double-invoke
+
         if (processedRef.current) return;
         processedRef.current = true;
 
@@ -42,7 +42,7 @@ export function CallbackPage() {
             try {
                 const { tokens, userinfo } = await exchangeToken();
 
-                // Persist tokens
+
                 if (tokens.access_token) localStorage.setItem('access_token', tokens.access_token);
                 if (tokens.id_token) localStorage.setItem('id_token', tokens.id_token);
                 if (tokens.refresh_token) localStorage.setItem('refresh_token', tokens.refresh_token);

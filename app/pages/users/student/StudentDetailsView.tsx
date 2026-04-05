@@ -1,4 +1,4 @@
-import React from "react";
+
 import { MainLayout } from "@/components/layout/MainLayout";
 import { InfoField } from "@/components/common/InfoField";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -111,12 +111,14 @@ export function StudentDetailsView({
                 inputType="email"
               />
               <PhoneInputField
+                id="student-phone"
                 label="Phone Number"
                 value={(isEditing ? editFormData.phoneNumber : student.phoneNumber) || ""}
                 onChange={(v) => setEditFormData({ ...editFormData, phoneNumber: v })}
                 disabled={!isEditing}
               />
               <DatePickerField
+                id="student-dob"
                 label="Date of Birth"
                 value={(isEditing ? (editFormData.dateOfBirth as string) : student.dateOfBirth) || ""}
                 onChange={(date) => setEditFormData({ ...editFormData, dateOfBirth: date })}
@@ -132,9 +134,9 @@ export function StudentDetailsView({
                 editFormData={editFormData}
                 setEditFormData={setEditFormData}
                 options={[
-                  { label: "Male", value: "Male" },
-                  { label: "Female", value: "Female" },
-                  { label: "Other", value: "Other" },
+                  { label: "Male", value: "male" },
+                  { label: "Female", value: "female" },
+                  { label: "Other", value: "other" },
                 ]}
               />
               <InfoField
@@ -168,6 +170,7 @@ export function StudentDetailsView({
                 setEditFormData={setEditFormData}
               />
               <PhoneInputField
+                id="guardian-phone"
                 label="Contact Number"
                 value={
                   (isEditing ? editFormData.guardianPhoneNumber : student.guardianPhoneNumber) || ""

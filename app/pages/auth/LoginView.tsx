@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -10,9 +10,9 @@ interface LoginViewProps {
 export function LoginView({ isLoading, handleSubmit }: LoginViewProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#E3F2FD] p-4">
-      {/* The "Big Box" Container */}
+
       <Card className="overflow-hidden shadow-2xl w-full max-w-5xl grid md:grid-cols-2 border-none ring-1 ring-gray-200">
-        {/* Left Side - Image Box */}
+
         <div className="relative hidden md:flex flex-col items-center justify-center p-8 bg-gray-50 border-r border-gray-100">
           <div className="w-full max-w-sm">
             <img
@@ -23,7 +23,7 @@ export function LoginView({ isLoading, handleSubmit }: LoginViewProps) {
           </div>
         </div>
 
-        {/* Right Side - Login Form Box */}
+
         <div className="flex flex-col justify-center p-8 md:p-12 bg-white">
           <div className="w-full max-w-sm mx-auto space-y-8">
             <div className="flex flex-col items-center space-y-2 text-center">

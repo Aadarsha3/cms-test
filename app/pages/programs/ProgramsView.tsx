@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Plus, Search, Loader2, RefreshCw, BookOpen, ChevronRight } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";

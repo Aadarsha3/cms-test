@@ -40,6 +40,7 @@ export function PhoneInputField({
             ) : (
                 <Input
                     id={id}
+                    name={id}
                     type="tel"
                     value={value}
                     onChange={handlePhoneChange}

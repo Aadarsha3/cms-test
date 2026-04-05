@@ -1,4 +1,4 @@
-import React from "react";
+
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DetailsLoading } from "@/components/common/details/DetailsLoading";
 import { DetailsError } from "@/components/common/details/DetailsError";

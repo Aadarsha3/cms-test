@@ -27,6 +27,7 @@ export function RowsSelector({
         Rows:
       </span>
       <Select
+        name="rows-per-page"
         value={String(value)}
         onValueChange={(v) => onValueChange(Number(v))}
       >

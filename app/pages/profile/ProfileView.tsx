@@ -1,4 +1,4 @@
-import React from "react";
+
 import { User, Mail, MapPin, Heart, Key, ExternalLink } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { InfoField } from "@/components/common/InfoField";

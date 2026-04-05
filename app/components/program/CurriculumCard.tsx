@@ -25,7 +25,7 @@ export function CurriculumCard({ programId, courses, loading }: CurriculumCardPr
       <CardHeader className="bg-muted/40 py-4 border-b flex flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <BookOpen className="h-5 w-5 text-muted-foreground" />
-          <CardTitle className="text-lg font-bold">Curriculum / Courses</CardTitle>
+          <CardTitle className="text-lg font-bold">Courses</CardTitle>
         </div>
         <Button size="sm" onClick={() => setLocation(`/courses/create?program=${programId}`)} className="gap-2 shadow-sm">
           <Plus className="h-4 w-4" />

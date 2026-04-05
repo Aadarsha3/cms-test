@@ -1,4 +1,4 @@
-import React from "react";
+
 import { UserPlus } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";

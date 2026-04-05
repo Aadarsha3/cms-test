@@ -45,13 +45,14 @@ export const InfoField = ({
 
   return (
     <div className="space-y-2">
-      <Label className="flex items-center gap-2">
+      <Label htmlFor={fieldKey} className="flex items-center gap-2">
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
         {label}
       </Label>
       {isEditable && isEditing ? (
         options ? (
           <Select
+            name={fieldKey}
             value={currentValue as string || ""}
             onValueChange={(val) => {
               if (onChange) {
@@ -61,7 +62,7 @@ export const InfoField = ({
               }
             }}
           >
-            <SelectTrigger className="h-9">
+            <SelectTrigger id={fieldKey} className="h-9">
               <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
@@ -74,6 +75,8 @@ export const InfoField = ({
           </Select>
         ) : (
           <Input
+            id={fieldKey}
+            name={fieldKey}
             type={inputType}
             className="h-9"
             value={currentValue as string || ""}

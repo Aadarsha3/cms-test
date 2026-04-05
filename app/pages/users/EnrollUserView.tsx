@@ -1,4 +1,4 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, ChevronRight } from "lucide-react";
@@ -72,7 +72,7 @@ export function EnrollUserView({
           </div>
         </div>
 
-        {/* Wizard Steps Indicator */}
+
         <div className="flex items-center justify-between relative px-10">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-muted/50 -z-10" />
 
@@ -216,10 +216,10 @@ export function EnrollUserView({
 }
 
 function ErrorToast({ error }: { error: string | null }) {
-  const [show, setShow] = React.useState(false);
-  const [content, setContent] = React.useState<string | null>(null);
+  const [show, setShow] = useState(false);
+  const [content, setContent] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       setContent(error);
       const timer = setTimeout(() => setShow(true), 10);

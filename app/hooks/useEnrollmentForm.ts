@@ -28,6 +28,7 @@ const initialStudentData: StudentFormData = {
     dateOfBirth: "",
     gender: "",
     presentAddress: "",
+    phoneNumber: "",
     guardianName: "",
     guardianPhoneNumber: "",
     guardianRelation: "",
@@ -125,6 +126,7 @@ export function useEnrollmentForm() {
                                 dateOfBirth: userToEdit.dateOfBirth || "",
                                 gender: userToEdit.gender || "",
                                 presentAddress: userToEdit.presentAddress || "",
+                                phoneNumber: userToEdit.phone || userToEdit.phoneNumber || "",
                                 guardianName: userToEdit.guardianName || "",
                                 guardianPhoneNumber: userToEdit.guardianPhoneNumber || userToEdit.guardianContact || "",
                                 guardianRelation: userToEdit.guardianRelation || userToEdit.guardianRelationship || "",
@@ -280,10 +282,11 @@ export function useEnrollmentForm() {
                 };
 
                 console.log("[DEBUG] POST /students payload:", studentPayload);
-                await dashboardApi.post("/students", studentPayload);
+                const res = await dashboardApi.post("/students", studentPayload);
+                const newId = res.data.id || targetUserId;
 
                 toast({ title: "Student enrolled successfully" });
-                setLocation(`/student/${targetUserId}`);
+                setLocation(`/student/${newId}`);
             } else if ((context === "staff" || ["staff", "admin", "teacher"].includes(profileData.role)) && !editingUserId) {
                 // Use POST /api/v1/staffs to create the staff and finish enrollment
                 const staffPayload = {
@@ -299,10 +302,11 @@ export function useEnrollmentForm() {
                 };
 
                 console.log("[DEBUG] POST /staffs payload:", staffPayload);
-                await dashboardApi.post("/staffs", staffPayload);
+                const res = await dashboardApi.post("/staffs", staffPayload);
+                const newId = res.data.id || targetUserId;
 
                 toast({ title: "Staff enrolled successfully" });
-                setLocation(`/users/${targetUserId}`);
+                setLocation(`/staff/${newId}`);
             } else {
                 // Staff / edit flow
                 const payload = {
@@ -335,8 +339,11 @@ export function useEnrollmentForm() {
     };
 
     const goBack = () => {
-        if (editingUserId) setLocation(`/users/${editingUserId}`);
-        else if (context === "student") setLocation("/students");
+        if (editingUserId) {
+            if (context === "student") setLocation(`/student/${editingUserId}`);
+            else if (context === "staff") setLocation(`/staff/${editingUserId}`);
+            else setLocation(`/users/${editingUserId}`);
+        } else if (context === "student") setLocation("/students");
         else if (context === "staff") setLocation("/staff");
         else setLocation("/dashboard");
     };

@@ -26,6 +26,7 @@ export function StepOneAccount({
           </Label>
           <Input
             id="firstName"
+            name="firstName"
             value={data.firstName}
             onChange={(e) => {
               const v = e.target.value;
@@ -41,6 +42,7 @@ export function StepOneAccount({
           </Label>
           <Input
             id="lastName"
+            name="lastName"
             value={data.lastName}
             onChange={(e) => {
               const v = e.target.value;
@@ -59,6 +61,7 @@ export function StepOneAccount({
           </Label>
           <Input
             id="enroll-user-id"
+            name="userId"
             value={data.userId}
             onChange={(e) => setData({ ...data, userId: e.target.value })}
             placeholder="e.g. COL2024001"
@@ -74,6 +77,7 @@ export function StepOneAccount({
           </Label>
           <Input
             id="enroll-user-email"
+            name="email"
             type="email"
             value={data.email}
             onChange={(e) => setData({ ...data, email: e.target.value })}
@@ -95,6 +99,7 @@ export function StepOneAccount({
         <div className="relative flex items-center max-w-md">
           <Input
             id="enroll-user-password"
+            name="password"
             type={showPassword ? "text" : "password"}
             value={data.password}
             onChange={(e) => setData({ ...data, password: e.target.value })}

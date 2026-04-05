@@ -11,7 +11,6 @@ import { DashboardPage } from "@/pages/dashboard/DashboardPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import { ChangePasswordPage } from "./pages/profile/ChangePasswordPage";
 import { EnrollUserPage } from "@/pages/users/EnrollUserPage";
-import { UserDetailsPage } from "@/pages/users/UserDetailsPage";
 import { StudentsPage } from "@/pages/users/student/StudentsPage";
 import { StudentDetailsPage } from "@/pages/users/student/StudentDetailsPage";
 import { StaffPage } from "@/pages/users/staff/StaffPage";
@@ -98,9 +97,6 @@ function Router() {
       </Route>
       <Route path="/users/:id/edit">
         <ProtectedRoute component={EnrollUserPage} permission="users_edit" />
-      </Route>
-      <Route path="/users/:id">
-        <ProtectedRoute component={UserDetailsPage} permission="users_view" />
       </Route>
 
       <Route path="/students">

@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { ProfileFormData, StudentFormData, AccountFormData, roleLabels } from "@/pages/users/user.types";
 import { DatePickerField } from "@/components/common/DatePickerField";
 import { PhoneInputField } from "@/components/common/PhoneInputField";
+import { User, Calendar, MapPin } from "lucide-react";
 
 export interface StaffDetailsFormProps {
   data: ProfileFormData;
@@ -62,22 +63,32 @@ export function StaffDetailsForm({
       <CardContent className="space-y-6">
         <div className="grid md:grid-cols-2 gap-4">
           <DatePickerField
+            id="staff-dob"
             label="Date of Birth"
             value={studentData.dateOfBirth || ""}
             onChange={(date) => setStudentData({ ...studentData, dateOfBirth: date })}
+            icon={<Calendar className="h-4 w-4 text-muted-foreground" />}
+            required
           />
           <DatePickerField
+            id="staff-join-date"
             label="Join Date"
             value={accountData.joinDate || ""}
             onChange={(date) => setAccountData({ ...accountData, joinDate: date })}
+            icon={<Calendar className="h-4 w-4 text-muted-foreground" />}
+            required
           />
           <div className="space-y-2">
-            <Label htmlFor="gender">Gender</Label>
+            <Label htmlFor="gender" className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground" />
+              Gender <span className="text-destructive">*</span>
+            </Label>
             <Select
+              name="gender"
               value={studentData.gender}
               onValueChange={(v: Gender) => setStudentData({ ...studentData, gender: v })}
             >
-              <SelectTrigger>
+              <SelectTrigger id="gender">
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
               <SelectContent>
@@ -97,9 +108,13 @@ export function StaffDetailsForm({
             onChange={(v) => setData({ ...data, phone: v })}
           />
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="presentAddress">Present Address</Label>
+            <Label htmlFor="presentAddress" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              Present Address <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="presentAddress"
+              name="presentAddress"
               value={studentData.presentAddress}
               onChange={(e) =>
                 setStudentData({ ...studentData, presentAddress: e.target.value })
@@ -111,12 +126,13 @@ export function StaffDetailsForm({
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
+                name="status"
                 value={data.status}
                 onValueChange={(v: "active" | "inactive") =>
                   setData({ ...data, status: v })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger id="status">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>

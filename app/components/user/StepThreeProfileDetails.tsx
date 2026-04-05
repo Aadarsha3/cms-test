@@ -14,7 +14,7 @@ interface StepThreeProfileDetailsProps {
     studentData: StudentFormData;
     setStudentData: (data: StudentFormData) => void;
     documents: any[];
-    setDocuments: React.Dispatch<React.SetStateAction<any[]>>;
+    setDocuments: (docs: any[]) => void;
     isAdmin: boolean;
     userFullName: string;
     isEditing?: boolean;

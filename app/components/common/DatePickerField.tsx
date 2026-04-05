@@ -15,6 +15,7 @@ interface DatePickerFieldProps {
     required?: boolean;
     placeholder?: string;
     disabled?: boolean;
+    icon?: React.ReactNode;
 }
 
 export function DatePickerField({
@@ -25,6 +26,7 @@ export function DatePickerField({
     required,
     placeholder = "yyyy-mm-dd",
     disabled,
+    icon,
 }: DatePickerFieldProps) {
     const [inputValue, setInputValue] = React.useState(value || "");
 
@@ -53,6 +55,7 @@ export function DatePickerField({
     return (
         <div className="space-y-2">
             <Label htmlFor={id} className="flex items-center gap-2">
+                {icon}
                 {label} {required && <span className="text-destructive">*</span>}
             </Label>
             {disabled ? (
@@ -63,6 +66,7 @@ export function DatePickerField({
                         <div className="relative flex-1">
                             <Input
                                 id={id}
+                                name={id}
                                 placeholder={placeholder}
                                 value={inputValue}
                                 onChange={(e) => handleInputManual(e.target.value)}

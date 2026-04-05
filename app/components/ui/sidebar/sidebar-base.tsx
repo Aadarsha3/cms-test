@@ -119,7 +119,7 @@ export function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar, open } = useSidebar()
+  const { toggleSidebar, open, isMobile } = useSidebar()
 
   return (
     <Button
@@ -134,7 +134,7 @@ export function SidebarTrigger({
       }}
       {...props}
     >
-      {open ? <PanelLeftIcon /> : <Menu />}
+      {isMobile ? <Menu /> : <PanelLeftIcon className={cn("transition-transform duration-200", !open && "rotate-180")} />}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

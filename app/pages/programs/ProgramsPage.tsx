@@ -50,7 +50,7 @@ export default function ProgramsPage() {
         page,
         size,
         sort: "id",
-        direction: "DESC",
+        direction: "DSC",
       };
 
       if (search.trim()) {
