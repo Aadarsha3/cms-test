@@ -1,18 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, useParams } from "wouter";
 import { dashboardApi } from "@/lib/api";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { useToast } from "@/hooks/use-toast";
 import { extractErrorMessage, logError, validateRequiredFields } from "@/lib/error-handler";
-import { DetailsLoading } from "@/components/common/details/DetailsLoading";
-import { DetailsError } from "@/components/common/details/DetailsError";
-import { DetailsActionBar } from "@/components/common/details/DetailsActionBar";
 import { useAuth } from "@/lib/auth-context";
-
-// Extracted Components
-import { ProgramInfoCard } from "@/components/program/ProgramInfoCard";
-import { CurriculumCard } from "@/components/program/CurriculumCard";
-import { EditProgramCard } from "@/components/program/EditProgramCard";
+import { ProgramDetailsView } from "./ProgramDetailsView";
 
 interface ProgramDetail {
   id: string;
@@ -37,7 +29,7 @@ interface EditData {
   duration: string;
 }
 
-export default function ProgramDetailsPage(): React.JSX.Element {
+export default function ProgramDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -63,6 +55,7 @@ export default function ProgramDetailsPage(): React.JSX.Element {
     setLoading(true);
     setError(null);
     try {
+      if (!id) return;
       const response = await dashboardApi.get<ProgramDetail>(`/programs/${id}`);
       setProgram(response.data);
       setEditData({
@@ -80,6 +73,7 @@ export default function ProgramDetailsPage(): React.JSX.Element {
   }, [id]);
 
   const fetchProgramCourses = useCallback(async () => {
+    if (!id) return;
     setLoadingCourses(true);
     try {
       const response = await dashboardApi.get(`/programs/${id}/courses`);
@@ -104,7 +98,7 @@ export default function ProgramDetailsPage(): React.JSX.Element {
   };
 
   const handleSave = async () => {
-    if (!program) return;
+    if (!program || !id) return;
     const isUnchanged = editData.name === program.name && editData.duration === program.duration &&
                         editData.code === program.programCode && editData.type === (program.type || "");
     
@@ -137,6 +131,7 @@ export default function ProgramDetailsPage(): React.JSX.Element {
   };
 
   const handleDelete = async () => {
+    if (!id) return;
     try {
       await dashboardApi.delete(`/programs/${id}`);
       toast({ title: "Program Deleted", description: "The program has been successfully removed." });
@@ -147,38 +142,25 @@ export default function ProgramDetailsPage(): React.JSX.Element {
     }
   };
 
-  if (loading) return <DetailsLoading title="Program Details" />;
-  if (error || !program) return <DetailsError title="Program Details" error={error || "Not found."} backLabel="Go Back" onBack={() => setLocation("/programs")} />;
-
   return (
-    <MainLayout title="Program Details">
-      <div className="max-w-4xl mx-auto space-y-6 pb-12">
-        <DetailsActionBar
-          onBack={() => setLocation("/programs")}
-          canEdit={hasPermission("users_edit")}
-          isEditing={isEditing}
-          saving={isSaving}
-          onEdit={() => setIsEditing(true)}
-          onSave={handleSave}
-          onDelete={handleDelete}
-          onCancel={() => {
-            setIsEditing(false);
-            setEditData({ name: program.name, code: program.programCode, type: program.type || "", duration: program.duration });
-          }}
-          editLabel="Edit Program"
-          deleteLabel="Delete Program"
-          confirmDelete={{ title: "Are you sure?", description: `This will permanently delete "${program.name}".` }}
-        />
-
-        {isEditing ? (
-          <EditProgramCard editData={editData} onChange={handleEditFieldChange} isLoading={isSaving} />
-        ) : (
-          <ProgramInfoCard program={program} />
-        )}
-
-        <CurriculumCard programId={id} courses={courses} loading={loadingCourses} />
-      </div>
-    </MainLayout>
+    <ProgramDetailsView
+      id={id || ""}
+      program={program}
+      loading={loading}
+      error={error}
+      isEditing={isEditing}
+      isSaving={isSaving}
+      courses={courses}
+      loadingCourses={loadingCourses}
+      editData={editData}
+      handleEditFieldChange={handleEditFieldChange}
+      handleSave={handleSave}
+      handleDelete={handleDelete}
+      setIsEditing={setIsEditing}
+      setEditData={setEditData}
+      hasPermission={hasPermission}
+      setLocation={setLocation}
+    />
   );
 }
 

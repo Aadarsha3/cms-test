@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { dashboardApi } from "@/lib/api";
-import { MainLayout } from "@/components/layout/MainLayout";
-import { StatCard } from "@/components/common/StatCard";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 
-import { Announcement, RecentActivity, AnnouncementForm, DashboardStats } from "./types";
-import { initialStats } from "./constants";
+import { Announcement, AnnouncementForm, DashboardStats } from "./types";
+import { Users, GraduationCap, BookOpen } from "lucide-react";
+import { DashboardView } from "./DashboardView";
 
-import { WelcomeBanner } from "@/components/dashboard/WelcomeBanner";
-import { AnnouncementsCard } from "@/components/announcement/AnnouncementsCard";
-import { AnnouncementDialog } from "@/components/announcement/AnnouncementDialog";
-import { AnnouncementDetailsDialog } from "@/components/announcement/AnnouncementDetailsDialog";
+const initialStats: DashboardStats = [
+    { title: "Total Students", value: "0", icon: Users },
+    { title: "Active Programs", value: "0", icon: GraduationCap },
+    { title: "Courses", value: "0", icon: BookOpen },
+];
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -36,7 +36,6 @@ export function DashboardPage() {
     try {
       const response = await dashboardApi.get("/announcements?&size=3&sort=createdDate&direction=DSC");
       const data = Array.isArray(response.data) ? response.data : (response.data as any)?.content || [];
-      // Format backend response to match UI needs
       const formattedData = data.map((item: any) => {
         let dateObj = new Date();
         if (Array.isArray(item.createdDate)) {
@@ -66,21 +65,19 @@ export function DashboardPage() {
   };
 
   useEffect(() => {
-    // Fetch common stats for everyone
     dashboardApi
       .get("/dashboard")
       .then((response) => {
         const { studentCount, courseCount, programCount } = response.data;
 
-        setDashboardStats((prev) => ({
-          ...prev,
-          admin: prev.admin.map((stat) => {
+        setDashboardStats((prev) => 
+          prev.map((stat) => {
             if (stat.title === "Total Students") return { ...stat, value: String(studentCount) };
             if (stat.title === "Courses") return { ...stat, value: String(courseCount) };
             if (stat.title === "Active Programs") return { ...stat, value: String(programCount) };
             return stat;
-          }),
-        }));
+          })
+        );
       })
       .catch((err) => {
         console.error("Dashboard stats fetch failed:", err);
@@ -90,8 +87,6 @@ export function DashboardPage() {
   }, [user]);
 
   if (!user) return null;
-
-  const stats = dashboardStats.admin;
 
   const isAdmin = user.role === "admin";
 
@@ -104,15 +99,6 @@ export function DashboardPage() {
     setIsAnnouncementDialogOpen(true);
   };
 
-  const handleOpenEditDialog = (announcement: Announcement) => {
-    setEditingAnnouncementId(announcement.id);
-    setAnnouncementForm({
-      title: announcement.title,
-      details: announcement.details || "",
-    });
-    setIsAnnouncementDialogOpen(true);
-  };
-
   const handleSaveAnnouncement = async () => {
     if (!announcementForm.title.trim()) {
       toast({ title: "Title is required", variant: "destructive" });
@@ -121,7 +107,6 @@ export function DashboardPage() {
 
     try {
       if (editingAnnouncementId) {
-        // According to API specification, we use PATCH for modifications
         await dashboardApi.patch(`/announcements/${editingAnnouncementId}`, [
           { op: "replace", path: "/title", value: announcementForm.title },
           { op: "replace", path: "/details", value: announcementForm.details },
@@ -139,69 +124,29 @@ export function DashboardPage() {
     }
   };
 
-  const filteredAnnouncements = announcements;
-
-  const handleDeleteAnnouncement = async (id: string) => {
-    try {
-      await dashboardApi.delete(`/announcements/${id}`);
-      setAnnouncements(prev => prev.filter(a => a.id !== id));
-      toast({ title: "Announcement deleted" });
-    } catch (err) {
-      console.error("Failed to delete announcement:", err);
-      toast({ title: "Failed to delete announcement", variant: "destructive" });
-    }
-  };
-
   const handleViewDetails = (announcement: Announcement) => {
     setSelectedAnnouncement(announcement);
     setIsDetailDialogOpen(true);
   };
 
   return (
-    <MainLayout title="Dashboard">
-      <div className="space-y-6">
-        <WelcomeBanner
-          name={user.name}
-        />
-
-        <div
-          className={`grid gap-4 grid-cols-1 sm:grid-cols-2 ${stats.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
-            }`}
-        >
-          {stats.map((stat, index) => (
-            <StatCard
-              key={stat.title}
-              {...stat}
-              testId={`stat-card-${index}`}
-            />
-          ))}
-        </div>
-
-        <div className="grid gap-6">
-          <AnnouncementsCard
-            announcements={filteredAnnouncements}
-            isAdmin={isAdmin}
-            onViewDetails={handleViewDetails}
-            onCreate={handleOpenCreateDialog}
-          />
-        </div>
-      </div>
-
-      <AnnouncementDialog
-        isOpen={isAnnouncementDialogOpen}
-        onClose={() => setIsAnnouncementDialogOpen(false)}
-        onSave={handleSaveAnnouncement}
-        form={announcementForm}
-        setForm={setAnnouncementForm}
-        isEditing={!!editingAnnouncementId}
-      />
-
-      <AnnouncementDetailsDialog
-        isOpen={isDetailDialogOpen}
-        onClose={() => setIsDetailDialogOpen(false)}
-        announcement={selectedAnnouncement}
-      />
-    </MainLayout>
+    <DashboardView
+      user={user}
+      stats={dashboardStats}
+      announcements={announcements}
+      isAdmin={isAdmin}
+      isAnnouncementDialogOpen={isAnnouncementDialogOpen}
+      setIsAnnouncementDialogOpen={setIsAnnouncementDialogOpen}
+      isDetailDialogOpen={isDetailDialogOpen}
+      setIsDetailDialogOpen={setIsDetailDialogOpen}
+      selectedAnnouncement={selectedAnnouncement}
+      announcementForm={announcementForm}
+      setAnnouncementForm={setAnnouncementForm}
+      editingAnnouncementId={editingAnnouncementId}
+      handleOpenCreateDialog={handleOpenCreateDialog}
+      handleSaveAnnouncement={handleSaveAnnouncement}
+      handleViewDetails={handleViewDetails}
+    />
   );
 }
 

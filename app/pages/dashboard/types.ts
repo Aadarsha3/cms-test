@@ -13,12 +13,7 @@ export interface StatItem {
     icon: LucideIcon;
 }
 
-export interface DashboardStats {
-    admin: StatItem[];
-    staff: StatItem[];
-    student: StatItem[];
-    teacher: StatItem[];
-}
+export type DashboardStats = StatItem[];
 
 export interface RecentActivity {
     id: number;
