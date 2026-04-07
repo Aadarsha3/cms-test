@@ -27,6 +27,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+export function HydrateFallback() {
+  return (
+    <div id="loading" className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center gap-2">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <p className="text-sm text-muted-foreground font-medium animate-pulse">Loading MetaHorizon...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return <AppLogic />;
 }

@@ -22,6 +22,7 @@ import CreateCoursePage from "./pages/programs/courses/CreateCoursePage";
 import CourseDetailsPage from "./pages/programs/courses/CourseDetailsPage";
 import AnnouncementsPage from "./pages/announcements/AnnouncementsPage";
 import AnnouncementDetailsPage from "./pages/announcements/AnnouncementDetailsPage";
+import { CalendarLogic as CalendarPage } from "./pages/calendar/CalendarLogic";
 import NotFound from "@/pages/common/not-found";
 
 function ProtectedRoute({
@@ -133,6 +134,10 @@ function Router() {
       </Route>
       <Route path="/announcements/:id">
         <ProtectedRoute component={AnnouncementDetailsPage} permission="dashboard_view" />
+      </Route>
+
+      <Route path="/calendar">
+        <ProtectedRoute component={CalendarPage} permission="calendar_view" />
       </Route>
 
       <Route component={NotFound} />

@@ -3,7 +3,6 @@ import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sid
 import { cn } from "@/lib/utils";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
-import { Button } from "@/components/ui/button";
 import { LogOut, User, KeyRound, GraduationCap, Settings } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -65,7 +64,7 @@ function MainLayoutContent({ children, title, className }: MainLayoutProps) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 md:mr-[20px]">
+        <div className="flex items-center gap-2">
           <div className={cn("flex items-center gap-2", isMobile && "mr-[10px]")}>
             <ThemeToggle />
 

@@ -45,7 +45,7 @@ export function DatePickerField({
         let formatted = digits;
         if (digits.length > 4) formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
         if (digits.length > 6) formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
-        
+
         setInputValue(formatted);
         if (formatted.length === 10 && !isNaN(Date.parse(formatted))) {
             onChange(formatted);
@@ -87,9 +87,9 @@ export function DatePickerField({
                             <div className="p-3 border-b flex items-center justify-between">
                                 <span className="text-xs font-medium text-muted-foreground">Select date</span>
                                 {value && (
-                                    <button 
-                                        type="button" 
-                                        onClick={() => onChange("")} 
+                                    <button
+                                        type="button"
+                                        onClick={() => onChange("")}
                                         className="text-xs text-destructive hover:underline"
                                     >
                                         Clear date

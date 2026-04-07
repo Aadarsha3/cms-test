@@ -71,6 +71,12 @@ const navItems: NavItem[] = [
     permissionId: "dashboard_view",
   },
   {
+    title: "Calendar",
+    url: "/calendar",
+    icon: CalendarDays,
+    permissionId: "calendar_view",
+  },
+  {
     title: "Profile",
     url: "/profile",
     icon: User,
