@@ -11,7 +11,8 @@ export default function AnnouncementDetailsPage() {
     const [, setLocation] = useLocation();
     const { toast } = useToast();
     const { hasPermission } = useAuth();
-    const isAdmin = hasPermission("users_edit");
+    const canEdit = hasPermission("announcements_edit");
+    const canDelete = hasPermission("announcements_delete");
 
     const [announcement, setAnnouncement] = useState<Announcement | null>(null);
     const [loading, setLoading] = useState(true);
@@ -96,7 +97,8 @@ export default function AnnouncementDetailsPage() {
             setIsEditing={setIsEditing}
             handleSave={handleSave}
             handleDelete={handleDelete}
-            isAdmin={isAdmin}
+            isAdmin={canEdit}
+            canDelete={canDelete}
             setLocation={setLocation}
         />
     );

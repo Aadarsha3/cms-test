@@ -16,13 +16,7 @@ export function PageHeader({ title, backUrl, icon }: PageHeaderProps) {
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => {
-          if (window.history.length > 1) {
-            window.history.back();
-          } else if (backUrl) {
-            setLocation(backUrl);
-          }
-        }}
+        onClick={() => setLocation(backUrl)}
         className="rounded-full shrink-0"
       >
         <ChevronLeft className="h-5 w-5" />

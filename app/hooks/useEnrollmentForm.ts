@@ -5,6 +5,7 @@ import {
     AccountFormData,
     ProfileFormData,
     StudentFormData,
+    StaffRequest,
     roleLabels,
 } from "@/pages/users/user.types";
 
@@ -288,8 +289,8 @@ export function useEnrollmentForm() {
                 setLocation(`/student/${newId}`);
             } else if ((context === "staff" || ["staff", "admin", "teacher"].includes(profileData.role)) && !editingUserId) {
                 // Use POST /api/v1/staffs to create the staff and finish enrollment
-                const staffPayload = {
-                    user: targetUserId,
+                const staffPayload: StaffRequest = {
+                    userId: targetUserId,
                     fullName: fullName,
                     email: accountData.email.trim(),
                     dateOfBirth: studentData.dateOfBirth,

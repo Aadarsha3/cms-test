@@ -54,9 +54,7 @@ export interface StudentFormData {
 
 export interface StaffDetail {
     id: string;
-    userId?: string;
-    user?: string;
-    username?: string;
+    userId: string;
     fullName: string;
     email: string;
     dateOfBirth: string;
@@ -66,9 +64,20 @@ export interface StaffDetail {
     designation: string;
     joinDate: string;
     terminationDate: string | null;
-    primaryEmail?: string;
     userAccountId?: string;
     accountCreatedDate?: string;
+}
+
+export interface StaffRequest {
+    userId: string;
+    fullName: string;
+    email: string;
+    dateOfBirth: string;
+    gender: string;
+    address: string;
+    phoneNumber: string;
+    designation: string;
+    joinDate: string;
 }
 
 export interface StaffFormData {

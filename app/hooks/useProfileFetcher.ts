@@ -23,7 +23,7 @@ export interface UseProfileFetcherReturn {
 }
 
 export function useProfileFetcher(): UseProfileFetcherReturn {
-  const { user: authUser } = useAuth();
+  const { user: authUser, setAuthUser } = useAuth();
   const [accountData, setAccountData] = useState<UserAccountData | null>(null);
   const [roleData, setRoleData] = useState<ProfileRoleData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +36,7 @@ export function useProfileFetcher(): UseProfileFetcherReturn {
       setLoading(true);
       let userUuid: string | null = null;
       let acctDataRef: UserAccountData | null = null;
+      let roleDataRef: ProfileRoleData | null = null;
 
       // 1. Resolve UUID + Fetch Account
       try {
@@ -50,6 +51,7 @@ export function useProfileFetcher(): UseProfileFetcherReturn {
           fixDates(acct, ["createdDate"]);
           setAccountData(acct);
           acctDataRef = acct;
+
         }
       } catch (e) {
         console.warn("[ProfileHook] Account resolution failed:", e);
@@ -65,18 +67,24 @@ export function useProfileFetcher(): UseProfileFetcherReturn {
         const listRes = await dashboardApi.get<{ content: any[] } | any[]>(endpoint, { params: { size: 1000 } });
         const list = Array.isArray(listRes.data) ? listRes.data : (listRes.data as any)?.content || [];
 
-        const match = list.find((item: any) =>
-          item.userId === lookupId ||
-          item.user === lookupId ||
-          item.id === lookupId ||
-          (item.email && lookupEmail && item.email.toLowerCase() === lookupEmail.toLowerCase())
-        );
+        const match = list.find((item: any) => {
+          const itemUserId =
+            item.userAccountId ||
+            item.userId ||
+            (typeof item.user === 'object' ? item.user?.id : item.user) ||
+            (typeof item.userAccount === 'object' ? item.userAccount?.id : item.userAccount);
+
+          return itemUserId === lookupId ||
+            item.id === lookupId ||
+            (item.email && lookupEmail && item.email.toLowerCase() === lookupEmail.toLowerCase());
+        });
 
         if (match) {
           const detailRes = await dashboardApi.get<ProfileRoleData>(`${endpoint}/${match.id || match.userId}`);
           const data = detailRes.data;
           fixDates(data, ["dateOfBirth", "joinDate", "terminationDate"]);
           setRoleData(data);
+          roleDataRef = data;
           setRoleNotFound(false);
         } else {
           setRoleNotFound(true);
@@ -85,12 +93,29 @@ export function useProfileFetcher(): UseProfileFetcherReturn {
         console.warn("[ProfileHook] Role fetch failed:", e);
         setRoleNotFound(true);
       } finally {
+        // 3. FINAL SESSION SYNC
+        if (authUser) {
+          const isStaff = authUser.role !== "student";
+          const staffObj = (isStaff ? roleDataRef : null) as StaffDetail | null;
+
+          const finalName = staffObj?.fullName || acctDataRef?.displayName || authUser.name;
+          const finalEmail = staffObj?.email || acctDataRef?.primaryEmail || authUser.email;
+
+          if (finalName !== authUser.name || finalEmail !== authUser.email) {
+            console.log("[ProfileHook] Final Syncing session header:", { finalName, finalEmail });
+            setAuthUser({
+              ...authUser,
+              name: finalName,
+              email: finalEmail
+            });
+          }
+        }
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, [authUser]);
+  }, [authUser?.id, authUser?.role]);
 
   return { accountData, roleData, loading, roleNotFound, authUser };
 }

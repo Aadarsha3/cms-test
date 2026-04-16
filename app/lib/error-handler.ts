@@ -7,20 +7,48 @@ export interface ApiErrorResponse {
 
 export function extractErrorMessage(
   err: any,
-  defaultMsg: string = "An error occurred"
+  defaultMsg: string = "An error occurred",
+  duplicateMsg?: string
 ): string {
   if (typeof err === "string") return err;
   if (!err) return defaultMsg;
 
-  const apiError = err.response?.data as ApiErrorResponse | undefined;
-  if (apiError?.message && typeof apiError.message === "string") {
-    return apiError.message;
+  const apiData = err.response?.data;
+  const searchableText = apiData ? (typeof apiData === 'string' ? apiData : JSON.stringify(apiData)).toLowerCase() : "";
+
+  if (searchableText.includes("duplicate") || searchableText.includes("already exists") || searchableText.includes("unique")) {
+    return duplicateMsg || "This information already exists.";
   }
-  if (apiError?.error && typeof apiError.error === "string") {
-    return apiError.error;
+
+  if (apiData && typeof apiData === 'object') {
+    const apiError = apiData as ApiErrorResponse;
+    const explicitMsg = apiError.message || apiError.error;
+    if (explicitMsg && typeof explicitMsg === 'string' && !explicitMsg.toLowerCase().includes("internal server error")) {
+      return explicitMsg;
+    }
+  }
+
+  const status = err.response?.status;
+  if (status) {
+    switch (status) {
+      case 400: return "Invalid information. Please check and try again.";
+      case 401: return "Session expired. Please log in again.";
+      case 403: return "Access denied.";
+      case 404: return "Record not found.";
+      case 409: return duplicateMsg || "This code or ID is already in use.";
+      case 500:
+        return duplicateMsg || "Something went wrong. Please check for duplicate data.";
+      case 502:
+      case 503:
+        return "Server is temporarily unavailable.";
+    }
   }
 
   if (err.message && typeof err.message === "string") {
+    const lowMsg = err.message.toLowerCase();
+    if (lowMsg.includes("status code") || lowMsg.includes("failed") || lowMsg.includes("500")) {
+      return defaultMsg;
+    }
     return err.message;
   }
 

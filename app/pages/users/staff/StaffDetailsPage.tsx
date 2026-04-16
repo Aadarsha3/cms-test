@@ -1,7 +1,9 @@
 import { useAuth } from "@/lib/auth-context";
 import { useRoute } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { StaffDetail } from "@/pages/users/user.types";
 import { useManagementDetails } from "@/hooks/useManagementDetails";
+import { dashboardApi, userApi } from "@/lib/api";
 import { StaffDetailsView } from "./StaffDetailsView";
 
 const EDITABLE_FIELDS: (keyof StaffDetail)[] = [
@@ -37,8 +39,21 @@ export function StaffDetailsPage() {
     dateFields: DATE_FIELDS,
   });
 
+  const { data: authorities = {}, isLoading: loadingAuthorities } = useQuery({
+    queryKey: ['staffAuthorities', staff?.userAccountId || staff?.userId],
+    queryFn: async () => {
+      const uid = staff?.userAccountId || staff?.userId;
+      if (!uid) return {};
+      const response = await userApi.get(`/users/${uid}/authorities/all`);
+      return response.data.authorities || {};
+    },
+    enabled: !!(staff?.userAccountId || staff?.userId),
+  });
+
   return (
     <StaffDetailsView
+      authorities={authorities}
+      loadingAuthorities={loadingAuthorities}
       staff={staff}
       loading={loading}
       error={error}

@@ -83,7 +83,8 @@ export function ProgramDetailsView({
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
         <DetailsActionBar
           onBack={() => setLocation("/programs")}
-          canEdit={hasPermission("users_edit")}
+          canEdit={hasPermission("programs_edit")}
+          canDelete={hasPermission("programs_delete")}
           isEditing={isEditing}
           saving={isSaving}
           onEdit={() => setIsEditing(true)}
@@ -116,7 +117,9 @@ export function ProgramDetailsView({
           <ProgramInfoCard program={program} />
         )}
 
-        <CurriculumCard programId={id} courses={courses} loading={loadingCourses} />
+        {hasPermission("courses_view") && (
+          <CurriculumCard programId={id} courses={courses} loading={loadingCourses} hasPermission={hasPermission} />
+        )}
       </div>
     </MainLayout>
   );

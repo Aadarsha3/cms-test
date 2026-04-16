@@ -1,9 +1,7 @@
 import { dashboardApi as api } from "@/lib/api";
 import { ApiCalendarEvent, CalendarEvent, EVENT_TYPE_CONFIG } from "./CalendarTypes";
 
-/**
- * Transforms backend API event structure into our frontend UI format
- */
+// Transforms backend API event structure into our frontend UI format
 const mapApiEventToUI = (event: ApiCalendarEvent): CalendarEvent => {
     const type = (event.eventType.toLowerCase() as CalendarEvent["type"]) || "event";
     return {
@@ -16,9 +14,7 @@ const mapApiEventToUI = (event: ApiCalendarEvent): CalendarEvent => {
 };
 
 export const calendarService = {
-    /**
-     * Fetches events for a specific year and month
-     */
+    //    Fetches events for a specific year and month
     async getEventsByMonth(year: number, month: number): Promise<CalendarEvent[]> {
         const response = await api.get<any>(`/events/month?year=${year}&month=${month}`);
 
@@ -34,9 +30,7 @@ export const calendarService = {
         }).filter(Boolean) as CalendarEvent[];
     },
 
-    /**
-     * Creates a new event in the system
-     */
+    //   Creates a new event in the system
     async createEvent(event: Omit<CalendarEvent, "id">): Promise<CalendarEvent> {
         const payload = {
             eventName: event.title,
@@ -47,9 +41,7 @@ export const calendarService = {
         return mapApiEventToUI(response.data);
     },
 
-    /**
-     * Updates an existing event using JSON Patch
-     */
+    //    Updates an existing event using JSON Patch
     async updateEvent(id: string, updates: Partial<CalendarEvent>): Promise<CalendarEvent> {
         const patch = [{ op: "add", path: "/id", value: id }];
 
@@ -67,9 +59,7 @@ export const calendarService = {
         return mapApiEventToUI(response.data);
     },
 
-    /**
-     * Deletes an event by ID
-     */
+    //    Deletes an event by ID
     async deleteEvent(id: string): Promise<void> {
         await api.delete(`/events/${id}`);
     }

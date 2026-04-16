@@ -29,7 +29,39 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
         permissions: [
             { id: "dashboard_view", name: "View Dashboard", description: "Access the main dashboard page", action: "view" },
             { id: "dashboard_stats", name: "View Stats", description: "View summary statistics on dashboard", action: "view" },
-            { id: "announcement_create", name: "Create Announcements", description: "Create new dashboard announcements", action: "create" },
+        ],
+    },
+    {
+        id: "announcements",
+        name: "Announcements",
+        icon: "Megaphone",
+        permissions: [
+            { id: "announcements_view", name: "View Announcements", description: "View announcements list and details", action: "view" },
+            { id: "announcements_create", name: "Create Announcements", description: "Publish new announcements", action: "create" },
+            { id: "announcements_edit", name: "Edit Announcements", description: "Modify existing announcements", action: "edit" },
+            { id: "announcements_delete", name: "Delete Announcements", description: "Remove announcements", action: "delete" },
+        ],
+    },
+    {
+        id: "students",
+        name: "Student Management",
+        icon: "GraduationCap",
+        permissions: [
+            { id: "students_view", name: "View Students", description: "View student lists", action: "view" },
+            { id: "students_create", name: "Create Students", description: "Enroll new students", action: "create" },
+            { id: "students_edit", name: "Edit Students", description: "Modify student details", action: "edit" },
+            { id: "students_delete", name: "Delete Students", description: "Remove students", action: "delete" },
+        ],
+    },
+    {
+        id: "staff",
+        name: "Staff Management",
+        icon: "Users",
+        permissions: [
+            { id: "staffs_view", name: "View Staff", description: "View staff lists", action: "view" },
+            { id: "staffs_create", name: "Create Staff", description: "Enroll new staff members", action: "create" },
+            { id: "staffs_edit", name: "Edit Staff", description: "Modify staff details", action: "edit" },
+            { id: "staffs_delete", name: "Delete Staff", description: "Remove staff members", action: "delete" },
         ],
     },
     {
@@ -45,86 +77,83 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
             { id: "courses_create", name: "Create Courses", description: "Add new courses", action: "create" },
             { id: "courses_edit", name: "Edit Courses", description: "Modify existing courses", action: "edit" },
             { id: "courses_delete", name: "Delete Courses", description: "Remove courses", action: "delete" },
-            { id: "syllabus_upload", name: "Upload Syllabus", description: "Upload course syllabus documents", action: "create" },
         ],
     },
     {
         id: "users",
-        name: "User Management",
-        icon: "Users",
+        name: "Account Management",
+        icon: "UserCog",
         permissions: [
-            { id: "users_view", name: "View Users", description: "View all users (admin/staff/student)", action: "view" },
-            { id: "users_create", name: "Enroll Users", description: "Enroll or create new users", action: "create" },
-            { id: "users_edit", name: "Edit Users", description: "Modify user accounts and details", action: "edit" },
-            { id: "users_delete", name: "Delete Users", description: "Remove users from system", action: "delete" },
-            { id: "users_export", name: "Export Users", description: "Export user data to Excel/CSV", action: "export" },
-            { id: "students_view", name: "View Student List", description: "View the primary student directory", action: "view" },
-            { id: "students_edit", name: "Edit Student Records", description: "Modify specific student enrollment data", action: "edit" },
+            { id: "users_view", name: "View Accounts", description: "View system user accounts", action: "view" },
+            { id: "users_create", name: "Create Accounts", description: "Provision new user accounts", action: "create" },
+            { id: "users_edit", name: "Edit Accounts", description: "Modify user account details", action: "edit" },
+            { id: "users_delete", name: "Delete Accounts", description: "Remove user accounts", action: "delete" },
+        ],
+    },
+    {
+        id: "calendar",
+        name: "Calendar Management",
+        icon: "CalendarDays",
+        permissions: [
+            { id: "calendar_view", name: "View Calendar", description: "View the system calendar", action: "view" },
+            { id: "calendar_manage", name: "Manage Events", description: "Create, edit, or delete events", action: "manage" },
         ],
     },
     {
         id: "profile",
-        name: "Profile",
+        name: "User Profile",
         icon: "User",
         permissions: [
-            { id: "profile_view", name: "View Own Profile", description: "Access personal profile page", action: "view" },
-            { id: "profile_edit", name: "Edit Own Profile", description: "Modify personal profile details", action: "edit" },
-            { id: "password_change", name: "Change Password", description: "Change account password", action: "edit" },
+            { id: "profile_view", name: "View Profile", description: "Access personal profile page", action: "view" },
+            { id: "profile_edit", name: "Edit Profile", description: "Modify personal profile details", action: "edit" },
+            { id: "password_change", name: "Security Settings", description: "Change account password", action: "edit" },
         ],
     },
     {
-        id: "schedule",
-        name: "Schedule & Calendar",
-        icon: "CalendarDays",
+        id: "administration",
+        name: "System Security",
+        icon: "ShieldAlert",
         permissions: [
-            { id: "calendar_view", name: "View Calendar", description: "View academic calendar", action: "view" },
-            { id: "routine_view", name: "View Routine", description: "View class routine/timetable", action: "view" },
-            { id: "routine_manage", name: "Manage Schedule", description: "Update class timings and routine", action: "manage" },
-        ],
-    },
-    {
-        id: "settings",
-        name: "Settings",
-        icon: "Settings",
-        permissions: [
-            { id: "settings_manage", name: "Manage System Settings", description: "Access system configuration", action: "manage" },
-            { id: "permissions_manage", name: "Manage Permissions", description: "Configure role-based access", action: "manage" },
+            { id: "access_control_manage", name: "Manage Authorities", description: "Grant or revoke user authorities", action: "manage" },
         ],
     },
 ];
 
-export type RolePermissions = Record<string, string[]>; 
-// role -> permission_ids[]
+export type RolePermissions = Record<string, string[]>;
 
 export const DEFAULT_ROLE_PERMISSIONS: RolePermissions = {
     admin: [
-        "dashboard_view", "dashboard_stats", "announcement_create",
+        "dashboard_view", "dashboard_stats",
+        "announcements_view", "announcements_create", "announcements_edit", "announcements_delete",
         "programs_view", "programs_create", "programs_edit", "programs_delete",
-        "courses_view", "courses_create", "courses_edit", "courses_delete", "syllabus_upload",
-        "users_view", "users_create", "users_edit", "users_delete", "users_export",
-        "students_view", "students_edit",
-        "calendar_view", "routine_view", "routine_manage",
+        "courses_view", "courses_create", "courses_edit", "courses_delete",
+        "users_view", "users_create", "users_edit", "users_delete",
+        "students_view", "students_create", "students_edit", "students_delete",
+        "staffs_view", "staffs_create", "staffs_edit", "staffs_delete",
         "profile_view", "profile_edit", "password_change",
-        "settings_manage", "permissions_manage"
+        "calendar_view", "calendar_manage",
+        "access_control_manage",
     ],
     staff: [
         "dashboard_view", "dashboard_stats",
-        "programs_view", "courses_view", "syllabus_upload",
-        "users_view", "students_view",
-        "calendar_view", "routine_view",
-        "profile_view", "password_change"
+        "announcements_view",
+        "users_view",
+        "profile_view", "password_change",
+        "calendar_view",
     ],
     student: [
         "dashboard_view",
+        "announcements_view",
         "courses_view",
-        "calendar_view", "routine_view",
-        "profile_view", "password_change"
+        "profile_view", "password_change",
+        "calendar_view",
     ],
     teacher: [
         "dashboard_view", "dashboard_stats",
-        "courses_view", "syllabus_upload",
-        "students_view",
-        "calendar_view", "routine_view",
-        "profile_view", "password_change"
+        "announcements_view",
+        "courses_view",
+        "profile_view", "password_change",
+        "calendar_view", "calendar_manage",
     ],
 };
+

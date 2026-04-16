@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { dashboardApi } from "@/lib/api";
 import { PageHeader } from "@/components/common/PageHeader";
 import { FormFooter } from "@/components/common/FormFooter";
+import { extractErrorMessage, logError } from "@/lib/error-handler";
 import { BookOpen } from "lucide-react";
 
 interface Program {
@@ -42,7 +42,7 @@ export default function CreateCoursePage() {
     let defaultProgram = "";
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      defaultProgram = params.get("program") || "";
+      defaultProgram = params.get("program") || params.get("programId") || "";
     }
     return {
       name: "",
@@ -73,7 +73,6 @@ export default function CreateCoursePage() {
     fetchPrograms();
   }, [toast]);
 
-  // ✅ Fixed: Validate all required fields
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
       toast({
@@ -102,7 +101,6 @@ export default function CreateCoursePage() {
       return false;
     }
 
-    // ✅ Fixed: Require program selection
     if (!formData.program) {
       toast({
         title: "Validation Error",
@@ -129,7 +127,7 @@ export default function CreateCoursePage() {
         name: formData.name.trim(),
         courseCode: formData.courseCode.trim(),
         creditHour: formData.creditHour,
-        program: formData.program, // ✅ This is now the program ID
+        program: formData.program,
       };
 
       const response = await dashboardApi.post("/courses", payload);
@@ -139,23 +137,19 @@ export default function CreateCoursePage() {
         description: "Course created successfully.",
       });
 
-      // ✅ Redirect to the new course details page
+      // Redirect to the new course details page with program context
       if (response.data?.id) {
-        setLocation(`/courses/${response.data.id}`, { replace: true });
+        const programParam = formData.program ? `?program=${formData.program}` : '';
+        setLocation(`/courses/${response.data.id}${programParam}`, { replace: true });
       } else {
-        setLocation(formData.program ? `/programs/${formData.program}` : "/programs", { replace: true });
+        const targetProgramId = formData.program || (response.data as any)?.programId || (response.data as any)?.program?.id;
+        setLocation(targetProgramId ? `/programs/${targetProgramId}` : "/programs", { replace: true });
       }
     } catch (err: any) {
-      console.error("Failed to create course:", err?.response?.data || err);
-      const errorMsg =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        err.message ||
-        "Failed to create course.";
-
+      logError("CreateCourse", err);
       toast({
         title: "Error",
-        description: typeof errorMsg === 'string' ? errorMsg : "An error occurred",
+        description: extractErrorMessage(err, "Failed to create course.", "This course code already exists."),
         variant: "destructive",
       });
     } finally {
@@ -274,7 +268,10 @@ export default function CreateCoursePage() {
 
               <FormFooter
                 loading={loading || fetchingPrograms}
-                onCancel={() => setLocation(formData.program ? `/programs/${formData.program}` : "/programs")}
+                onCancel={() => {
+                  const targetBack = formData.program ? `/programs/${formData.program}` : "/programs";
+                  setLocation(targetBack);
+                }}
                 submitText="Create Course"
               />
             </form>

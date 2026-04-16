@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useAuth } from "@/lib/auth-context";
 import { dashboardApi, userApi } from "@/lib/api";
 import { fixDateArray } from "@/lib/utils";
 
@@ -13,10 +14,7 @@ interface UseManagementDetailsOptions<T> {
   roleLabel?: string;
 }
 
-/**
- * Shared hook for fetching, editing, saving, and deleting entities (Students/Staff)
- * Standardizes the "Bridge" between Dashboard (port 8000) and Account (port 8001) metadata.
- */
+
 export function useManagementDetails<T extends { id: string; userId?: string; user?: string; fullName?: string; email?: string; primaryEmail?: string; username?: string; accountCreatedDate?: string; userAccountId?: string }>({
   entityType,
   entityId,
@@ -25,6 +23,7 @@ export function useManagementDetails<T extends { id: string; userId?: string; us
   dateFields = [],
 }: UseManagementDetailsOptions<T>) {
   const { toast } = useToast();
+  const { user: authUser, setAuthUser } = useAuth();
   const [, setLocation] = useLocation();
 
   const [data, setData] = useState<T | null>(null);
@@ -35,7 +34,10 @@ export function useManagementDetails<T extends { id: string; userId?: string; us
   const [saving, setSaving] = useState(false);
 
   const fetchEntity = useCallback(async () => {
-    if (!entityId) return;
+    if (!entityId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -50,7 +52,6 @@ export function useManagementDetails<T extends { id: string; userId?: string; us
         }
       }
 
-      // 3. Resolve account metadata cross-reference
       try {
         const lookupId = entity.userId || entity.user || entityId;
         const lookupEmail = entity.email || entity.primaryEmail;
@@ -70,7 +71,7 @@ export function useManagementDetails<T extends { id: string; userId?: string; us
           entity.accountCreatedDate = fixDateArray(matchedUser.createdDate) || fixDateArray(matchedUser.createdAt) || "N/A";
         }
       } catch (e) {
-        console.warn(`[DetailsHook] Failed to resolve account metadata for ${entityType}`, e);
+        console.warn(`[DetailsHook] Failed to resolve account metadata`, e);
       }
 
       setData(entity);
@@ -105,10 +106,9 @@ export function useManagementDetails<T extends { id: string; userId?: string; us
     if (!entityId || !data) return;
     setSaving(true);
     try {
-      // JSON Patch generation
       const patchOps = editableFields.reduce((ops, field) => {
         if (editFormData[field] !== undefined && editFormData[field] !== data[field]) {
-          ops.push({ op: "replace", path: `/${String(field)}`, value: editFormData[field] });
+          ops.push({ op: "add", path: `/${String(field)}`, value: editFormData[field] });
         }
         return ops;
       }, [] as { op: string, path: string, value: any }[]);
@@ -121,7 +121,40 @@ export function useManagementDetails<T extends { id: string; userId?: string; us
       const res = await dashboardApi.patch(`/${entityType}/${entityId}`, patchOps);
       const updated = res.data;
 
-      // Re-fix dates in updated response
+      if (entityType === "staffs") {
+        const nameChange = patchOps.find(op => op.path === "/fullName");
+        const emailChange = patchOps.find(op => op.path === "/email");
+
+        if (nameChange || emailChange) {
+          try {
+            console.log(`[Sync] Updating User API (8001):`, { displayName: nameChange?.value, primaryEmail: emailChange?.value });
+
+            const userRes = await userApi.get(`/users/${entityId}`);
+            const updatedUser = { ...userRes.data };
+
+            if (nameChange) updatedUser.displayName = nameChange.value;
+            if (emailChange) updatedUser.primaryEmail = emailChange.value;
+
+            await userApi.put(`/users/${entityId}`, updatedUser);
+          } catch (userErrByPut: any) {
+            console.warn("[Sync] API sync failed, relying on local session update:", userErrByPut);
+          }
+        }
+      }
+
+      if (authUser && (data.username === authUser.id || updated.username === authUser.id)) {
+        const newName = (editFormData as any).fullName || (updated as any).fullName || authUser.name;
+        const newEmail = (editFormData as any).email || (updated as any).email || authUser.email;
+
+        if (newName !== authUser.name || newEmail !== authUser.email) {
+          setAuthUser({
+            ...authUser,
+            name: newName,
+            email: newEmail
+          });
+        }
+      }
+
       for (const field of dateFields) {
         if (Array.isArray(updated[field])) {
           updated[field] = fixDateArray(updated[field]) as any;

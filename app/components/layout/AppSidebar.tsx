@@ -1,22 +1,13 @@
 import { useLocation, Link } from "wouter";
 import {
   LayoutDashboard,
-  GraduationCap,
-  Users,
-  FileText,
-  User,
-  BookOpen,
-  ClipboardList,
-  Building2,
-  CalendarDays,
-  CreditCard,
-  Shield,
-  Lock,
-  UserCheck,
-  Award,
-  Clock,
-  BarChart3,
   Megaphone,
+  GraduationCap,
+  Building2,
+  User,
+  Users,
+  CalendarDays,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -47,6 +38,12 @@ const navItems: NavItem[] = [
     permissionId: "dashboard_view",
   },
   {
+    title: "Announcements",
+    url: "/announcements",
+    icon: Megaphone,
+    permissionId: "announcements_view",
+  },
+  {
     title: "Student Management",
     url: "/students",
     icon: GraduationCap,
@@ -56,19 +53,25 @@ const navItems: NavItem[] = [
     title: "Staff Management",
     url: "/staff",
     icon: Users,
-    permissionId: "users_view",
+    permissionId: "staffs_view",
   },
   {
     title: "Program Management",
     url: "/programs",
     icon: Building2,
-    permissionId: "users_view",
+    permissionId: "programs_view",
   },
   {
-    title: "Announcements",
-    url: "/announcements",
-    icon: Megaphone,
-    permissionId: "dashboard_view",
+    title: "Calendar",
+    url: "/calendar",
+    icon: CalendarDays,
+    permissionId: "calendar_view",
+  },
+  {
+    title: "Authority Management",
+    url: "/authority",
+    icon: ShieldCheck,
+    permissionId: "access_control_manage",
   },
   {
     title: "Calendar",
@@ -83,6 +86,7 @@ const navItems: NavItem[] = [
     permissionId: "profile_view",
   },
 ];
+
 
 
 export function AppSidebar() {

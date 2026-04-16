@@ -15,12 +15,6 @@ export interface StatItem {
 
 export type DashboardStats = StatItem[];
 
-export interface RecentActivity {
-    id: number;
-    message: string;
-    time: string;
-}
-
 export interface AnnouncementForm {
     title: string;
     details: string;

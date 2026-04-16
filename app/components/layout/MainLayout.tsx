@@ -1,8 +1,11 @@
 import { useState, type ReactNode } from "react";
-import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar/sidebar";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar/sidebar";
 import { cn } from "@/lib/utils";
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LogOut, User, KeyRound, GraduationCap, Settings } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -21,8 +24,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -44,49 +47,83 @@ function MainLayoutContent({ children, title, className }: MainLayoutProps) {
             className={cn(
               "flex h-full items-center gap-3 shrink-0 transition-[width,padding] duration-200 ease-linear overflow-hidden relative",
               open && !isMobile ? "w-[--sidebar-width] pl-4" : "w-0 p-0",
-              isMobile && "hidden"
+              isMobile && "hidden",
             )}
           >
-            <div className={cn("absolute right-0 top-[5px] bottom-[5px] w-px bg-border transition-opacity duration-200", open ? "opacity-100" : "opacity-0")} />
+            <div
+              className={cn(
+                "absolute right-0 top-[5px] bottom-[5px] w-px bg-border transition-opacity duration-200",
+                open ? "opacity-100" : "opacity-0",
+              )}
+            />
             <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground shrink-0">
               <GraduationCap className="h-6 w-6" />
             </div>
             <div className="flex flex-col whitespace-nowrap">
-              <span className="text-lg font-semibold leading-tight" data-testid="text-app-name">MetaHorizon</span>
-              <span className="text-xs text-muted-foreground leading-tight">College Management System</span>
+              <span
+                className="text-lg font-semibold leading-tight"
+                data-testid="text-app-name"
+              >
+                MetaHorizon
+              </span>
+              <span className="text-xs text-muted-foreground leading-tight">
+                College Management System
+              </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2 md:gap-4 pl-1 md:pl-4">
-            <SidebarTrigger className={cn(isMobile && "ml-[2px]")} data-testid="button-sidebar-toggle" />
+            <SidebarTrigger
+              className={cn(isMobile && "ml-[2px]")}
+              data-testid="button-sidebar-toggle"
+            />
             {title && (
-              <h1 className="text-sm md:text-xl font-semibold line-clamp-1" data-testid="text-page-title">{title}</h1>
+              <h1
+                className="text-sm md:text-xl font-semibold line-clamp-1"
+                data-testid="text-page-title"
+              >
+                {title}
+              </h1>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className={cn("flex items-center gap-2", isMobile && "mr-[10px]")}>
+          <div
+            className={cn("flex items-center gap-2", isMobile && "mr-[10px]")}
+          >
             <ThemeToggle />
 
             {user && (
               <div className="flex items-center gap-3">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div className="flex items-center gap-3 cursor-pointer group/profile" data-testid="button-profile-menu">
+                    <div
+                      className="flex items-center gap-3 cursor-pointer group/profile"
+                      data-testid="button-profile-menu"
+                    >
                       <Settings className="h-5 w-5 text-muted-foreground group-hover/profile:text-primary transition-colors" />
                       <div className="hidden md:flex flex-col items-start gap-0.5">
-                        <span className="text-sm font-bold text-foreground/90 leading-tight group-hover/profile:text-primary transition-colors" data-testid="text-user-name">
+                        <span
+                          className="text-sm font-bold text-foreground/90 leading-tight group-hover/profile:text-primary transition-colors"
+                          data-testid="text-user-name"
+                        >
                           {user.name}
                         </span>
                       </div>
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuItem onClick={() => setLocation("/profile")} data-testid="menu-item-profile">
+                    <DropdownMenuItem
+                      onClick={() => setLocation("/profile")}
+                      data-testid="menu-item-profile"
+                    >
                       <User className="mr-2 h-4 w-4" />
                       <span>View Profile</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setLocation("/change-password")} data-testid="menu-item-change-password">
+                    <DropdownMenuItem
+                      onClick={() => setLocation("/change-password")}
+                      data-testid="menu-item-change-password"
+                    >
                       <KeyRound className="mr-2 h-4 w-4" />
                       <span>Change Password</span>
                     </DropdownMenuItem>
@@ -101,17 +138,28 @@ function MainLayoutContent({ children, title, className }: MainLayoutProps) {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+                <AlertDialog
+                  open={showLogoutDialog}
+                  onOpenChange={setShowLogoutDialog}
+                >
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        Are you sure you want to sign out?
+                      </AlertDialogTitle>
                       <AlertDialogDescription>
-                        You will need to sign in again to access the application.
+                        You will need to sign in again to access the
+                        application.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={logout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Sign Out</AlertDialogAction>
+                      <AlertDialogAction
+                        onClick={logout}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Sign Out
+                      </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>

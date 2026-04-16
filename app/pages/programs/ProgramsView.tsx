@@ -38,6 +38,7 @@ interface ProgramsViewProps {
   handleNextPage: () => void;
   handlePrevPage: () => void;
   setLocation: (loc: string) => void;
+  hasPermission: (permissionId: string) => boolean;
 }
 
 export function ProgramsView({
@@ -56,6 +57,7 @@ export function ProgramsView({
   handleNextPage,
   handlePrevPage,
   setLocation,
+  hasPermission,
 }: ProgramsViewProps) {
   return (
     <MainLayout title="Program Management">
@@ -103,14 +105,16 @@ export function ProgramsView({
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
 
-            <Button
-              onClick={() => setLocation("/programs/create")}
-              className="gap-2 h-11 px-6 shadow-md hover:shadow-lg transition-all"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add Program</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
+            {hasPermission("programs_create") && (
+              <Button
+                onClick={() => setLocation("/programs/create")}
+                className="gap-2 h-11 px-6 shadow-md hover:shadow-lg transition-all"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Program</span>
+                <span className="sm:hidden">Add</span>
+              </Button>
+            )}
           </div>
         </div>
 

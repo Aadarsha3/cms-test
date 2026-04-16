@@ -41,6 +41,7 @@ interface StaffViewProps {
   refresh: () => void;
   onEnroll: () => void;
   onRowClick: (id: string) => void;
+  hasPermission: (permissionId: string) => boolean;
 }
 
 export function StaffView({
@@ -59,6 +60,7 @@ export function StaffView({
   refresh,
   onEnroll,
   onRowClick,
+  hasPermission,
 }: StaffViewProps) {
   return (
     <MainLayout title="Staff Management">
@@ -76,6 +78,7 @@ export function StaffView({
             icon: UserPlus,
             onClick: onEnroll,
             testId: "button-enroll-staff",
+            hidden: !hasPermission("staffs_create"),
           }}
         />
 

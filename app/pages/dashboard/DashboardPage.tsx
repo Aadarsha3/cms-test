@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { dashboardApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
+import { useCalendar } from "@/hooks/useCalendar";
 
 import { Announcement, AnnouncementForm, DashboardStats } from "./types";
 import { Users, GraduationCap, BookOpen } from "lucide-react";
@@ -14,17 +15,19 @@ const initialStats: DashboardStats = [
 ];
 
 export function DashboardPage() {
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
   const { toast } = useToast();
 
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>(initialStats);
 
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+  const { events: calendarEvents } = useCalendar(currentYear, currentMonth);
+
   const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false);
-  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [editingAnnouncementId, setEditingAnnouncementId] = useState<string | null>(null);
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
 
   const [announcementForm, setAnnouncementForm] = useState<AnnouncementForm>({
     title: "",
@@ -88,7 +91,7 @@ export function DashboardPage() {
 
   if (!user) return null;
 
-  const isAdmin = user.role === "admin";
+  const canManageAnnouncements = hasPermission("announcements_create") || hasPermission("announcements_edit");
 
   const handleOpenCreateDialog = () => {
     setEditingAnnouncementId(null);
@@ -124,28 +127,20 @@ export function DashboardPage() {
     }
   };
 
-  const handleViewDetails = (announcement: Announcement) => {
-    setSelectedAnnouncement(announcement);
-    setIsDetailDialogOpen(true);
-  };
-
   return (
     <DashboardView
       user={user}
       stats={dashboardStats}
       announcements={announcements}
-      isAdmin={isAdmin}
+      calendarEvents={calendarEvents}
+      isAdmin={canManageAnnouncements}
       isAnnouncementDialogOpen={isAnnouncementDialogOpen}
       setIsAnnouncementDialogOpen={setIsAnnouncementDialogOpen}
-      isDetailDialogOpen={isDetailDialogOpen}
-      setIsDetailDialogOpen={setIsDetailDialogOpen}
-      selectedAnnouncement={selectedAnnouncement}
       announcementForm={announcementForm}
       setAnnouncementForm={setAnnouncementForm}
       editingAnnouncementId={editingAnnouncementId}
       handleOpenCreateDialog={handleOpenCreateDialog}
       handleSaveAnnouncement={handleSaveAnnouncement}
-      handleViewDetails={handleViewDetails}
     />
   );
 }

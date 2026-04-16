@@ -5,23 +5,26 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-context";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { SessionSync } from "@/components/auth/SessionSync";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { CallbackPage } from "@/pages/auth/CallbackPage";
 import { DashboardPage } from "@/pages/dashboard/DashboardPage";
-import { ProfilePage } from "./pages/profile/ProfilePage";
-import { ChangePasswordPage } from "./pages/profile/ChangePasswordPage";
-import { EnrollUserPage } from "@/pages/users/EnrollUserPage";
-import { StudentsPage } from "@/pages/users/student/StudentsPage";
-import { StudentDetailsPage } from "@/pages/users/student/StudentDetailsPage";
-import { StaffPage } from "@/pages/users/staff/StaffPage";
-import { StaffDetailsPage } from "@/pages/users/staff/StaffDetailsPage";
+import AnnouncementsPage from "./pages/announcements/AnnouncementsPage";
+import AnnouncementDetailsPage from "./pages/announcements/AnnouncementDetailsPage";
 import ProgramsPage from "./pages/programs/ProgramsPage";
 import CreateProgramPage from "./pages/programs/CreateProgramPage";
 import ProgramDetailsPage from "./pages/programs/ProgramDetailsPage";
 import CreateCoursePage from "./pages/programs/courses/CreateCoursePage";
 import CourseDetailsPage from "./pages/programs/courses/CourseDetailsPage";
-import AnnouncementsPage from "./pages/announcements/AnnouncementsPage";
-import AnnouncementDetailsPage from "./pages/announcements/AnnouncementDetailsPage";
+import { AuthorityManagementPage } from "./pages/authority/AuthorityPage";
+import { ProfilePage } from "./pages/profile/ProfilePage";
+import { ChangePasswordPage } from "./pages/profile/ChangePasswordPage";
+import { StudentsPage } from "./pages/users/student/StudentsPage";
+import { StudentDetailsPage } from "./pages/users/student/StudentDetailsPage";
+import { StaffPage } from "./pages/users/staff/StaffPage";
+import { StaffDetailsPage } from "./pages/users/staff/StaffDetailsPage";
+import { StaffPermissionsPage } from "./pages/users/staff/StaffPermissionsPage";
+import { EnrollUserPage } from "./pages/users/EnrollUserPage";
 import { CalendarLogic as CalendarPage } from "./pages/calendar/CalendarLogic";
 import NotFound from "@/pages/common/not-found";
 
@@ -40,20 +43,20 @@ function ProtectedRoute({
     return <Redirect to="/" />;
   }
 
-  // Check permission if provided
   if (permission && !hasPermission(permission)) {
     if (permission === "dashboard_view") {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen">
           <h1 className="text-2xl font-bold">Unauthorized</h1>
-          <p className="mt-2 text-muted-foreground">You do not have permission to view the dashboard.</p>
+          <p className="mt-2 text-muted-foreground">
+            You do not have permission to view the dashboard.
+          </p>
         </div>
       );
     }
     return <Redirect to="/dashboard" />;
   }
 
-  // Check roles if provided (and no permission was checked or already passed)
   if (roles && user && !roles.includes(user.role)) {
     return <Redirect to="/dashboard" />;
   }
@@ -81,6 +84,47 @@ function Router() {
         <ProtectedRoute component={DashboardPage} permission="dashboard_view" />
       </Route>
 
+      <Route path="/announcements">
+        <ProtectedRoute
+          component={AnnouncementsPage}
+          permission="announcements_view"
+        />
+      </Route>
+      <Route path="/announcements/:id">
+        <ProtectedRoute
+          component={AnnouncementDetailsPage}
+          permission="announcements_view"
+        />
+      </Route>
+
+      <Route path="/programs">
+        <ProtectedRoute component={ProgramsPage} permission="programs_view" />
+      </Route>
+      <Route path="/programs/create">
+        <ProtectedRoute
+          component={CreateProgramPage}
+          permission="programs_create"
+        />
+      </Route>
+      <Route path="/programs/:id">
+        <ProtectedRoute
+          component={ProgramDetailsPage}
+          permission="programs_view"
+        />
+      </Route>
+
+      <Route path="/courses/create">
+        <ProtectedRoute
+          component={CreateCoursePage}
+          permission="courses_create"
+        />
+      </Route>
+      <Route path="/courses/:id">
+        <ProtectedRoute
+          component={CourseDetailsPage}
+          permission="courses_view"
+        />
+      </Route>
 
       <Route path="/profile">
         <ProtectedRoute component={ProfilePage} permission="profile_view" />
@@ -92,48 +136,35 @@ function Router() {
         />
       </Route>
 
-      {/* User Management Routes */}
-      <Route path="/users/enroll">
-        <ProtectedRoute component={EnrollUserPage} permission="users_create" />
-      </Route>
-      <Route path="/users/:id/edit">
-        <ProtectedRoute component={EnrollUserPage} permission="users_edit" />
-      </Route>
-
       <Route path="/students">
         <ProtectedRoute component={StudentsPage} permission="students_view" />
       </Route>
       <Route path="/student/:id">
-        <ProtectedRoute component={StudentDetailsPage} permission="students_view" />
+        <ProtectedRoute
+          component={StudentDetailsPage}
+          permission="students_view"
+        />
       </Route>
       <Route path="/staff">
-        <ProtectedRoute component={StaffPage} permission="users_view" />
+        <ProtectedRoute component={StaffPage} permission="staffs_view" />
       </Route>
       <Route path="/staff/:id">
-        <ProtectedRoute component={StaffDetailsPage} permission="users_view" />
+        <ProtectedRoute component={StaffDetailsPage} permission="staffs_view" />
       </Route>
-      <Route path="/programs">
-        <ProtectedRoute component={ProgramsPage} permission="users_view" />
+      <Route path="/staff/:id/permissions">
+        <ProtectedRoute
+          component={StaffPermissionsPage}
+          permission="staffs_view"
+        />
       </Route>
-      <Route path="/programs/create">
-        <ProtectedRoute component={CreateProgramPage} permission="users_view" />
+      <Route path="/authority">
+        <ProtectedRoute
+          component={AuthorityManagementPage}
+          permission="access_control_manage"
+        />
       </Route>
-      <Route path="/programs/:id">
-        <ProtectedRoute component={ProgramDetailsPage} permission="users_view" />
-      </Route>
-
-      <Route path="/courses/create">
-        <ProtectedRoute component={CreateCoursePage} permission="users_view" />
-      </Route>
-      <Route path="/courses/:id">
-        <ProtectedRoute component={CourseDetailsPage} permission="users_view" />
-      </Route>
-
-      <Route path="/announcements">
-        <ProtectedRoute component={AnnouncementsPage} permission="dashboard_view" />
-      </Route>
-      <Route path="/announcements/:id">
-        <ProtectedRoute component={AnnouncementDetailsPage} permission="dashboard_view" />
+      <Route path="/users/enroll">
+        <ProtectedRoute component={EnrollUserPage} permission="users_create" />
       </Route>
 
       <Route path="/calendar">
@@ -150,6 +181,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
+          <SessionSync />
           <TooltipProvider>
             <Toaster />
             <Router />
@@ -161,31 +193,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -27,6 +27,7 @@ interface AnnouncementDetailsViewProps {
   handleSave: () => void;
   handleDelete: () => void;
   isAdmin: boolean;
+  canDelete: boolean;
   setLocation: (loc: string) => void;
 }
 
@@ -41,12 +42,13 @@ export function AnnouncementDetailsView({
   handleSave,
   handleDelete,
   isAdmin,
+  canDelete,
   setLocation,
 }: AnnouncementDetailsViewProps) {
   if (loading) {
     return (
       <MainLayout title="Notice Details">
-        <div className="max-w-3xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
           <Skeleton className="h-10 w-32" />
           <Card className="border-[#243F76]/10 shadow-sm overflow-hidden">
             <CardHeader className="bg-muted/40 pb-8 border-b">
@@ -71,7 +73,7 @@ export function AnnouncementDetailsView({
 
   return (
     <MainLayout title="Notice Details">
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <Button
             variant="ghost"
@@ -82,18 +84,22 @@ export function AnnouncementDetailsView({
             Back to List
           </Button>
 
-          {isAdmin && !isEditing && (
+          {!isEditing && (
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsEditing(true)}
-                className="gap-2 border-[#243F76]/20"
-              >
-                <Edit2 className="h-4 w-4" /> Edit
-              </Button>
-              <Button variant="destructive" onClick={handleDelete} className="gap-2">
-                <Trash2 className="h-4 w-4" /> Delete
-              </Button>
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                  className="gap-2 border-[#243F76]/20"
+                >
+                  <Edit2 className="h-4 w-4" /> Edit
+                </Button>
+              )}
+              {canDelete && (
+                <Button variant="destructive" onClick={handleDelete} className="gap-2">
+                  <Trash2 className="h-4 w-4" /> Delete
+                </Button>
+              )}
             </div>
           )}
         </div>

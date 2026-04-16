@@ -41,6 +41,7 @@ interface StudentsViewProps {
   refresh: () => void;
   onEnroll: () => void;
   onRowClick: (id: string) => void;
+  hasPermission: (permissionId: string) => boolean;
 }
 
 export function StudentsView({
@@ -59,6 +60,7 @@ export function StudentsView({
   refresh,
   onEnroll,
   onRowClick,
+  hasPermission,
 }: StudentsViewProps) {
   return (
     <MainLayout title="Student Management">
@@ -76,6 +78,7 @@ export function StudentsView({
             icon: UserPlus,
             onClick: onEnroll,
             testId: "button-enroll-student",
+            hidden: !hasPermission("students_create"),
           }}
         />
 

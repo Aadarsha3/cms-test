@@ -10,9 +10,12 @@ import { DetailsLoading } from "@/components/common/details/DetailsLoading";
 import { DetailsError } from "@/components/common/details/DetailsError";
 import { DetailsActionBar } from "@/components/common/details/DetailsActionBar";
 import { roleLabels, roleColors } from "@/pages/users/user.types";
+import { PermissionDisplay } from "@/components/authority/PermissionDisplay";
 
 interface StaffDetailsViewProps {
   staff: any;
+  authorities: Record<string, string[]>;
+  loadingAuthorities: boolean;
   loading: boolean;
   error: string | null;
   isEditing: boolean;
@@ -29,6 +32,8 @@ interface StaffDetailsViewProps {
 
 export function StaffDetailsView({
   staff,
+  authorities,
+  loadingAuthorities,
   loading,
   error,
   isEditing,
@@ -60,7 +65,8 @@ export function StaffDetailsView({
         <DetailsActionBar
           backLabel="Go Back"
           onBack={goBack}
-          canEdit={hasPermission("users_edit")}
+          canEdit={hasPermission("staffs_edit")}
+          canDelete={hasPermission("staffs_delete")}
           isEditing={isEditing}
           saving={saving}
           onEdit={handleEdit}
@@ -181,6 +187,15 @@ export function StaffDetailsView({
             </div>
           </CardContent>
         </Card>
+
+        {/* Permissions Summary */}
+        <PermissionDisplay 
+          authorities={authorities} 
+          loading={loadingAuthorities} 
+          variant="full"
+          manageUrl={hasPermission("access_control_manage") ? `/authority?uid=${staff.userAccountId || staff.id}` : undefined}
+          title="Access & Permissions"
+        />
       </div>
     </MainLayout>
   );

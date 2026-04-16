@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { dashboardApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { extractErrorMessage, logError } from "@/lib/error-handler";
+import { useAuth } from "@/lib/auth-context";
 import { ProgramsView } from "./ProgramsView";
 
 interface ProgramResponse {
@@ -36,6 +37,7 @@ export default function ProgramsPage() {
 
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { hasPermission } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => setSearch(localSearch), 300);
@@ -146,6 +148,7 @@ export default function ProgramsPage() {
       handleNextPage={handleNextPage}
       handlePrevPage={handlePrevPage}
       setLocation={setLocation}
+      hasPermission={hasPermission}
     />
   );
 }

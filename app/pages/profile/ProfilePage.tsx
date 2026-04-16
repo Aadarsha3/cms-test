@@ -8,9 +8,10 @@ export function ProfilePage() {
 
   if (!authUser) return null;
 
-  const displayName = accountData?.displayName || authUser.name;
   const isStudent = authUser.role === "student";
   const isStaffStaff = ["staff", "admin", "teacher"].includes(authUser.role);
+  const displayName = (!isStudent && (roleData as any)?.fullName) || accountData?.displayName || authUser.name;
+  const displayEmail = (!isStudent && (roleData as any)?.email) || accountData?.primaryEmail || authUser.email;
 
   return (
     <ProfileView
@@ -20,6 +21,7 @@ export function ProfilePage() {
       roleNotFound={roleNotFound}
       authUser={authUser}
       displayName={displayName}
+      displayEmail={displayEmail}
       isStudent={isStudent}
       isStaffStaff={isStaffStaff}
       onChangePassword={() => setLocation("/change-password")}

@@ -16,6 +16,7 @@ export interface DetailsActionBarProps {
   backLabel?: string;
   onBack: () => void;
   canEdit?: boolean;
+  canDelete?: boolean;
   isEditing: boolean;
   saving: boolean;
   onEdit: () => void;
@@ -42,6 +43,7 @@ export function DetailsActionBar({
   backLabel = "Go Back",
   onBack,
   canEdit = true,
+  canDelete = true,
   isEditing,
   saving,
   onEdit,
@@ -79,9 +81,9 @@ export function DetailsActionBar({
         <ArrowLeft className="h-4 w-4" /> {backLabel}
       </Button>
 
-      {canEdit && (
+      {(canEdit || canDelete || isEditing) && (
         <div className="flex items-center gap-3 self-end sm:self-auto">
-          {isEditing ? (
+          {canEdit && isEditing ? (
             <>
               <Button
                 variant="ghost"
@@ -112,7 +114,7 @@ export function DetailsActionBar({
               </Button>
             </>
           ) : (
-            <>
+            canEdit ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -121,7 +123,11 @@ export function DetailsActionBar({
               >
                 <EditIcon className="h-4 w-4" /> {editLabel}
               </Button>
-              
+            ) : null
+          )}
+
+          {canDelete && !isEditing && (
+            <>
               {confirmDelete ? (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>

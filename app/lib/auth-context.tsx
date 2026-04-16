@@ -22,7 +22,8 @@ export interface AuthUser {
   enrollmentDate?: string;
   program?: string;
   group?: string;
-
+  permissions?: string[];
+  User_Id?: string;
 }
 
 interface AuthContextType {
@@ -81,6 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check main role permissions
     const rolePerms = permissions[user.role] || [];
     if (rolePerms.includes(permissionId)) return true;
+
+    // Check extra individual permissions granted by token
+    if (user.permissions && user.permissions.includes(permissionId)) return true;
 
     return false;
   };

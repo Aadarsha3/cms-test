@@ -10,7 +10,8 @@ export default function AnnouncementsPage() {
     const { hasPermission } = useAuth();
     const { toast } = useToast();
     const [, setLocation] = useLocation();
-    const isAdmin = hasPermission("users_edit");
+    const canView = hasPermission("announcements_view");
+    const canCreate = hasPermission("announcements_create");
 
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ export default function AnnouncementsPage() {
     const [form, setForm] = useState<AnnouncementForm>({ title: "", details: "" });
 
     const fetchAnnouncements = async () => {
+        if (!canView) return;
         setLoading(true);
         try {
             const response = await dashboardApi.get(`/announcements?page=${page}&size=${size}&sort=createdDate&direction=DSC`);
@@ -66,8 +68,12 @@ export default function AnnouncementsPage() {
     };
 
     useEffect(() => {
-        fetchAnnouncements();
-    }, [page, size]);
+        if (canView) {
+            fetchAnnouncements();
+        } else {
+            setLoading(false);
+        }
+    }, [page, size, canView]);
 
     const handleCreate = () => {
         setEditingId(null);
@@ -107,7 +113,7 @@ export default function AnnouncementsPage() {
             setPage={setPage}
             fetchAnnouncements={fetchAnnouncements}
             handleCreate={handleCreate}
-            isAdmin={isAdmin}
+            isAdmin={canCreate}
             filtered={filtered}
             setLocation={setLocation}
             totalPages={totalPages}

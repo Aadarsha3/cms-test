@@ -3,12 +3,12 @@ import { useLocation, useParams } from "wouter";
 import { dashboardApi } from "@/lib/api";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { BookOpen, AlertCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { extractErrorMessage, logError } from "@/lib/error-handler";
 
 import { DetailsLoading } from "@/components/common/details/DetailsLoading";
 import { DetailsError } from "@/components/common/details/DetailsError";
@@ -19,7 +19,8 @@ interface CourseDetail {
   name: string;
   courseCode: string;
   creditHour: string;
-  program?: string;
+  program?: string | any;
+  programId?: string;
 }
 
 export default function CourseDetailsPage(): React.JSX.Element {
@@ -63,6 +64,14 @@ export default function CourseDetailsPage(): React.JSX.Element {
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Read the parent program ID from the URL query parameter
+  const urlProgramId = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get("program")
+    : null;
+  const programId = urlProgramId || course?.programId ||
+    (typeof course?.program === 'string' ? course.program : (course?.program as any)?.id);
+  const backUrl = programId ? `/programs/${programId}` : "/programs";
+
   const handleSave = async () => {
     if (
       editData.name === course?.name &&
@@ -104,10 +113,10 @@ export default function CourseDetailsPage(): React.JSX.Element {
         description: "Course details updated successfully.",
       });
     } catch (err: any) {
-      console.error("Failed to update course:", err);
+      logError("UpdateCourse", err);
       toast({
-        title: "Error updating course",
-        description: err.response?.data?.message || err.message,
+        title: "Update Failed",
+        description: extractErrorMessage(err, "Failed to update course details.", "This course code is already taken."),
         variant: "destructive",
       });
     } finally {
@@ -123,30 +132,27 @@ export default function CourseDetailsPage(): React.JSX.Element {
         title: "Course Deleted",
         description: "The course has been successfully deleted.",
       });
-      setLocation(course?.program ? `/programs/${course.program}` : "/programs");
+      setLocation(backUrl);
     } catch (err: any) {
-      console.error("Failed to delete course:", err);
+      logError("DeleteCourse", err);
       toast({
         title: "Delete Failed",
-        description: err.response?.data?.message || "Failed to delete the course.",
+        description: extractErrorMessage(err, "Failed to delete the course."),
         variant: "destructive",
       });
       setIsDeleting(false);
     }
   };
 
-  const isAdmin = hasPermission("users_edit");
-  const backUrl = course?.program ? `/programs/${course.program}` : "/programs";
-
   if (loading) return <DetailsLoading title="Course Details" />;
 
   if (error || !course) {
     return (
-      <DetailsError 
-        title="Course Details" 
-        error={error || "Course not found."} 
+      <DetailsError
+        title="Course Details"
+        error={error || "Course not found."}
         backLabel="Go Back"
-        onBack={() => setLocation(backUrl)} 
+        onBack={() => setLocation(backUrl)}
       />
     );
   }
@@ -156,7 +162,8 @@ export default function CourseDetailsPage(): React.JSX.Element {
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
         <DetailsActionBar
           onBack={() => setLocation(backUrl)}
-          canEdit={isAdmin}
+          canEdit={hasPermission("courses_edit")}
+          canDelete={hasPermission("courses_delete")}
           isEditing={isEditing}
           saving={isSaving}
           onEdit={() => {
@@ -222,7 +229,7 @@ export default function CourseDetailsPage(): React.JSX.Element {
                     className="h-11"
                   />
                 ) : (
-                  <div className="font-semibold text-lg px-4 py-2.5 bg-muted/30 border border-border/50 rounded-xl min-h-12 flex items-center">
+                  <div className="font-semibold text-base px-4 py-2.5 bg-muted/30 border border-border/50 rounded-xl min-h-12 flex items-center">
                     {course.name || "-"}
                   </div>
                 )}
@@ -259,7 +266,7 @@ export default function CourseDetailsPage(): React.JSX.Element {
                     className="h-11"
                   />
                 ) : (
-                  <div className="font-semibold text-lg px-4 py-2.5 bg-muted/30 border border-border/50 rounded-xl min-h-12 flex items-center">
+                  <div className="font-semibold text-base px-4 py-2.5 bg-muted/30 border border-border/50 rounded-xl min-h-12 flex items-center">
                     {course.creditHour || "0"} Credits
                   </div>
                 )}

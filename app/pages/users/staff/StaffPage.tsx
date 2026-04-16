@@ -1,5 +1,6 @@
 import { useManagementList } from "@/hooks/useManagementList";
 import { useLocation } from "wouter";
+import { useAuth } from "@/lib/auth-context";
 import { StaffView } from "./StaffView";
 
 interface StaffResponse {
@@ -13,6 +14,7 @@ interface StaffResponse {
 
 export function StaffPage() {
   const [, setLocation] = useLocation();
+  const { hasPermission } = useAuth();
   const {
     data: staffs,
     loading,
@@ -31,7 +33,7 @@ export function StaffPage() {
     idField: "id",
   });
 
-  const filteredStaffs = staffs.filter((s) => {
+  const filteredStaffs = staffs.filter((s: StaffResponse) => {
     if (!s) return false;
     const searchLower = search.toLowerCase();
     return (
@@ -59,6 +61,7 @@ export function StaffPage() {
       refresh={refresh}
       onEnroll={() => setLocation("/users/enroll?context=staff")}
       onRowClick={(id) => setLocation(`/staff/${id}`)}
+      hasPermission={hasPermission}
     />
   );
 }

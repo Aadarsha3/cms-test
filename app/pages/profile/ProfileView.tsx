@@ -17,6 +17,7 @@ interface ProfileViewProps {
   roleNotFound: boolean;
   authUser: any;
   displayName: string;
+  displayEmail: string;
   isStudent: boolean;
   isStaffStaff: boolean;
   onChangePassword: () => void;
@@ -29,6 +30,7 @@ export function ProfileView({
   roleNotFound,
   authUser,
   displayName,
+  displayEmail,
   isStudent,
   isStaffStaff,
   onChangePassword,
@@ -51,7 +53,7 @@ export function ProfileView({
           roleLabel={roleLabels[authUser.role]}
           roleColor={roleColors[authUser.role]}
           username={accountData?.username}
-          email={accountData?.primaryEmail || authUser.email}
+          email={displayEmail}
           userId={accountData?.id || authUser.id}
           createdDate={accountData?.createdDate}
         />
@@ -67,7 +69,7 @@ export function ProfileView({
                   <InfoField label="Full Name" value={roleData.fullName || displayName} icon={User} />
                   <InfoField
                     label="Email Address"
-                    value={roleData.email || accountData?.primaryEmail || authUser.email}
+                    value={roleData.email || displayEmail}
                     icon={Mail}
                   />
                   <PhoneInputField

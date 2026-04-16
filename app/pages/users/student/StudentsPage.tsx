@@ -1,5 +1,6 @@
 import { useManagementList } from "@/hooks/useManagementList";
 import { useLocation } from "wouter";
+import { useAuth } from "@/lib/auth-context";
 import { StudentsView } from "./StudentsView";
 
 interface StudentResponse {
@@ -14,6 +15,7 @@ interface StudentResponse {
 
 export function StudentsPage() {
   const [, setLocation] = useLocation();
+  const { hasPermission } = useAuth();
   const {
     data: students,
     loading,
@@ -32,7 +34,7 @@ export function StudentsPage() {
     idField: "userId",
   });
 
-  const filteredStudents = students.filter((s) => {
+  const filteredStudents = students.filter((s: StudentResponse) => {
     if (!s) return false;
     const searchLower = search.toLowerCase();
     return (
@@ -60,6 +62,7 @@ export function StudentsPage() {
       refresh={refresh}
       onEnroll={() => setLocation("/users/enroll?context=student")}
       onRowClick={(id) => setLocation(`/student/${id}`)}
+      hasPermission={hasPermission}
     />
   );
 }

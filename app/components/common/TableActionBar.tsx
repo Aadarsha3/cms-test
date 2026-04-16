@@ -18,6 +18,7 @@ interface TableActionBarProps {
     icon?: React.ElementType;
     onClick: () => void;
     testId?: string;
+    hidden?: boolean;
   };
   className?: string;
 }
@@ -69,7 +70,7 @@ export function TableActionBar({
           />
         </Button>
         
-        {actionButton && (
+        {actionButton && !actionButton.hidden && (
           <Button
             onClick={actionButton.onClick}
             className="gap-2 h-11 px-6 shadow-md hover:shadow-lg transition-all active:scale-95"

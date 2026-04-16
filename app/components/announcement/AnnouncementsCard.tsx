@@ -14,7 +14,6 @@ import { useLocation } from "wouter";
 interface AnnouncementsCardProps {
     announcements: Announcement[];
     isAdmin: boolean;
-    onViewDetails: (announcement: Announcement) => void;
     onCreate: () => void;
     className?: string;
 }
@@ -22,7 +21,6 @@ interface AnnouncementsCardProps {
 export function AnnouncementsCard({
     announcements,
     isAdmin,
-    onViewDetails,
     onCreate,
     className,
 }: AnnouncementsCardProps) {
@@ -42,10 +40,10 @@ export function AnnouncementsCard({
                     <Button
                         size="sm"
                         onClick={onCreate}
-                        className="rounded-full px-3 md:px-4 bg-primary hover:bg-primary/90 shadow-sm shrink-0 h-8 md:h-9"
+                        className="rounded-full px-3 sm:px-4 bg-primary hover:bg-primary/90 shadow-sm shrink-0 h-8 sm:h-9"
                     >
-                        <Plus className="h-3.5 w-3.5 md:mr-2" />
-                        <span className="hidden xs:inline">Post New</span>
+                        <Plus className="h-3.5 w-3.5 sm:mr-2" />
+                        <span className="hidden sm:inline">Post New</span>
                     </Button>
                 )}
             </CardHeader>

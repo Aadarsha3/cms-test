@@ -15,9 +15,10 @@ interface CurriculumCardProps {
   programId: string;
   courses: CourseDetail[];
   loading: boolean;
+  hasPermission: (permission: string) => boolean;
 }
 
-export function CurriculumCard({ programId, courses, loading }: CurriculumCardProps) {
+export function CurriculumCard({ programId, courses, loading, hasPermission }: CurriculumCardProps) {
   const [, setLocation] = useLocation();
 
   return (
@@ -27,10 +28,12 @@ export function CurriculumCard({ programId, courses, loading }: CurriculumCardPr
           <BookOpen className="h-5 w-5 text-muted-foreground" />
           <CardTitle className="text-lg font-bold">Courses</CardTitle>
         </div>
-        <Button size="sm" onClick={() => setLocation(`/courses/create?program=${programId}`)} className="gap-2 shadow-sm">
-          <Plus className="h-4 w-4" />
-          <span>Add Course</span>
-        </Button>
+        {hasPermission("courses_create") && (
+          <Button size="sm" onClick={() => setLocation(`/courses/create?program=${programId}`)} className="gap-2 shadow-sm">
+            <Plus className="h-4 w-4" />
+            <span>Add Course</span>
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid gap-3">
@@ -47,7 +50,7 @@ export function CurriculumCard({ programId, courses, loading }: CurriculumCardPr
             courses.map((course) => (
               <div
                 key={course.id}
-                onClick={() => setLocation(`/courses/${course.id}`)}
+                onClick={() => setLocation(`/courses/${course.id}?program=${programId}`)}
                 className="group flex items-center justify-between p-4 rounded-xl border border-border bg-card/50 transition-all cursor-pointer hover:bg-muted/30 hover:border-primary/20 hover:shadow-sm gap-3"
               >
                 <div className="flex items-center gap-4 min-w-0">

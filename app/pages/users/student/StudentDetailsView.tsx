@@ -10,8 +10,12 @@ import { DetailsLoading } from "@/components/common/details/DetailsLoading";
 import { DetailsError } from "@/components/common/details/DetailsError";
 import { DetailsActionBar } from "@/components/common/details/DetailsActionBar";
 
+import { PermissionDisplay } from "@/components/authority/PermissionDisplay";
+
 interface StudentDetailsViewProps {
   student: any;
+  authorities: Record<string, string[]>;
+  loadingAuthorities: boolean;
   loading: boolean;
   error: string | null;
   isEditing: boolean;
@@ -28,6 +32,8 @@ interface StudentDetailsViewProps {
 
 export function StudentDetailsView({
   student,
+  authorities,
+  loadingAuthorities,
   loading,
   error,
   isEditing,
@@ -59,7 +65,8 @@ export function StudentDetailsView({
         <DetailsActionBar
           backLabel="Go Back"
           onBack={goBack}
-          canEdit={hasPermission("users_edit")}
+          canEdit={hasPermission("students_edit")}
+          canDelete={hasPermission("students_delete")}
           isEditing={isEditing}
           saving={saving}
           onEdit={handleEdit}
@@ -191,6 +198,13 @@ export function StudentDetailsView({
             </div>
           </CardContent>
         </Card>
+
+        <PermissionDisplay
+          authorities={authorities}
+          loading={loadingAuthorities}
+          manageUrl={hasPermission("access_control_manage") ? `/authority?uid=${student.userAccountId || student.id}` : undefined}
+          title="Permissions"
+        />
       </div>
     </MainLayout>
   );
