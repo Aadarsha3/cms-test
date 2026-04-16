@@ -1,0 +1,15 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_DASHBOARD_API_URL: ${VITE_DASHBOARD_API_URL:-http://localhost:8000/api/v1}
+        VITE_USER_API_URL: ${VITE_USER_API_URL:-http://localhost:8001/api/v1}
+        VITE_AUTH_SERVER_URL: ${VITE_AUTH_SERVER_URL:-http://localhost:8001}
+        VITE_OIDC_CLIENT_ID: ${VITE_OIDC_CLIENT_ID:-react-client}
+        VITE_OIDC_REDIRECT_URI: ${VITE_OIDC_REDIRECT_URI:-http://localhost:5173/login/oauth2/code/react-client}
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+    container_name: frontend-app
