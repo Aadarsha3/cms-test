@@ -40,7 +40,7 @@ export function useProfileFetcher(): UseProfileFetcherReturn {
 
       // 1. Resolve UUID + Fetch Account
       try {
-        const listRes = await userApi.get<{ content: UserDetail[] } | UserDetail[]>("/users", { params: { size: 500 } });
+        const listRes = await userApi.get<{ content: UserDetail[] } | UserDetail[]>("/users", { params: { size: 50 } });
         const users = Array.isArray(listRes.data) ? listRes.data : listRes.data?.content || [];
         const match = users.find((u) => u.username === authUser.id || u.id === authUser.id);
 
@@ -64,7 +64,7 @@ export function useProfileFetcher(): UseProfileFetcherReturn {
       const endpoint = isStudent ? "/students" : "/staffs";
 
       try {
-        const listRes = await dashboardApi.get<{ content: any[] } | any[]>(endpoint, { params: { size: 1000 } });
+        const listRes = await dashboardApi.get<{ content: any[] } | any[]>(endpoint, { params: { size: 50 } });
         const list = Array.isArray(listRes.data) ? listRes.data : (listRes.data as any)?.content || [];
 
         const match = list.find((item: any) => {

@@ -74,12 +74,6 @@ const navItems: NavItem[] = [
     permissionId: "access_control_manage",
   },
   {
-    title: "Calendar",
-    url: "/calendar",
-    icon: CalendarDays,
-    permissionId: "calendar_view",
-  },
-  {
     title: "Profile",
     url: "/profile",
     icon: User,

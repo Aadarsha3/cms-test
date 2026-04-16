@@ -87,7 +87,7 @@ function MainLayoutContent({ children, title, className }: MainLayoutProps) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 md:mr-[20px]">
           <div
             className={cn("flex items-center gap-2", isMobile && "mr-[10px]")}
           >
