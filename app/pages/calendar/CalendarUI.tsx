@@ -91,7 +91,7 @@ export function CalendarUI({
                     <Card className="flex flex-col border border-primary/5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_20px_rgb(0,0,0,0.1)] bg-card/60 backdrop-blur-xl overflow-hidden ring-1 ring-white/10">
                         <CardHeader className="flex flex-row items-center justify-between border-b border-primary/5 bg-primary/[0.01] py-2 px-3 sm:px-4">
                             <div className="flex items-center gap-2">
-                                <div className="p-2 bg-primary/10 rounded-lg shadow-inner border border-primary/10">
+                                <div className="">
                                     <CalendarIcon className="h-4 w-4 text-primary" />
                                 </div>
                                 <div>
@@ -157,7 +157,7 @@ export function CalendarUI({
                                             caption: "flex justify-center pt-1 pb-2 relative items-center w-full mb-1 border-b border-primary/5",
                                             caption_label: "text-sm font-bold text-foreground/80",
                                             nav: "space-x-1 flex items-center",
-                                            nav_button: "h-7 w-7 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-primary/10 hover:text-primary rounded-lg transition-all border border-transparent hover:border-primary/20",
+                                            nav_button: "h-7 w-7 bg-transparent p-0 opacity-70 hover:opacity-100 hover:text-primary transition-all border-none",
                                             nav_button_previous: "absolute left-2",
                                             nav_button_next: "absolute right-2",
                                             table: "w-full border-collapse",
