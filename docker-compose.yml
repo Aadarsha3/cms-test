@@ -3,13 +3,27 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        VITE_DASHBOARD_API_URL: ${VITE_DASHBOARD_API_URL:-http://localhost:8000/api/v1}
-        VITE_USER_API_URL: ${VITE_USER_API_URL:-http://localhost:8001/api/v1}
-        VITE_AUTH_SERVER_URL: ${VITE_AUTH_SERVER_URL:-http://localhost:8001}
-        VITE_OIDC_CLIENT_ID: ${VITE_OIDC_CLIENT_ID:-react-client}
-        VITE_OIDC_REDIRECT_URI: ${VITE_OIDC_REDIRECT_URI:-http://localhost:5173/login/oauth2/code/react-client}
+    image: cms-frontend:latest
+    container_name: cms-frontend
     ports:
-      - "5173:80"
+      - "5173:8080"
+    environment:
+      - VITE_DASHBOARD_API_URL=${VITE_DASHBOARD_API_URL:-http://localhost:8000/api/v1}
+      - VITE_USER_API_URL=${VITE_USER_API_URL:-http://localhost:8001/api/v1}
+      - VITE_AUTH_SERVER_URL=${VITE_AUTH_SERVER_URL:-http://localhost:8001}
+      - VITE_OIDC_CLIENT_ID=${VITE_OIDC_CLIENT_ID:-react-client}
+      - VITE_OIDC_REDIRECT_URI=${VITE_OIDC_REDIRECT_URI:-http://localhost:5173/login/oauth2/code/react-client}
     restart: unless-stopped
-    container_name: frontend-app
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
